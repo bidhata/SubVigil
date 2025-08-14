@@ -35,7 +35,7 @@
 ## 🛠️ Installation
 
 ```bash
-git clone https://github.com/yourusername/subgrab.git
+git clone https://github.com/bidhata/subgrab.git
 cd subgrab
 pip install -r requirements.txt
 ```
