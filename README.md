@@ -1,6 +1,6 @@
 ![report](https://github.com/user-attachments/assets/6cf50d49-ffbd-475f-aaf4-ae6d557bf6b4)
 
-# 🔍 SubGrab - Advanced Subdomain Enumeration Tool
+# 🔍 SubGrab - AI Enabled Advanced Subdomain Enumeration Tool
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)
