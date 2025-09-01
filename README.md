@@ -124,7 +124,7 @@ SubGrab integrates with **OpenRouter API** to provide AI-powered subdomain disco
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/subgrab.git
+git clone https://github.com/bidhata/subgrab.git
 cd subgrab
 
 # Install dependencies
@@ -136,7 +136,7 @@ python subgrab.py example.com
 
 ### 💻 **Method 2: Windows Binaries (Recommended)**
 
-1. **Download** the latest release from [Releases](https://github.com/your-repo/subgrab/releases)
+1. **Download** the latest release from [Releases](https://github.com/bidhata/subgrab/releases)
 2. **Extract** the ZIP file
 3. **Double-click** `QuickStart.bat` for interactive menu
 4. **Or run directly**: `subgrab.exe example.com`
