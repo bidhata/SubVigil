@@ -43,6 +43,8 @@ class SubGrabGUI:
         self.censys_id_var = tk.StringVar()
         self.censys_secret_var = tk.StringVar()
         self.github_token_var = tk.StringVar()
+        self.openrouter_key_var = tk.StringVar()
+        self.openrouter_model_var = tk.StringVar(value="anthropic/claude-3.5-sonnet")
         
         # Nameservers
         self.nameservers_var = tk.StringVar(value="8.8.8.8,8.8.4.4,1.1.1.1")
@@ -246,7 +248,8 @@ class SubGrabGUI:
             ("VirusTotal API Key:", self.virustotal_key_var, "https://virustotal.com/"),
             ("Censys API ID:", self.censys_id_var, "https://censys.io/"),
             ("Censys API Secret:", self.censys_secret_var, ""),
-            ("GitHub Token:", self.github_token_var, "https://github.com/settings/tokens")
+            ("GitHub Token:", self.github_token_var, "https://github.com/settings/tokens"),
+            ("OpenRouter API Key:", self.openrouter_key_var, "https://openrouter.ai/")
         ]
         
         for i, (label, var, url) in enumerate(api_keys):
@@ -264,9 +267,27 @@ class SubGrabGUI:
                 ttk.Button(entry_frame, text="Get Key", 
                           command=lambda u=url: webbrowser.open(u)).grid(row=0, column=1)
         
+        # OpenRouter model selection
+        ttk.Label(parent, text="OpenRouter Model:").grid(row=len(api_keys) + 2, column=0, sticky=tk.W, pady=(10, 5))
+        model_frame = ttk.Frame(parent)
+        model_frame.grid(row=len(api_keys) + 2, column=1, sticky=(tk.W, tk.E), pady=(10, 5), padx=(10, 0))
+        
+        models = [
+            "anthropic/claude-3.5-sonnet",
+            "anthropic/claude-3-haiku",
+            "openai/gpt-4o",
+            "openai/gpt-4o-mini",
+            "google/gemini-pro-1.5",
+            "meta-llama/llama-3.1-8b-instruct"
+        ]
+        
+        model_combo = ttk.Combobox(model_frame, textvariable=self.openrouter_model_var, 
+                                  values=models, state="readonly", width=40)
+        model_combo.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        
         # Save/Load API keys
         buttons_frame = ttk.Frame(parent)
-        buttons_frame.grid(row=len(api_keys) + 3, column=0, columnspan=2, pady=(15, 0))
+        buttons_frame.grid(row=len(api_keys) + 4, column=0, columnspan=2, pady=(15, 0))
         
         ttk.Button(buttons_frame, text="Save API Keys", 
                   command=self.save_api_keys).grid(row=0, column=0, padx=(0, 5))
@@ -324,7 +345,9 @@ class SubGrabGUI:
             'virustotal': self.virustotal_key_var.get(),
             'censys_id': self.censys_id_var.get(),
             'censys_secret': self.censys_secret_var.get(),
-            'github': self.github_token_var.get()
+            'github': self.github_token_var.get(),
+            'openrouter': self.openrouter_key_var.get(),
+            'openrouter_model': self.openrouter_model_var.get()
         }
         
         filename = filedialog.asksaveasfilename(
@@ -359,6 +382,8 @@ class SubGrabGUI:
                 self.censys_id_var.set(api_data.get('censys_id', ''))
                 self.censys_secret_var.set(api_data.get('censys_secret', ''))
                 self.github_token_var.set(api_data.get('github', ''))
+                self.openrouter_key_var.set(api_data.get('openrouter', ''))
+                self.openrouter_model_var.set(api_data.get('openrouter_model', 'anthropic/claude-3.5-sonnet'))
                 
                 messagebox.showinfo("Success", "API keys loaded successfully!")
             except Exception as e:
@@ -417,6 +442,9 @@ class SubGrabGUI:
             cmd.extend(['--censys-secret', self.censys_secret_var.get().strip()])
         if self.github_token_var.get().strip():
             cmd.extend(['--github-token', self.github_token_var.get().strip()])
+        if self.openrouter_key_var.get().strip():
+            cmd.extend(['--openrouter-key', self.openrouter_key_var.get().strip()])
+            cmd.extend(['--openrouter-model', self.openrouter_model_var.get()])
             
         return cmd
         

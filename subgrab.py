@@ -58,6 +58,9 @@ class SubdomainEnumerator:
         self.nameservers = nameservers or ['8.8.8.8', '8.8.4.4', '1.1.1.1']
         self.api_keys = api_keys or {}
         
+        # OpenRouter integration
+        self.openrouter_enhancer = None
+        
         # Results storage
         self.subdomains = set()
         self.active_subdomains = set()
@@ -500,6 +503,38 @@ class SubdomainEnumerator:
         
         return subdomains
 
+    def openrouter_enhancement(self):
+        """Use OpenRouter AI for intelligent subdomain generation"""
+        if not self.openrouter_enhancer:
+            return set()
+            
+        print(f"{Fore.CYAN}[*] Using AI to generate intelligent subdomain variations...")
+        subdomains = set()
+        
+        try:
+            # Generate AI-powered subdomains
+            ai_subdomains = self.openrouter_enhancer.generate_intelligent_subdomains(self.domain)
+            for subdomain in ai_subdomains:
+                full_subdomain = f"{subdomain}.{self.domain}"
+                subdomains.add(full_subdomain)
+            
+            # If we have existing subdomains, generate pattern-based ones
+            if len(self.subdomains) > 3:
+                existing_list = [sub.replace(f'.{self.domain}', '') for sub in self.subdomains]
+                pattern_subdomains = self.openrouter_enhancer.generate_pattern_based_subdomains(
+                    self.domain, existing_list
+                )
+                for subdomain in pattern_subdomains:
+                    full_subdomain = f"{subdomain}.{self.domain}"
+                    subdomains.add(full_subdomain)
+            
+            print(f"{Fore.GREEN}[+] AI generated {len(subdomains)} potential subdomains")
+            
+        except Exception as e:
+            print(f"{Fore.RED}[!] OpenRouter AI error: {e}")
+        
+        return subdomains
+
     def security_apis(self):
         """Use security APIs for enumeration"""
         print(f"{Fore.CYAN}[*] Querying security APIs...")
@@ -872,6 +907,7 @@ class SubdomainEnumerator:
             self.rapiddns,
             self.security_apis,
             self.github_code_search,
+            self.openrouter_enhancement,  # Add AI-powered discovery
             self.dns_enumeration,
             self.reverse_dns_lookup
         ]
@@ -1540,6 +1576,20 @@ class SubdomainEnumerator:
         
         start_time = time.time()
         
+        # Initialize OpenRouter if API key provided
+        if 'openrouter' in self.api_keys:
+            try:
+                from openrouter_integration import OpenRouterSubdomainEnhancer
+                self.openrouter_enhancer = OpenRouterSubdomainEnhancer(
+                    self.api_keys['openrouter'],
+                    getattr(self, 'openrouter_model', 'anthropic/claude-3.5-sonnet')
+                )
+                print(f"{Fore.GREEN}[+] OpenRouter AI integration enabled")
+            except ImportError:
+                print(f"{Fore.YELLOW}[!] OpenRouter integration module not found")
+            except Exception as e:
+                print(f"{Fore.RED}[!] OpenRouter initialization failed: {e}")
+        
         # Passive discovery
         self.run_passive_discovery()
         
@@ -1603,6 +1653,9 @@ Examples:
     parser.add_argument('--censys-id', help='Censys API ID')
     parser.add_argument('--censys-secret', help='Censys API secret')
     parser.add_argument('--github-token', help='GitHub API token')
+    parser.add_argument('--openrouter-key', help='OpenRouter API key for AI-powered subdomain generation')
+    parser.add_argument('--openrouter-model', default='anthropic/claude-3.5-sonnet',
+                       help='OpenRouter model to use (default: anthropic/claude-3.5-sonnet)')
     
     args = parser.parse_args()
     
@@ -1627,6 +1680,8 @@ Examples:
         api_keys['censys'] = {'id': args.censys_id, 'secret': args.censys_secret}
     if args.github_token:
         api_keys['github'] = args.github_token
+    if args.openrouter_key:
+        api_keys['openrouter'] = args.openrouter_key
     
     # Initialize and run enumeration
     enumerator = SubdomainEnumerator(
@@ -1640,6 +1695,10 @@ Examples:
         nameservers=args.nameservers,
         api_keys=api_keys
     )
+    
+    # Set OpenRouter model if provided
+    if args.openrouter_key:
+        enumerator.openrouter_model = args.openrouter_model
     
     try:
         enumerator.run()
