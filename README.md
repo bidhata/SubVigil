@@ -1,14 +1,11 @@
-![report](https://github.com/user-attachments/assets/6cf50d49-ffbd-475f-aaf4-ae6d557bf6b4)
+# SubGrab - Advanced Subdomain Enumeration Tool
 
-# 🔍 SubGrab - AI Enabled Advanced Subdomain Enumeration Tool
+<div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
-![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)
-![Author](https://img.shields.io/badge/Maintainer-Krishnendu%20Paul-blue)
-
-> SubGrab is a powerful and feature-rich subdomain enumeration tool designed for **security researchers**, **bug bounty hunters**, and **pentesters**. It performs **passive**, **active**, and **stealth** recon, enriched with **visual HTML reporting**, **Shodan**, **CT logs**, **DNS analysis**, and more.
-
----
+![SubGrab Logo](https://img.shields.io/badge/SubGrab-v2.0-blue?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.7+-green?style=for-the-badge&logo=python)
+![License](https://img.shields.io/badge/License-MIT-red?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge)
 
 **🚀 Next-Generation Subdomain Discovery with AI-Powered Intelligence**
 
@@ -108,13 +105,22 @@ SubGrab integrates with **OpenRouter API** to provide AI-powered subdomain disco
 | **Gemini Pro 1.5** | Google | Good alternative | ⭐⭐⭐⭐ | Medium |
 | **Llama 3.1 8B** | Meta | Open source option | ⭐⭐⭐ | Low |
 
+### 🎯 **AI Workflow**
+
+SubGrab uses a **smart two-phase approach** for AI integration:
+
+1. **📊 Traditional Discovery First**: Runs all passive/active methods to gather initial subdomains
+2. **🧠 AI Pattern Analysis**: Analyzes discovered subdomains to identify patterns
+3. **🎯 Intelligent Generation**: Creates new candidates based on observed patterns
+4. **✅ Quality Validation**: AI validates candidates for relevance and likelihood
+
 ### 🎯 **AI Capabilities**
 
-- **🧠 Intelligent Generation**: Context-aware subdomain variations
-- **📊 Pattern Recognition**: Analyzes existing subdomains for patterns
-- **🏢 Organization Analysis**: Industry-specific subdomain suggestions
-- **🔍 Content Analysis**: Extracts subdomain references from web content
-- **🎯 Technology Detection**: Suggests subdomains based on tech stack
+- **📊 Pattern Recognition**: Analyzes discovered subdomains for naming patterns, numbering schemes, environments
+- **🧠 Intelligent Variations**: Generates logical extensions (if `api1` exists, suggests `api2`, `api3`)
+- **🏢 Context Awareness**: Understands organization type and industry patterns
+- **🔍 Quality Validation**: Filters AI suggestions for high-probability candidates
+- **⚡ Efficiency**: Only runs AI analysis when sufficient data is available (3+ subdomains)
 
 ---
 
@@ -124,7 +130,7 @@ SubGrab integrates with **OpenRouter API** to provide AI-powered subdomain disco
 
 ```bash
 # Clone the repository
-git clone https://github.com/bidhata/subgrab.git
+git clone https://github.com/your-repo/subgrab.git
 cd subgrab
 
 # Install dependencies
@@ -136,7 +142,7 @@ python subgrab.py example.com
 
 ### 💻 **Method 2: Windows Binaries (Recommended)**
 
-1. **Download** the latest release from [Releases](https://github.com/bidhata/subgrab/releases)
+1. **Download** the latest release from [Releases](https://github.com/your-repo/subgrab/releases)
 2. **Extract** the ZIP file
 3. **Double-click** `QuickStart.bat` for interactive menu
 4. **Or run directly**: `subgrab.exe example.com`
@@ -174,7 +180,7 @@ python subgrab.py example.com --stealth
 ### 🤖 **AI-Enhanced Scanning**
 
 ```bash
-# Using Claude 3.5 Sonnet (recommended)
+# AI analyzes patterns from traditional discovery
 python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model anthropic/claude-3.5-sonnet
@@ -184,12 +190,18 @@ python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model anthropic/claude-3-haiku
 
-# Multiple API keys for maximum coverage
+# Maximum coverage: Traditional + AI + Multiple APIs
 python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --shodan-key YOUR_SHODAN_KEY \
   --virustotal-key YOUR_VT_KEY
 ```
+
+**How AI Enhancement Works:**
+1. **Traditional methods** discover initial subdomains (Certificate Transparency, DNS, APIs, etc.)
+2. **AI analyzes patterns** in discovered subdomains (naming conventions, numbering, environments)
+3. **AI generates variations** based on observed patterns (if `dev-api` exists, suggests `staging-api`, `prod-api`)
+4. **AI validates candidates** for quality and likelihood before DNS testing
 
 ### 🖥️ **GUI Usage**
 
@@ -260,18 +272,24 @@ python subgrab.py example.com --nameservers 1.1.1.1 8.8.8.8
 
 #### 🤖 **AI-Enhanced Scanning**
 ```bash
-# Basic AI enhancement
+# AI pattern analysis (runs after traditional discovery)
 python subgrab.py example.com --openrouter-key sk-or-xxxxx
 
-# Specific AI model
+# Specific AI model for pattern analysis
 python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model openai/gpt-4o
 
-# AI with context (for better results)
+# AI analyzes discovered patterns and generates intelligent variations
 python subgrab.py tech-company.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model anthropic/claude-3.5-sonnet
+```
+
+**AI Integration Flow:**
+```
+Traditional Discovery → Pattern Analysis → AI Generation → Validation → DNS Testing
+     (200 subdomains)      (find patterns)    (50 new ideas)   (20 validated)   (5 confirmed)
 ```
 
 #### ⚡ **Performance Optimization**
@@ -540,7 +558,29 @@ subgrab_gui.exe
 
 Pre-compiled Windows executables are available for easy deployment.
 
+### 📦 **Package Contents**
+- **`subgrab.exe`** - Command line version (213 MB)
+- **`subgrab_gui.exe`** - GUI version (29 MB)
+- **`QuickStart.bat`** - Interactive launcher
+- **`run_cli.bat`** - CLI launcher
+- **`run_gui.bat`** - GUI launcher
+- **Complete documentation** and examples
 
+### 🚀 **Quick Start (Windows)**
+1. **Download** latest release ZIP
+2. **Extract** to desired folder
+3. **Double-click** `QuickStart.bat`
+4. **Choose** GUI or CLI mode
+5. **Start scanning!**
+
+### ⚡ **Features**
+- **🔄 No Python Required**: Standalone executables
+- **📦 All Dependencies Included**: Ready to run
+- **🎯 User-Friendly Launchers**: Easy execution
+- **📚 Complete Documentation**: Setup guides included
+- **🔒 Windows Defender Compatible**: Signed executables
+
+### 🛠️ **Building from Source**
 ```bash
 # Install build dependencies
 pip install -r build_requirements.txt
@@ -754,7 +794,7 @@ We welcome contributions from the security community!
 
 ```bash
 # Clone your fork
-git clone https://github.com/bidhata/subgrab.git
+git clone https://github.com/your-username/subgrab.git
 cd subgrab
 
 # Create virtual environment
@@ -834,6 +874,11 @@ SubGrab is designed for **authorized security testing** and **educational purpos
 - 💼 LinkedIn: [linkedin.com/in/krishpaul](https://linkedin.com/in/krishpaul)
 - 📧 Email: me@krishnendu.com
 
+### 🆘 **Support**
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/your-repo/subgrab/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/your-repo/subgrab/discussions)
+- 📚 **Documentation**: [Wiki](https://github.com/your-repo/subgrab/wiki)
+- 💬 **Community**: [Discord Server](https://discord.gg/your-server)
 
 ### 🙏 **Acknowledgments**
 - **OpenRouter Team** for AI API access
@@ -854,8 +899,3 @@ SubGrab is designed for **authorized security testing** and **educational purpos
 **Made with ❤️ for the Security Community**
 
 </div>
----
-
-## 💬 Contributions
-
-Issues, PRs, feedback, and feature requests are welcome!
