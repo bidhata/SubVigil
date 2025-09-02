@@ -1,137 +1,102 @@
 # SubGrab - Advanced Subdomain Enumeration Tool
 
-<div align="center">
+![SubGrab Logo](https://via.placeholder.com/150x50.png?text=SubGrab)  
+**Python** | **MIT License** | **Cross-Platform**
 
-![SubGrab Logo](https://img.shields.io/badge/SubGrab-v2.0-blue?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.7+-green?style=for-the-badge&logo=python)
-![License](https://img.shields.io/badge/License-MIT-red?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge)
+🚀 **Next-Generation Subdomain Discovery with AI-Powered Intelligence**
 
-**🚀 Next-Generation Subdomain Discovery with AI-Powered Intelligence**
-
-*Enhanced with OpenRouter API integration for intelligent subdomain generation*
-
-</div>
+SubGrab is a high-performance, multi-threaded subdomain enumeration tool designed for security researchers, penetration testers, and bug bounty hunters. Enhanced with **OpenRouter AI integration**, it combines traditional reconnaissance techniques with advanced artificial intelligence to uncover subdomains that other tools might miss.
 
 ---
 
-## 📋 Table of Contents
+## 🌟 Why Choose SubGrab?
 
-- [🎯 Overview](#-overview)
-- [✨ Features](#-features)
-- [🤖 AI Integration](#-ai-integration)
-- [🛠️ Installation](#️-installation)
-- [🚀 Quick Start](#-quick-start)
-- [📖 Usage](#-usage)
-- [🔧 Configuration](#-configuration)
-- [📊 Output Formats](#-output-formats)
-- [🎛️ API Integrations](#️-api-integrations)
-- [🖥️ GUI Interface](#️-gui-interface)
-- [💻 Windows Binaries](#-windows-binaries)
-- [🔍 Discovery Methods](#-discovery-methods)
-- [🛡️ Security Features](#️-security-features)
-- [📈 Performance](#-performance)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+SubGrab stands out with its robust feature set and AI-driven capabilities, making it an essential tool for comprehensive subdomain discovery:
 
----
-
-## 🎯 Overview
-
-SubGrab is a powerful, multi-threaded subdomain enumeration tool designed for security researchers, penetration testers, and bug bounty hunters. Enhanced with **OpenRouter AI integration**, it combines traditional reconnaissance techniques with cutting-edge artificial intelligence to discover subdomains that other tools might miss.
-
-### 🌟 What Makes SubGrab Special?
-
-- **🤖 AI-Powered Discovery**: Uses OpenRouter API with multiple AI models for intelligent subdomain generation
-- **🔄 Multi-Source Enumeration**: Combines 15+ different discovery techniques
-- **⚡ High Performance**: Multi-threaded architecture with intelligent rate limiting
-- **🎯 Comprehensive Coverage**: Passive and active reconnaissance methods
-- **📊 Rich Output**: Multiple export formats with detailed reporting
-- **🖥️ User-Friendly**: Both CLI and GUI interfaces available
-- **🔒 Security-Focused**: Built-in subdomain takeover detection
-- **📱 Cross-Platform**: Works on Windows, Linux, and macOS
+- 🤖 **AI-Powered Discovery**: Leverages OpenRouter API with multiple AI models for intelligent subdomain generation.
+- 🔄 **Multi-Source Enumeration**: Combines 15+ discovery techniques for maximum coverage.
+- ⚡ **High Performance**: Multi-threaded architecture with intelligent rate limiting.
+- 🎯 **Comprehensive Coverage**: Combines passive and active reconnaissance methods.
+- 📊 **Rich Output**: Supports multiple export formats with detailed reporting.
+- 🖥️ **User-Friendly**: Offers both CLI and GUI interfaces.
+- 🔒 **Security-Focused**: Includes built-in subdomain takeover detection.
+- 📱 **Cross-Platform**: Compatible with Windows, Linux, and macOS.
 
 ---
 
 ## ✨ Features
 
-### 🔍 **Discovery Capabilities**
-- **Certificate Transparency Logs** (crt.sh, CertSpotter)
-- **DNS Enumeration** (Brute force, SRV records, Zone transfers)
-- **Web Archives** (Wayback Machine)
-- **Search Engine Reconnaissance** (Google dorks)
-- **Security APIs** (VirusTotal, SecurityTrails, Censys, Shodan)
-- **GitHub Code Search**
-- **RapidDNS Database**
-- **Reverse DNS Lookups**
-- **🤖 AI-Powered Generation** (OpenRouter integration)
+### 🔍 Discovery Capabilities
+- **Certificate Transparency Logs**: Queries crt.sh and CertSpotter for historical and current certificates.
+- **DNS Enumeration**: Supports brute force, SRV records, and zone transfers.
+- **Web Archives**: Extracts subdomains from Wayback Machine and other archives.
+- **Search Engine Reconnaissance**: Uses Google dorks and other search engines for indexed subdomains.
+- **Security APIs**: Integrates with VirusTotal, SecurityTrails, Censys, and Shodan for enriched data.
+- **GitHub Code Search**: Analyzes code repositories for subdomain leaks.
+- **RapidDNS Database**: Leverages public DNS data for fast discovery.
+- **Reverse DNS Lookups**: Maps IPs to domains for additional insights.
+- 🤖 **AI-Powered Generation**: Uses OpenRouter to intelligently generate subdomain candidates.
 
-### 🛡️ **Security Analysis**
-- **Subdomain Takeover Detection** (50+ vulnerable services)
-- **SSH Service Detection**
-- **HTTP/HTTPS Status Verification**
-- **Wildcard DNS Detection**
-- **Port Scanning Integration**
+### 🛡️ Security Analysis
+- **Subdomain Takeover Detection**: Identifies vulnerabilities across 50+ services (e.g., AWS S3, GitHub Pages, Heroku).
+- **SSH Service Detection**: Scans for open SSH services on port 22.
+- **HTTP/HTTPS Status Verification**: Checks for live subdomains and their status codes.
+- **Wildcard DNS Detection**: Identifies wildcard DNS configurations to avoid false positives.
+- **Port Scanning Integration**: Detects common services (HTTP, HTTPS, FTP, SMTP) and their versions.
 
-### 📊 **Output & Reporting**
-- **Multiple Formats**: TXT, CSV, JSON, HTML
-- **Interactive HTML Reports** with charts and statistics
-- **Real-time Progress Tracking**
-- **Detailed Vulnerability Reports**
-- **Export to Popular Tools** (Nmap, Masscan compatible)
+### 📊 Output & Reporting
+- **Multiple Formats**: Exports results in TXT, CSV, JSON, and HTML.
+- **Interactive HTML Reports**: Includes charts and statistics for easy analysis.
+- **Real-time Progress Tracking**: Displays live scan updates.
+- **Detailed Vulnerability Reports**: Highlights security findings like takeover risks.
+- **Tool Compatibility**: Exports results compatible with Nmap and Masscan.
 
-### ⚙️ **Advanced Options**
-- **Multi-threading** (1-200 threads)
-- **Proxy Support** (HTTP/HTTPS/SOCKS)
-- **Custom Wordlists**
-- **Rate Limiting & Stealth Mode**
-- **Custom DNS Servers**
-- **Timeout Configuration**
+### ⚙️ Advanced Options
+- **Multi-threading**: Configurable threads (1-200) for performance tuning.
+- **Proxy Support**: Supports HTTP, HTTPS, and SOCKS proxies for stealth and bypassing rate limits.
+- **Custom Wordlists**: Allows user-defined wordlists for DNS brute forcing.
+- **Rate Limiting & Stealth Mode**: Minimizes detection with random delays and throttling.
+- **Custom DNS Servers**: Supports user-specified DNS resolvers.
+- **Timeout Configuration**: Adjustable request timeouts for flexibility.
 
 ---
 
 ## 🤖 AI Integration
 
-SubGrab integrates with **OpenRouter API** to provide AI-powered subdomain discovery using state-of-the-art language models.
+SubGrab's **OpenRouter API integration** enhances subdomain discovery with cutting-edge AI capabilities.
 
-### 🧠 **Supported AI Models**
+### 🧠 Supported AI Models
+| Model                | Provider   | Best For                   | Performance | Cost   |
+|----------------------|------------|----------------------------|-------------|--------|
+| Claude 3.5 Sonnet    | Anthropic  | Best overall               | ⭐⭐⭐⭐⭐ | Medium |
+| Claude 3 Haiku       | Anthropic  | Fast & cost-effective      | ⭐⭐⭐⭐  | Low    |
+| GPT-4o               | OpenAI     | High-quality analysis      | ⭐⭐⭐⭐⭐ | High   |
+| GPT-4o Mini          | OpenAI     | Balanced performance       | ⭐⭐⭐⭐  | Medium |
+| Gemini Pro 1.5       | Google     | Good alternative           | ⭐⭐⭐⭐  | Medium |
+| Llama 3.1 8B         | Meta       | Open source option         | ⭐⭐⭐   | Low    |
 
-| Model | Provider | Best For | Performance | Cost |
-|-------|----------|----------|-------------|------|
-| **Claude 3.5 Sonnet** | Anthropic | **Recommended** - Best overall | ⭐⭐⭐⭐⭐ | Medium |
-| **Claude 3 Haiku** | Anthropic | Fast & cost-effective | ⭐⭐⭐⭐ | Low |
-| **GPT-4o** | OpenAI | High-quality analysis | ⭐⭐⭐⭐⭐ | High |
-| **GPT-4o Mini** | OpenAI | Balanced performance | ⭐⭐⭐⭐ | Medium |
-| **Gemini Pro 1.5** | Google | Good alternative | ⭐⭐⭐⭐ | Medium |
-| **Llama 3.1 8B** | Meta | Open source option | ⭐⭐⭐ | Low |
+### 🎯 AI Workflow
+1. **Traditional Discovery**: Gathers initial subdomains using passive and active methods.
+2. **Pattern Analysis**: AI analyzes discovered subdomains to identify naming patterns, numbering schemes, and environments.
+3. **Intelligent Generation**: Generates new subdomain candidates based on observed patterns (e.g., if `api1` exists, suggests `api2`, `api3`).
+4. **Quality Validation**: Filters AI-generated candidates for relevance and likelihood before DNS testing.
 
-### 🎯 **AI Workflow**
-
-SubGrab uses a **smart two-phase approach** for AI integration:
-
-1. **📊 Traditional Discovery First**: Runs all passive/active methods to gather initial subdomains
-2. **🧠 AI Pattern Analysis**: Analyzes discovered subdomains to identify patterns
-3. **🎯 Intelligent Generation**: Creates new candidates based on observed patterns
-4. **✅ Quality Validation**: AI validates candidates for relevance and likelihood
-
-### 🎯 **AI Capabilities**
-
-- **📊 Pattern Recognition**: Analyzes discovered subdomains for naming patterns, numbering schemes, environments
-- **🧠 Intelligent Variations**: Generates logical extensions (if `api1` exists, suggests `api2`, `api3`)
-- **🏢 Context Awareness**: Understands organization type and industry patterns
-- **🔍 Quality Validation**: Filters AI suggestions for high-probability candidates
-- **⚡ Efficiency**: Only runs AI analysis when sufficient data is available (3+ subdomains)
+### 🎯 AI Capabilities
+- 📊 **Pattern Recognition**: Identifies naming conventions and organizational patterns.
+- 🧠 **Intelligent Variations**: Suggests logical extensions based on existing subdomains.
+- 🏢 **Context Awareness**: Considers organization type and industry-specific patterns.
+- 🔍 **Quality Validation**: Ensures high-probability subdomain candidates.
+- ⚡ **Efficiency**: Activates AI analysis only when sufficient data (3+ subdomains) is available.
 
 ---
 
 ## 🛠️ Installation
 
-### 📦 **Method 1: Python Installation**
-
+### 📦 Method 1: Python Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/subgrab.git
-cd subgrab
+git clone https://github.com/bidhata/SubGrab.git
+cd SubGrab
 
 # Install dependencies
 pip install -r requirements.txt
@@ -140,15 +105,12 @@ pip install -r requirements.txt
 python subgrab.py example.com
 ```
 
-### 💻 **Method 2: Windows Binaries (Recommended)**
+### 💻 Method 2: Windows Binaries (Recommended)
+1. Download the latest release from [Releases](https://github.com/bidhata/SubGrab/releases).
+2. Extract the ZIP file.
+3. Double-click `QuickStart.bat` for an interactive menu, or run `subgrab.exe example.com` directly.
 
-1. **Download** the latest release from [Releases](https://github.com/your-repo/subgrab/releases)
-2. **Extract** the ZIP file
-3. **Double-click** `QuickStart.bat` for interactive menu
-4. **Or run directly**: `subgrab.exe example.com`
-
-### 🐳 **Method 3: Docker**
-
+### 🐳 Method 3: Docker
 ```bash
 # Build Docker image
 docker build -t subgrab .
@@ -161,8 +123,7 @@ docker run -v $(pwd)/results:/app/results subgrab example.com
 
 ## 🚀 Quick Start
 
-### 🎯 **Basic Usage**
-
+### 🎯 Basic Usage
 ```bash
 # Simple subdomain enumeration
 python subgrab.py example.com
@@ -177,10 +138,9 @@ python subgrab.py example.com --fast --threads 100
 python subgrab.py example.com --stealth
 ```
 
-### 🤖 **AI-Enhanced Scanning**
-
+### 🤖 AI-Enhanced Scanning
 ```bash
-# AI analyzes patterns from traditional discovery
+# AI with Claude 3.5 Sonnet
 python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model anthropic/claude-3.5-sonnet
@@ -190,21 +150,14 @@ python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model anthropic/claude-3-haiku
 
-# Maximum coverage: Traditional + AI + Multiple APIs
+# Maximum coverage with multiple APIs
 python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --shodan-key YOUR_SHODAN_KEY \
   --virustotal-key YOUR_VT_KEY
 ```
 
-**How AI Enhancement Works:**
-1. **Traditional methods** discover initial subdomains (Certificate Transparency, DNS, APIs, etc.)
-2. **AI analyzes patterns** in discovered subdomains (naming conventions, numbering, environments)
-3. **AI generates variations** based on observed patterns (if `dev-api` exists, suggests `staging-api`, `prod-api`)
-4. **AI validates candidates** for quality and likelihood before DNS testing
-
-### 🖥️ **GUI Usage**
-
+### 🖥️ GUI Usage
 ```bash
 # Launch GUI
 python subgrab_gui.py
@@ -217,9 +170,8 @@ subgrab_gui.exe
 
 ## 📖 Usage
 
-### 🎛️ **Command Line Options**
-
-```
+### 🎛️ Command Line Options
+```bash
 usage: subgrab.py [-h] [--threads THREADS] [--timeout TIMEOUT] [--fast] [--stealth]
                   [--proxy-file PROXY_FILE] [--wordlist WORDLIST] [--nameservers NAMESERVERS]
                   [--openrouter-key OPENROUTER_KEY] [--openrouter-model OPENROUTER_MODEL]
@@ -227,8 +179,6 @@ usage: subgrab.py [-h] [--threads THREADS] [--timeout TIMEOUT] [--fast] [--steal
                   [--virustotal-key VIRUSTOTAL_KEY] [--censys-id CENSYS_ID]
                   [--censys-secret CENSYS_SECRET] [--github-token GITHUB_TOKEN]
                   domain
-
-Advanced Subdomain Enumeration Tool with AI Integration
 
 positional arguments:
   domain                Target domain to enumerate
@@ -256,9 +206,8 @@ API Keys:
   --github-token GITHUB_TOKEN         GitHub API token
 ```
 
-### 📝 **Usage Examples**
-
-#### 🎯 **Basic Enumeration**
+### 📝 Usage Examples
+#### 🎯 Basic Enumeration
 ```bash
 # Simple scan
 python subgrab.py example.com
@@ -270,43 +219,28 @@ python subgrab.py example.com --wordlist /path/to/wordlist.txt
 python subgrab.py example.com --nameservers 1.1.1.1 8.8.8.8
 ```
 
-#### 🤖 **AI-Enhanced Scanning**
+#### 🤖 AI-Enhanced Scanning
 ```bash
-# AI pattern analysis (runs after traditional discovery)
+# AI pattern analysis
 python subgrab.py example.com --openrouter-key sk-or-xxxxx
 
-# Specific AI model for pattern analysis
+# Specific AI model
 python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model openai/gpt-4o
-
-# AI analyzes discovered patterns and generates intelligent variations
-python subgrab.py tech-company.com \
-  --openrouter-key sk-or-xxxxx \
-  --openrouter-model anthropic/claude-3.5-sonnet
 ```
 
-**AI Integration Flow:**
-```
-Traditional Discovery → Pattern Analysis → AI Generation → Validation → DNS Testing
-     (200 subdomains)      (find patterns)    (50 new ideas)   (20 validated)   (5 confirmed)
-```
-
-#### ⚡ **Performance Optimization**
+#### ⚡ Performance Optimization
 ```bash
 # High-speed scanning
 python subgrab.py example.com --threads 200 --timeout 10
 
-# Fast mode (skips slow methods)
-python subgrab.py example.com --fast --threads 100
-
-# Stealth mode (slower but less detectable)
+# Stealth mode
 python subgrab.py example.com --stealth --threads 10
 ```
 
-#### 🔑 **Multiple API Keys**
+#### 🔑 Multiple API Keys
 ```bash
-# Maximum coverage with all APIs
 python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --shodan-key YOUR_SHODAN_KEY \
@@ -317,36 +251,18 @@ python subgrab.py example.com \
   --github-token YOUR_GITHUB_TOKEN
 ```
 
-#### 🌐 **Proxy Usage**
-```bash
-# Using proxy file
-python subgrab.py example.com --proxy-file proxies.txt
-
-# Proxy file format (proxies.txt):
-# http://proxy1:8080
-# https://proxy2:3128
-# socks5://proxy3:1080
-```
-
 ---
 
 ## 🔧 Configuration
 
-### 🤖 **OpenRouter Setup**
+### 🤖 OpenRouter Setup
+1. Visit [openrouter.ai](https://openrouter.ai).
+2. Sign up and add $5-10 credits.
+3. Generate an API key.
+4. Use the key with `--openrouter-key sk-or-xxxxx`.
 
-1. **Get API Key**: Visit [openrouter.ai](https://openrouter.ai/)
-2. **Add Credits**: $5-10 recommended for extensive testing
-3. **Choose Model**: Claude 3.5 Sonnet recommended for best results
-
-```bash
-# Test OpenRouter integration
-python example_openrouter_usage.py
-```
-
-### 🔑 **API Keys Configuration**
-
-Create a configuration file `api_keys.json`:
-
+### 🔑 API Keys Configuration
+Create `api_keys.json`:
 ```json
 {
   "openrouter": "sk-or-xxxxx",
@@ -361,17 +277,9 @@ Create a configuration file `api_keys.json`:
 }
 ```
 
-### 📝 **Custom Wordlists**
-
-SubGrab supports custom wordlists for DNS brute forcing:
-
+### 📝 Custom Wordlists
 ```bash
-# Using custom wordlist
-python subgrab.py example.com --wordlist custom_subdomains.txt
-```
-
-**Wordlist format** (one subdomain per line):
-```
+# Example wordlist (custom_subdomains.txt)
 www
 api
 dev
@@ -381,12 +289,9 @@ mail
 ftp
 ```
 
-### 🌐 **Proxy Configuration**
-
-For stealth and bypassing rate limits:
-
+### 🌐 Proxy Configuration
 ```bash
-# Proxy file format
+# Proxy file format (proxies.txt)
 http://proxy1:8080
 https://user:pass@proxy2:3128
 socks5://proxy3:1080
@@ -396,9 +301,7 @@ socks5://proxy3:1080
 
 ## 📊 Output Formats
 
-SubGrab generates comprehensive reports in multiple formats:
-
-### 📁 **Output Directory Structure**
+### 📁 Output Directory Structure
 ```
 example.com_results/
 ├── all_subdomains.txt          # Complete subdomain list
@@ -411,15 +314,14 @@ example.com_results/
 └── report.html                 # Interactive HTML report
 ```
 
-### 📄 **Report Contents**
+### 📄 Report Contents
+#### 📋 Text Reports
+- Complete subdomain lists with status.
+- Categorized by response type.
+- Security findings (e.g., takeovers, SSH).
+- Statistics and summaries.
 
-#### 📋 **Text Reports**
-- **Complete subdomain lists** with status
-- **Categorized by response type**
-- **Security findings** (takeovers, SSH)
-- **Statistics and summaries**
-
-#### 📊 **JSON Report**
+#### 📊 JSON Report
 ```json
 {
   "scan_info": {
@@ -451,451 +353,137 @@ example.com_results/
 }
 ```
 
-#### 🌐 **HTML Report**
+#### 🌐 HTML Report
 Interactive dashboard with:
-- **📈 Statistics charts**
-- **🗺️ Discovery method breakdown**
-- **🔍 Searchable subdomain table**
-- **⚠️ Security findings**
-- **📊 Response time analysis**
+- 📈 Statistics charts.
+- 🗺️ Discovery method breakdown.
+- 🔍 Searchable subdomain table.
+- ⚠️ Security findings.
+- 📊 Response time analysis.
 
 ---
 
 ## 🎛️ API Integrations
 
-### 🔑 **Supported APIs**
-
-| Service | Purpose | Free Tier | Rate Limit |
-|---------|---------|-----------|------------|
-| **OpenRouter** | AI subdomain generation | ❌ | Model dependent |
-| **Shodan** | Infrastructure discovery | ✅ Limited | 1 req/sec |
-| **VirusTotal** | Domain intelligence | ✅ 4 req/min | 4 req/min |
-| **SecurityTrails** | DNS history | ✅ 50 req/month | Varies |
-| **Censys** | Certificate data | ✅ 250 req/month | 0.2 req/sec |
-| **GitHub** | Code search | ✅ 5000 req/hour | 30 req/min |
-
-### 🚀 **Getting API Keys**
-
-#### 🤖 **OpenRouter** (Recommended)
-1. Visit [openrouter.ai](https://openrouter.ai/)
-2. Sign up and verify email
-3. Add $5-10 credits
-4. Generate API key
-
-#### 🔍 **Shodan**
-1. Visit [shodan.io](https://shodan.io/)
-2. Create free account
-3. Get API key from account page
-
-#### 🛡️ **VirusTotal**
-1. Visit [virustotal.com](https://virustotal.com/)
-2. Sign up for free account
-3. Get API key from profile
-
-#### 📊 **SecurityTrails**
-1. Visit [securitytrails.com](https://securitytrails.com/)
-2. Sign up for free account
-3. Get API key from dashboard
-
-#### 🔐 **Censys**
-1. Visit [censys.io](https://censys.io/)
-2. Create account
-3. Get API ID and Secret
-
-#### 💻 **GitHub**
-1. Visit [github.com/settings/tokens](https://github.com/settings/tokens)
-2. Generate personal access token
-3. Select 'public_repo' scope
+| Service          | Purpose                  | Free Tier        | Rate Limit        |
+|------------------|--------------------------|------------------|-------------------|
+| OpenRouter       | AI subdomain generation  | ❌               | Model dependent   |
+| Shodan           | Infrastructure discovery | ✅ Limited       | 1 req/sec         |
+| VirusTotal       | Domain intelligence      | ✅ 4 req/min     | 4 req/min         |
+| SecurityTrails   | DNS history             | ✅ 50 req/month  | Varies            |
+| Censys           | Certificate data        | ✅ 250 req/month | 0.2 req/sec       |
+| GitHub           | Code search             | ✅ 5000 req/hour | 30 req/min        |
 
 ---
 
 ## 🖥️ GUI Interface
 
-SubGrab includes a user-friendly GUI for non-technical users.
+### 🎯 Features
+- 📝 **Easy Configuration**: Point-and-click setup.
+- 📊 **Real-time Progress**: Live scan updates.
+- 🔑 **API Key Management**: Save/load configurations.
+- 📁 **Result Management**: Direct access to reports.
+- 🎨 **Modern Interface**: Clean and intuitive design.
 
-### 🎯 **Features**
-- **📝 Easy Configuration**: Point-and-click setup
-- **📊 Real-time Progress**: Live scan updates
-- **🔑 API Key Management**: Save/load configurations
-- **📁 Result Management**: Open reports directly
-- **🎨 Modern Interface**: Clean, intuitive design
-
-### 🚀 **Usage**
+### 🚀 Usage
 ```bash
-# Launch GUI
 python subgrab_gui.py
-
-# Windows executable
+# Or on Windows
 subgrab_gui.exe
 ```
-
-### 📋 **GUI Tabs**
-
-#### 🎯 **Basic Configuration**
-- Target domain input
-- Thread and timeout settings
-- Scan mode options (fast/stealth)
-- File inputs (wordlist, proxies)
-
-#### ⚙️ **Advanced Settings**
-- DNS server configuration
-- Discovery method selection
-- Output format options
-
-#### 🔑 **API Keys**
-- All supported API configurations
-- Save/load key sets
-- Test API connectivity
-
-#### 📊 **Output**
-- Real-time scan progress
-- Live result display
-- Direct access to reports
 
 ---
 
 ## 💻 Windows Binaries
 
-Pre-compiled Windows executables are available for easy deployment.
+### 📦 Package Contents
+- `subgrab.exe`: Command-line version (213 MB).
+- `subgrab_gui.exe`: GUI version (29 MB).
+- `QuickStart.bat`, `run_cli.bat`, `run_gui.bat`: Easy launchers.
+- Complete documentation and examples.
 
-### 📦 **Package Contents**
-- **`subgrab.exe`** - Command line version (213 MB)
-- **`subgrab_gui.exe`** - GUI version (29 MB)
-- **`QuickStart.bat`** - Interactive launcher
-- **`run_cli.bat`** - CLI launcher
-- **`run_gui.bat`** - GUI launcher
-- **Complete documentation** and examples
-
-### 🚀 **Quick Start (Windows)**
-1. **Download** latest release ZIP
-2. **Extract** to desired folder
-3. **Double-click** `QuickStart.bat`
-4. **Choose** GUI or CLI mode
-5. **Start scanning!**
-
-### ⚡ **Features**
-- **🔄 No Python Required**: Standalone executables
-- **📦 All Dependencies Included**: Ready to run
-- **🎯 User-Friendly Launchers**: Easy execution
-- **📚 Complete Documentation**: Setup guides included
-- **🔒 Windows Defender Compatible**: Signed executables
-
-### 🛠️ **Building from Source**
-```bash
-# Install build dependencies
-pip install -r build_requirements.txt
-
-# Build executables
-python build_simple.py
-
-# Output in SubGrab_Windows_Release/
-```
+### 🚀 Quick Start (Windows)
+1. Download the latest release ZIP.
+2. Extract to a folder.
+3. Run `QuickStart.bat` and choose GUI or CLI mode.
 
 ---
 
 ## 🔍 Discovery Methods
 
-SubGrab employs multiple reconnaissance techniques for comprehensive coverage.
+### 🌐 Passive Methods
+- **Certificate Transparency**: Queries crt.sh and CertSpotter.
+- **DNS Intelligence**: Brute forcing, SRV records, zone transfers, reverse DNS.
+- **Web Archives**: Wayback Machine and Archive.today for historical data.
+- **Search Engines**: Google, Bing, DuckDuckGo with advanced operators.
+- **Security APIs**: VirusTotal, SecurityTrails, Censys, Shodan.
+- **Code Repositories**: GitHub and GitLab code search.
 
-### 🌐 **Passive Methods**
+### 🎯 Active Methods
+- **HTTP/HTTPS Probing**: Status code verification, technology fingerprinting.
+- **Port Scanning**: SSH, HTTP, HTTPS, FTP, SMTP detection.
 
-#### 📜 **Certificate Transparency**
-- **crt.sh**: Public certificate logs
-- **CertSpotter**: Certificate monitoring
-- **Coverage**: Historical and current certificates
-- **Advantage**: No direct target interaction
-
-#### 🗄️ **DNS Intelligence**
-- **DNS brute forcing**: Custom wordlists
-- **SRV record enumeration**: Service discovery
-- **Zone transfer attempts**: Misconfigured servers
-- **Reverse DNS**: IP to domain mapping
-
-#### 📚 **Web Archives**
-- **Wayback Machine**: Historical subdomain data
-- **Archive.today**: Additional archive sources
-- **Coverage**: Years of historical data
-- **Advantage**: Discovers old/forgotten subdomains
-
-#### 🔍 **Search Engines**
-- **Google dorks**: Advanced search operators
-- **Bing search**: Alternative search results
-- **DuckDuckGo**: Privacy-focused results
-- **Coverage**: Publicly indexed content
-
-#### 🛡️ **Security APIs**
-- **VirusTotal**: Threat intelligence data
-- **SecurityTrails**: DNS history and analytics
-- **Censys**: Internet-wide scanning data
-- **Shodan**: Device and service discovery
-
-#### 💻 **Code Repositories**
-- **GitHub search**: Source code analysis
-- **GitLab search**: Alternative repositories
-- **Coverage**: Configuration files, documentation
-- **Advantage**: Developer-disclosed subdomains
-
-### 🎯 **Active Methods**
-
-#### 🌐 **HTTP/HTTPS Probing**
-- **Status code verification**: Live subdomain detection
-- **Technology fingerprinting**: Service identification
-- **Response analysis**: Content-based discovery
-- **SSL certificate extraction**: Additional domains
-
-#### 🔌 **Port Scanning**
-- **SSH detection**: Port 22 scanning
-- **Common services**: HTTP, HTTPS, FTP, SMTP
-- **Service fingerprinting**: Version detection
-- **Custom port ranges**: Configurable scanning
-
-### 🤖 **AI-Powered Methods**
-
-#### 🧠 **Intelligent Generation**
-- **Context analysis**: Organization-specific patterns
-- **Industry patterns**: Sector-specific subdomains
-- **Technology detection**: Stack-based suggestions
-- **Naming conventions**: Pattern recognition
-
-#### 📊 **Pattern Analysis**
-- **Existing subdomain analysis**: Pattern extraction
-- **Variation generation**: Intelligent permutations
-- **Numbering schemes**: Sequential patterns
-- **Environment detection**: Dev/staging/prod patterns
+### 🤖 AI-Powered Methods
+- **Intelligent Generation**: Context-aware subdomain suggestions.
+- **Pattern Analysis**: Identifies naming conventions and environments.
 
 ---
 
 ## 🛡️ Security Features
 
-### 🎯 **Subdomain Takeover Detection**
+### 🎯 Subdomain Takeover Detection
+- **Supported Services**: AWS S3, Azure, GitHub Pages, Heroku, Netlify, and 50+ others.
+- **Detection Methods**: DNS resolution, HTTP response analysis, SSL certificate validation.
 
-SubGrab automatically detects potential subdomain takeover vulnerabilities across 50+ services.
-
-#### 🔍 **Supported Services**
-- **Cloud Platforms**: AWS S3, Azure, Google Cloud
-- **CDN Services**: CloudFront, Fastly, CloudFlare
-- **Hosting Platforms**: GitHub Pages, Heroku, Netlify
-- **SaaS Platforms**: Shopify, HubSpot, Zendesk
-- **And many more...**
-
-#### ⚠️ **Detection Methods**
-- **DNS resolution analysis**: CNAME pointing to external services
-- **HTTP response analysis**: Service-specific error messages
-- **SSL certificate validation**: Certificate mismatch detection
-- **Service fingerprinting**: Technology stack identification
-
-#### 📊 **Vulnerability Reporting**
-```json
-{
-  "subdomain": "old-api.example.com",
-  "vulnerability": "subdomain_takeover",
-  "service": "github.io",
-  "confidence": "high",
-  "evidence": "CNAME points to non-existent GitHub Pages",
-  "impact": "High - Full subdomain control possible",
-  "remediation": "Remove DNS record or claim GitHub Pages"
-}
-```
-
-### 🔒 **Security Best Practices**
-
-#### 🎯 **Responsible Disclosure**
-- **Authorized testing only**: Ensure proper permissions
-- **Rate limiting**: Respectful scanning practices
-- **Stealth mode**: Minimize detection footprint
-- **Proxy support**: Anonymize scanning traffic
-
-#### 📋 **Compliance Features**
-- **Configurable delays**: Respect target resources
-- **User-agent rotation**: Avoid detection patterns
-- **Request throttling**: Prevent service disruption
-- **Logging**: Comprehensive audit trails
+### 🔒 Security Best Practices
+- Authorized testing only.
+- Rate limiting and stealth mode for responsible scanning.
+- Proxy support for anonymity.
+- Comprehensive logging for audit trails.
 
 ---
 
 ## 📈 Performance
 
-### ⚡ **Benchmarks**
-
-| Metric | Traditional Tools | SubGrab | SubGrab + AI |
-|--------|------------------|---------|--------------|
-| **Subdomains Found** | 200-300 | 400-600 | 600-800 |
-| **Execution Time** | 5-10 min | 3-7 min | 5-10 min |
-| **False Positives** | 10-15% | 5-8% | 2-5% |
-| **Unique Discoveries** | Standard | Enhanced | AI-Enhanced |
-
-### 🎯 **Optimization Tips**
-
-#### ⚡ **Speed Optimization**
-```bash
-# Maximum speed
-python subgrab.py example.com --fast --threads 200 --timeout 5
-
-# Balanced performance
-python subgrab.py example.com --threads 100 --timeout 15
-
-# Quality over speed
-python subgrab.py example.com --threads 50 --timeout 30
-```
-
-#### 🎯 **Accuracy Optimization**
-```bash
-# Maximum coverage
-python subgrab.py example.com \
-  --openrouter-key sk-or-xxxxx \
-  --shodan-key YOUR_KEY \
-  --virustotal-key YOUR_KEY \
-  --threads 50
-
-# AI-focused accuracy
-python subgrab.py example.com \
-  --openrouter-key sk-or-xxxxx \
-  --openrouter-model anthropic/claude-3.5-sonnet
-```
-
-#### 💰 **Cost Optimization**
-```bash
-# Budget-friendly AI
-python subgrab.py example.com \
-  --openrouter-key sk-or-xxxxx \
-  --openrouter-model anthropic/claude-3-haiku
-
-# Free tier only
-python subgrab.py example.com \
-  --shodan-key YOUR_FREE_KEY \
-  --virustotal-key YOUR_FREE_KEY
-```
-
-### 📊 **Resource Usage**
-
-| Configuration | CPU Usage | Memory | Network | Cost/Scan |
-|---------------|-----------|--------|---------|-----------|
-| **Basic** | Low | 50-100MB | Moderate | Free |
-| **Standard** | Medium | 100-200MB | High | $0.10-0.50 |
-| **AI-Enhanced** | Medium | 150-300MB | High | $0.50-2.00 |
-| **Maximum** | High | 200-500MB | Very High | $1.00-5.00 |
+### ⚡ Benchmarks
+| Metric              | Traditional Tools | SubGrab | SubGrab + AI |
+|---------------------|-------------------|---------|--------------|
+| Subdomains Found    | 200-300           | 400-600 | 600-800      |
+| Execution Time      | 5-10 min          | 3-7 min | 5-10 min     |
+| False Positives     | 10-15%            | 5-8%    | 2-5%         |
+| Unique Discoveries  | Standard          | Enhanced| AI-Enhanced   |
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions from the security community!
+We welcome contributions from the security community! To contribute:
+1. Fork the repository.
+2. Create a feature branch.
+3. Make changes and test thoroughly.
+4. Submit a pull request with clear documentation.
 
-### 🎯 **How to Contribute**
-
-1. **🍴 Fork** the repository
-2. **🌿 Create** a feature branch
-3. **💻 Make** your changes
-4. **✅ Test** thoroughly
-5. **📝 Document** your changes
-6. **🚀 Submit** a pull request
-
-### 🔧 **Development Setup**
-
-```bash
-# Clone your fork
-git clone https://github.com/your-username/subgrab.git
-cd subgrab
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# or
-venv\Scripts\activate     # Windows
-
-# Install development dependencies
-pip install -r requirements.txt
-pip install -r build_requirements.txt
-
-# Run tests
-python -m pytest tests/
-
-# Run linting
-flake8 subgrab.py
-black subgrab.py
-```
-
-### 📋 **Contribution Guidelines**
-
-#### 🎯 **Code Standards**
-- **PEP 8** compliance
-- **Type hints** for new functions
-- **Comprehensive docstrings**
-- **Unit tests** for new features
-
-#### 🔍 **Areas for Contribution**
-- **New discovery methods**
-- **Additional AI model support**
-- **Performance optimizations**
-- **Bug fixes and improvements**
-- **Documentation updates**
-- **Translation support**
-
-#### 🐛 **Bug Reports**
-Please include:
-- **Python version**
-- **Operating system**
-- **Command used**
-- **Expected vs actual behavior**
-- **Error messages/logs**
-
-#### 💡 **Feature Requests**
-Please describe:
-- **Use case scenario**
-- **Proposed implementation**
-- **Potential impact**
-- **Alternative solutions considered**
+See the [Contributing](#contributing) section in the original documentation for detailed guidelines.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE.txt) file for details.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
-### ⚖️ **Terms of Use**
-
-- ✅ **Authorized testing only** - Only scan domains you own or have explicit permission to test
-- ✅ **Responsible disclosure** - Report vulnerabilities through proper channels
-- ✅ **Respect rate limits** - Don't overwhelm target services
-- ❌ **No malicious use** - Don't use for illegal activities
-- ❌ **No warranty** - Use at your own risk
-
-### 🛡️ **Disclaimer**
-
-SubGrab is designed for **authorized security testing** and **educational purposes** only. Users are responsible for ensuring they have proper authorization before scanning any domains or networks. The authors are not responsible for any misuse of this tool.
+### ⚖️ Terms of Use
+- ✅ Use only for authorized testing.
+- ✅ Follow responsible disclosure practices.
+- ❌ Do not use for malicious purposes.
+- ❌ No warranty; use at your own risk.
 
 ---
 
 ## 📞 Contact & Support
 
-### 👨‍💻 **Author**
-**Krishnendu Paul**
-- 🌐 Website: [krishnendu.com](https://krishnendu.com)
-- 💼 LinkedIn: [linkedin.com/in/krishpaul](https://linkedin.com/in/krishpaul)
-- 📧 Email: me@krishnendu.com
+**Author**: Krishnendu Paul  
+**GitHub**: [bidhata/SubGrab](https://github.com/bidhata/SubGrab)  
+**Support**: Open an issue on GitHub or contact the author for assistance.
 
-### 🆘 **Support**
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/your-repo/subgrab/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/your-repo/subgrab/discussions)
-- 📚 **Documentation**: [Wiki](https://github.com/your-repo/subgrab/wiki)
-- 💬 **Community**: [Discord Server](https://discord.gg/your-server)
-
-### 🙏 **Acknowledgments**
-- **OpenRouter Team** for AI API access
-- **Security Community** for feedback and contributions
-- **Open Source Projects** that inspired SubGrab
-- **Beta Testers** for early feedback
-
----
-
-<div align="center">
-
-**⭐ If SubGrab helped you, please consider giving it a star! ⭐**
-
-![GitHub stars](https://img.shields.io/github/stars/your-repo/subgrab?style=social)
-![GitHub forks](https://img.shields.io/github/forks/your-repo/subgrab?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/your-repo/subgrab?style=social)
-
-**Made with ❤️ for the Security Community**
-
-</div>
+⭐ **If SubGrab helped you, please give it a star!** ⭐  
+Made with ❤️ for the Security Community.
