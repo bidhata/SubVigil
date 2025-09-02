@@ -110,13 +110,6 @@ python subgrab.py example.com
 2. Extract the ZIP file.
 3. Double-click `QuickStart.bat` for an interactive menu, or run `subgrab.exe example.com` directly.
 
-### 🐳 Method 3: Docker
-```bash
-# Build Docker image
-docker build -t subgrab .
-
-# Run with Docker
-docker run -v $(pwd)/results:/app/results subgrab example.com
 ```
 
 ---
@@ -487,4 +480,5 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ⭐ **If SubGrab helped you, please give it a star!** ⭐  
 Made with ❤️ for the Security Community.
+
 
