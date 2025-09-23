@@ -1,6 +1,5 @@
 # SubGrab - Advanced Subdomain Enumeration Tool
 
-![SubGrab Logo](https://via.placeholder.com/150x50.png?text=SubGrab)  
 **Python** | **MIT License** | **Cross-Platform**
 
 🚀 **Next-Generation Subdomain Discovery with AI-Powered Intelligence**
