@@ -46,6 +46,23 @@ class SubGrabGUI:
         self.openrouter_key_var = tk.StringVar()
         self.openrouter_model_var = tk.StringVar(value="anthropic/claude-3.5-sonnet")
         
+        # Additional API Keys variables
+        self.bevigil_key_var = tk.StringVar()
+        self.bufferover_key_var = tk.StringVar()
+        self.c99_key_var = tk.StringVar()
+        self.chaos_key_var = tk.StringVar()
+        self.fullhunt_key_var = tk.StringVar()
+        self.intelx_key_var = tk.StringVar()
+        self.netlas_key_var = tk.StringVar()
+        self.leakix_key_var = tk.StringVar()
+        self.zoomeye_key_var = tk.StringVar()
+        self.fofa_key_var = tk.StringVar()
+        self.hunter_key_var = tk.StringVar()
+        self.quake_key_var = tk.StringVar()
+        self.whoisxml_key_var = tk.StringVar()
+        self.builtwith_key_var = tk.StringVar()
+        self.facebook_token_var = tk.StringVar()
+        
         # Nameservers
         self.nameservers_var = tk.StringVar(value="8.8.8.8,8.8.4.4,1.1.1.1")
         
@@ -241,40 +258,68 @@ class SubGrabGUI:
         ttk.Label(parent, text="Note: API keys are optional but greatly improve results", 
                  style='Info.TLabel').grid(row=1, column=0, columnspan=2, pady=(0, 10))
         
-        # API key entries
-        api_keys = [
+        # Create scrollable frame for API keys
+        main_frame = ttk.Frame(parent)
+        main_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
+        main_frame.columnconfigure(0, weight=1)
+        main_frame.rowconfigure(0, weight=1)
+        
+        canvas = tk.Canvas(main_frame, height=400)
+        scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # API key entries - organized by category
+        current_row = 0
+        
+        # Core Security APIs
+        ttk.Label(scrollable_frame, text="=== Core Security APIs ===", style='Heading.TLabel').grid(
+            row=current_row, column=0, columnspan=2, sticky=tk.W, pady=(0, 5))
+        current_row += 1
+        
+        core_apis = [
             ("Shodan API Key:", self.shodan_key_var, "https://shodan.io/"),
             ("SecurityTrails API Key:", self.securitytrails_key_var, "https://securitytrails.com/"),
             ("VirusTotal API Key:", self.virustotal_key_var, "https://virustotal.com/"),
             ("Censys API ID:", self.censys_id_var, "https://censys.io/"),
             ("Censys API Secret:", self.censys_secret_var, ""),
-            ("GitHub Token:", self.github_token_var, "https://github.com/settings/tokens"),
-            ("OpenRouter API Key:", self.openrouter_key_var, "https://openrouter.ai/")
         ]
         
-        for i, (label, var, url) in enumerate(api_keys):
-            row = i + 2
-            ttk.Label(parent, text=label).grid(row=row, column=0, sticky=tk.W, pady=(0, 5))
-            
-            entry_frame = ttk.Frame(parent)
-            entry_frame.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=(0, 5), padx=(10, 0))
-            entry_frame.columnconfigure(0, weight=1)
-            
-            entry = ttk.Entry(entry_frame, textvariable=var, show="*", width=40)
-            entry.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 5))
-            
-            if url:
-                ttk.Button(entry_frame, text="Get Key", 
-                          command=lambda u=url: webbrowser.open(u)).grid(row=0, column=1)
+        for label, var, url in core_apis:
+            self._create_api_entry(scrollable_frame, current_row, label, var, url)
+            current_row += 1
         
-        # OpenRouter model selection
-        ttk.Label(parent, text="OpenRouter Model:").grid(row=len(api_keys) + 2, column=0, sticky=tk.W, pady=(10, 5))
-        model_frame = ttk.Frame(parent)
-        model_frame.grid(row=len(api_keys) + 2, column=1, sticky=(tk.W, tk.E), pady=(10, 5), padx=(10, 0))
+        # Development & Code
+        ttk.Label(scrollable_frame, text="=== Development & Code ===", style='Heading.TLabel').grid(
+            row=current_row, column=0, columnspan=2, sticky=tk.W, pady=(15, 5))
+        current_row += 1
+        
+        # GitHub Token
+        self._create_api_entry(scrollable_frame, current_row, "GitHub Token:", self.github_token_var, "https://github.com/settings/tokens")
+        current_row += 1
+        
+        # OpenRouter API Key
+        self._create_api_entry(scrollable_frame, current_row, "OpenRouter API Key:", self.openrouter_key_var, "https://openrouter.ai/")
+        current_row += 1
+        
+        # OpenRouter Model Selection (right after API key)
+        ttk.Label(scrollable_frame, text="OpenRouter Model:", style='TLabel').grid(
+            row=current_row, column=0, sticky=tk.W, pady=(0, 5), padx=(20, 0))
+        
+        model_frame = ttk.Frame(scrollable_frame)
+        model_frame.grid(row=current_row, column=1, sticky=(tk.W, tk.E), pady=(0, 5), padx=(10, 0))
+        model_frame.columnconfigure(0, weight=1)
         
         models = [
             "anthropic/claude-3.5-sonnet",
-            "anthropic/claude-3-haiku",
+            "anthropic/claude-3-haiku", 
             "openai/gpt-4o",
             "openai/gpt-4o-mini",
             "google/gemini-pro-1.5",
@@ -284,18 +329,86 @@ class SubGrabGUI:
         model_combo = ttk.Combobox(model_frame, textvariable=self.openrouter_model_var, 
                                   values=models, state="readonly", width=40)
         model_combo.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        current_row += 1
         
-        # Save/Load API keys
-        buttons_frame = ttk.Frame(parent)
-        buttons_frame.grid(row=len(api_keys) + 4, column=0, columnspan=2, pady=(15, 0))
+        # Premium Threat Intelligence
+        ttk.Label(scrollable_frame, text="=== Premium Threat Intelligence ===", style='Heading.TLabel').grid(
+            row=current_row, column=0, columnspan=2, sticky=tk.W, pady=(15, 5))
+        current_row += 1
+        
+        premium_apis = [
+            ("BeVigil API Key:", self.bevigil_key_var, "https://bevigil.com/"),
+            ("BufferOver API Key:", self.bufferover_key_var, "https://tls.bufferover.run/"),
+            ("C99.nl API Key:", self.c99_key_var, "https://api.c99.nl/"),
+            ("Chaos API Key:", self.chaos_key_var, "https://chaos.projectdiscovery.io/"),
+            ("FullHunt API Key:", self.fullhunt_key_var, "https://fullhunt.io/"),
+            ("IntelX API Key:", self.intelx_key_var, "https://intelx.io/"),
+            ("Netlas API Key:", self.netlas_key_var, "https://netlas.io/"),
+            ("LeakIX API Key:", self.leakix_key_var, "https://leakix.net/"),
+            ("ZoomEye API Key:", self.zoomeye_key_var, "https://zoomeye.org/"),
+        ]
+        
+        for label, var, url in premium_apis:
+            self._create_api_entry(scrollable_frame, current_row, label, var, url)
+            current_row += 1
+        
+        # Additional Sources
+        ttk.Label(scrollable_frame, text="=== Additional Sources ===", style='Heading.TLabel').grid(
+            row=current_row, column=0, columnspan=2, sticky=tk.W, pady=(15, 5))
+        current_row += 1
+        
+        additional_apis = [
+            ("FOFA API Key:", self.fofa_key_var, "https://fofa.so/"),
+            ("Hunter API Key:", self.hunter_key_var, "https://hunter.qianxin.com/"),
+            ("Quake API Key:", self.quake_key_var, "https://quake.360.cn/"),
+            ("WhoisXML API Key:", self.whoisxml_key_var, "https://whoisxmlapi.com/"),
+            ("BuiltWith API Key:", self.builtwith_key_var, "https://builtwith.com/"),
+            ("Facebook Token:", self.facebook_token_var, "https://developers.facebook.com/"),
+        ]
+        
+        for label, var, url in additional_apis:
+            self._create_api_entry(scrollable_frame, current_row, label, var, url)
+            current_row += 1
+        
+        # Save/Load API keys buttons
+        buttons_frame = ttk.Frame(scrollable_frame)
+        buttons_frame.grid(row=current_row + 1, column=0, columnspan=2, pady=(20, 10))
         
         ttk.Button(buttons_frame, text="Save API Keys", 
                   command=self.save_api_keys).grid(row=0, column=0, padx=(0, 5))
         ttk.Button(buttons_frame, text="Load API Keys", 
                   command=self.load_api_keys).grid(row=0, column=1, padx=(5, 0))
         
-        # Configure column weights
-        parent.columnconfigure(1, weight=1)
+        # Grid the canvas and scrollbar
+        canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        
+        # Configure scrollable_frame column weights
+        scrollable_frame.columnconfigure(1, weight=1)
+        
+        # Enable mouse wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        # Configure parent column weights
+        parent.columnconfigure(0, weight=1)
+        parent.rowconfigure(2, weight=1)
+    
+    def _create_api_entry(self, parent, row, label, var, url):
+        """Helper method to create API key entry"""
+        ttk.Label(parent, text=label).grid(row=row, column=0, sticky=tk.W, pady=(0, 5))
+        
+        entry_frame = ttk.Frame(parent)
+        entry_frame.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=(0, 5), padx=(10, 0))
+        entry_frame.columnconfigure(0, weight=1)
+        
+        entry = ttk.Entry(entry_frame, textvariable=var, show="*", width=40)
+        entry.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 5))
+        
+        if url:
+            ttk.Button(entry_frame, text="Get Key", 
+                      command=lambda u=url: webbrowser.open(u)).grid(row=0, column=1)
         
     def create_output_tab(self, parent):
         """Create output display tab"""
@@ -340,6 +453,7 @@ class SubGrabGUI:
     def save_api_keys(self):
         """Save API keys to file"""
         api_data = {
+            # Core APIs
             'shodan': self.shodan_key_var.get(),
             'securitytrails': self.securitytrails_key_var.get(),
             'virustotal': self.virustotal_key_var.get(),
@@ -347,7 +461,24 @@ class SubGrabGUI:
             'censys_secret': self.censys_secret_var.get(),
             'github': self.github_token_var.get(),
             'openrouter': self.openrouter_key_var.get(),
-            'openrouter_model': self.openrouter_model_var.get()
+            'openrouter_model': self.openrouter_model_var.get(),
+            
+            # Additional APIs
+            'bevigil': self.bevigil_key_var.get(),
+            'bufferover': self.bufferover_key_var.get(),
+            'c99': self.c99_key_var.get(),
+            'chaos': self.chaos_key_var.get(),
+            'fullhunt': self.fullhunt_key_var.get(),
+            'intelx': self.intelx_key_var.get(),
+            'netlas': self.netlas_key_var.get(),
+            'leakix': self.leakix_key_var.get(),
+            'zoomeye': self.zoomeye_key_var.get(),
+            'fofa': self.fofa_key_var.get(),
+            'hunter': self.hunter_key_var.get(),
+            'quake': self.quake_key_var.get(),
+            'whoisxml': self.whoisxml_key_var.get(),
+            'builtwith': self.builtwith_key_var.get(),
+            'facebook': self.facebook_token_var.get()
         }
         
         filename = filedialog.asksaveasfilename(
@@ -376,6 +507,7 @@ class SubGrabGUI:
                 with open(filename, 'r') as f:
                     api_data = json.load(f)
                 
+                # Load core API keys
                 self.shodan_key_var.set(api_data.get('shodan', ''))
                 self.securitytrails_key_var.set(api_data.get('securitytrails', ''))
                 self.virustotal_key_var.set(api_data.get('virustotal', ''))
@@ -384,6 +516,23 @@ class SubGrabGUI:
                 self.github_token_var.set(api_data.get('github', ''))
                 self.openrouter_key_var.set(api_data.get('openrouter', ''))
                 self.openrouter_model_var.set(api_data.get('openrouter_model', 'anthropic/claude-3.5-sonnet'))
+                
+                # Load additional API keys
+                self.bevigil_key_var.set(api_data.get('bevigil', ''))
+                self.bufferover_key_var.set(api_data.get('bufferover', ''))
+                self.c99_key_var.set(api_data.get('c99', ''))
+                self.chaos_key_var.set(api_data.get('chaos', ''))
+                self.fullhunt_key_var.set(api_data.get('fullhunt', ''))
+                self.intelx_key_var.set(api_data.get('intelx', ''))
+                self.netlas_key_var.set(api_data.get('netlas', ''))
+                self.leakix_key_var.set(api_data.get('leakix', ''))
+                self.zoomeye_key_var.set(api_data.get('zoomeye', ''))
+                self.fofa_key_var.set(api_data.get('fofa', ''))
+                self.hunter_key_var.set(api_data.get('hunter', ''))
+                self.quake_key_var.set(api_data.get('quake', ''))
+                self.whoisxml_key_var.set(api_data.get('whoisxml', ''))
+                self.builtwith_key_var.set(api_data.get('builtwith', ''))
+                self.facebook_token_var.set(api_data.get('facebook', ''))
                 
                 messagebox.showinfo("Success", "API keys loaded successfully!")
             except Exception as e:
