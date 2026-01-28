@@ -45,6 +45,8 @@ class SubGrabGUI:
         self.github_token_var = tk.StringVar()
         self.openrouter_key_var = tk.StringVar()
         self.openrouter_model_var = tk.StringVar(value="anthropic/claude-3.5-sonnet")
+        self.grok_key_var = tk.StringVar()
+        self.grok_model_var = tk.StringVar(value="grok-beta")
         
         # Additional API Keys variables
         self.bevigil_key_var = tk.StringVar()
@@ -305,6 +307,30 @@ class SubGrabGUI:
         self._create_api_entry(scrollable_frame, current_row, "GitHub Token:", self.github_token_var, "https://github.com/settings/tokens")
         current_row += 1
         
+        # AI Enhancement APIs
+        ttk.Label(scrollable_frame, text="--- AI-Powered Enhancement ---", style='Heading.TLabel', foreground='purple').grid(
+            row=current_row, column=0, columnspan=2, sticky=tk.W, pady=(5, 5))
+        current_row += 1
+        
+        # Grok API Key
+        self._create_api_entry(scrollable_frame, current_row, "Grok API Key (xAI):", self.grok_key_var, "https://console.x.ai/")
+        current_row += 1
+        
+        # Grok Model Selection
+        ttk.Label(scrollable_frame, text="Grok Model:", style='TLabel').grid(
+            row=current_row, column=0, sticky=tk.W, pady=(0, 5), padx=(20, 0))
+        
+        grok_model_frame = ttk.Frame(scrollable_frame)
+        grok_model_frame.grid(row=current_row, column=1, sticky=(tk.W, tk.E), pady=(0, 5), padx=(10, 0))
+        grok_model_frame.columnconfigure(0, weight=1)
+        
+        grok_models = ["grok-beta", "grok-2-1212", "grok-2-vision-1212"]
+        
+        grok_combo = ttk.Combobox(grok_model_frame, textvariable=self.grok_model_var, 
+                                  values=grok_models, state="readonly", width=40)
+        grok_combo.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        current_row += 1
+        
         # OpenRouter API Key
         self._create_api_entry(scrollable_frame, current_row, "OpenRouter API Key:", self.openrouter_key_var, "https://openrouter.ai/")
         current_row += 1
@@ -460,6 +486,10 @@ class SubGrabGUI:
             'censys_id': self.censys_id_var.get(),
             'censys_secret': self.censys_secret_var.get(),
             'github': self.github_token_var.get(),
+            
+            # AI APIs
+            'grok': self.grok_key_var.get(),
+            'grok_model': self.grok_model_var.get(),
             'openrouter': self.openrouter_key_var.get(),
             'openrouter_model': self.openrouter_model_var.get(),
             
@@ -514,6 +544,10 @@ class SubGrabGUI:
                 self.censys_id_var.set(api_data.get('censys_id', ''))
                 self.censys_secret_var.set(api_data.get('censys_secret', ''))
                 self.github_token_var.set(api_data.get('github', ''))
+                
+                # Load AI API keys
+                self.grok_key_var.set(api_data.get('grok', ''))
+                self.grok_model_var.set(api_data.get('grok_model', 'grok-beta'))
                 self.openrouter_key_var.set(api_data.get('openrouter', ''))
                 self.openrouter_model_var.set(api_data.get('openrouter_model', 'anthropic/claude-3.5-sonnet'))
                 
@@ -591,6 +625,11 @@ class SubGrabGUI:
             cmd.extend(['--censys-secret', self.censys_secret_var.get().strip()])
         if self.github_token_var.get().strip():
             cmd.extend(['--github-token', self.github_token_var.get().strip()])
+        
+        # Add AI enhancement keys
+        if self.grok_key_var.get().strip():
+            cmd.extend(['--grok-key', self.grok_key_var.get().strip()])
+            cmd.extend(['--grok-model', self.grok_model_var.get()])
         if self.openrouter_key_var.get().strip():
             cmd.extend(['--openrouter-key', self.openrouter_key_var.get().strip()])
             cmd.extend(['--openrouter-model', self.openrouter_model_var.get()])
