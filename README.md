@@ -72,6 +72,8 @@ SubGrab's **OpenRouter API integration** enhances subdomain discovery with cutti
 |----------------------|------------|----------------------------|-------------|--------|
 | Claude 3.5 Sonnet    | Anthropic  | Best overall               | ⭐⭐⭐⭐⭐ | Medium |
 | Claude 3 Haiku       | Anthropic  | Fast & cost-effective      | ⭐⭐⭐⭐  | Low    |
+| **Grok Beta**        | **xAI**    | **FREE tier available**    | ⭐⭐⭐⭐⭐ | **FREE/Low** |
+| Grok Vision Beta     | xAI        | Vision + reasoning         | ⭐⭐⭐⭐  | Low    |
 | GPT-4o               | OpenAI     | High-quality analysis      | ⭐⭐⭐⭐⭐ | High   |
 | GPT-4o Mini          | OpenAI     | Balanced performance       | ⭐⭐⭐⭐  | Medium |
 | Gemini Pro 1.5       | Google     | Good alternative           | ⭐⭐⭐⭐  | Medium |
@@ -142,7 +144,16 @@ python subgrab.py example.com --stealth
 
 ### 🤖 AI-Enhanced Scanning
 ```bash
-# AI with Claude 3.5 Sonnet
+# FREE: Using Grok AI (xAI) - Recommended for budget-conscious users
+python subgrab.py example.com \
+  --grok-key xai-xxxxx
+
+# Grok with specific model
+python subgrab.py example.com \
+  --grok-key xai-xxxxx \
+  --grok-model grok-beta
+
+# AI with Claude 3.5 Sonnet (OpenRouter)
 python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model anthropic/claude-3.5-sonnet
@@ -152,8 +163,15 @@ python subgrab.py example.com \
   --openrouter-key sk-or-xxxxx \
   --openrouter-model anthropic/claude-3-haiku
 
+# Use BOTH Grok AND OpenRouter for maximum AI coverage
+python subgrab.py example.com \
+  --grok-key xai-xxxxx \
+  --openrouter-key sk-or-xxxxx \
+  --openrouter-model anthropic/claude-3.5-sonnet
+
 # Maximum coverage with multiple APIs
 python subgrab.py example.com \
+  --grok-key xai-xxxxx \
   --openrouter-key sk-or-xxxxx \
   --shodan-key YOUR_SHODAN_KEY \
   --virustotal-key YOUR_VT_KEY
@@ -204,6 +222,8 @@ optional arguments:
 AI Integration:
   --openrouter-key OPENROUTER_KEY     OpenRouter API key
   --openrouter-model OPENROUTER_MODEL OpenRouter model (default: anthropic/claude-3.5-sonnet)
+  --grok-key GROK_KEY                 xAI Grok API key (FREE tier available)
+  --grok-model GROK_MODEL             Grok model (default: grok-beta, also: grok-vision-beta)
 
 API Keys:
   --shodan-key SHODAN_KEY             Shodan API key
@@ -265,7 +285,23 @@ python subgrab.py example.com \
 
 ## 🔧 Configuration
 
-### 🤖 OpenRouter Setup
+### 🤖 AI API Setup
+
+#### Grok (xAI) - FREE Option ⭐ Recommended
+1. Visit [console.x.ai](https://console.x.ai) or [x.ai/api](https://x.ai/api).
+2. Sign up for a free account.
+3. Get **$25 FREE credits per month** during beta (as of 2026).
+4. Generate an API key from the console.
+5. Use the key with `--grok-key xai-xxxxx`.
+
+**Why Grok?**
+- 💰 **FREE** $25/month credits (beta)
+- 🚀 High-quality AI from xAI (Elon Musk's company)
+- ⚡ Fast and efficient
+- 🔌 OpenAI-compatible API
+- 🆓 No credit card required for free tier
+
+#### OpenRouter Setup
 1. Visit [openrouter.ai](https://openrouter.ai).
 2. Sign up and add $5-10 credits.
 3. Generate an API key.
@@ -275,6 +311,7 @@ python subgrab.py example.com \
 Create `api_keys.json` (or use the GUI for easy management):
 ```json
 {
+  "grok": "xai-xxxxx",
   "openrouter": "sk-or-xxxxx",
   "shodan": "your_shodan_key",
   "virustotal": "your_vt_key",

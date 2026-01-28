@@ -58,8 +58,9 @@ class SubdomainEnumerator:
         self.nameservers = nameservers or ['8.8.8.8', '8.8.4.4', '1.1.1.1']
         self.api_keys = api_keys or {}
         
-        # OpenRouter integration
+        # AI integrations
         self.openrouter_enhancer = None
+        self.grok_enhancer = None
         
         # Results storage
         self.subdomains = set()
@@ -1144,6 +1145,60 @@ class SubdomainEnumerator:
         
         return subdomains
 
+    def grok_enhancement(self):
+        """Use Grok (xAI) for intelligent subdomain generation based on discovered patterns"""
+        if not self.grok_enhancer:
+            return set()
+            
+        print(f"{Fore.CYAN}[*] Using Grok AI to analyze patterns and generate additional subdomains...")
+        subdomains = set()
+        
+        try:
+            # Get existing subdomains (remove domain part for analysis)
+            existing_list = []
+            for sub in self.subdomains:
+                if sub.endswith(f'.{self.domain}'):
+                    existing_list.append(sub.replace(f'.{self.domain}', ''))
+                else:
+                    existing_list.append(sub)
+            
+            if len(existing_list) >= 3:
+                print(f"{Fore.CYAN}[*] Analyzing {len(existing_list)} discovered subdomains for patterns...")
+                
+                # Use AI to generate pattern-based subdomains
+                ai_subdomains = self.grok_enhancer.generate_pattern_based_subdomains(
+                    self.domain, existing_list
+                )
+                
+                # Validate AI-generated subdomains for quality
+                if ai_subdomains:
+                    print(f"{Fore.CYAN}[*] Validating {len(ai_subdomains)} AI-generated candidates...")
+                    validated_subdomains = self.grok_enhancer.validate_ai_subdomains(
+                        self.domain, ai_subdomains, list(self.subdomains)
+                    )
+                    
+                    for subdomain in validated_subdomains:
+                        full_subdomain = f"{subdomain}.{self.domain}"
+                        subdomains.add(full_subdomain)
+                    
+                    print(f"{Fore.GREEN}[+] Grok AI pattern analysis: {len(ai_subdomains)} generated -> {len(validated_subdomains)} validated")
+                
+            else:
+                print(f"{Fore.YELLOW}[!] Only {len(existing_list)} subdomains found - using basic Grok generation")
+                
+                # Fallback to basic generation if not enough patterns
+                ai_subdomains = self.grok_enhancer._generate_basic_subdomains(self.domain)
+                for subdomain in ai_subdomains:
+                    full_subdomain = f"{subdomain}.{self.domain}"
+                    subdomains.add(full_subdomain)
+                
+                print(f"{Fore.GREEN}[+] Grok AI basic generation provided {len(subdomains)} candidates")
+            
+        except Exception as e:
+            print(f"{Fore.RED}[!] Grok AI error: {e}")
+        
+        return subdomains
+
     def security_apis(self):
         """Use security APIs for enumeration"""
         print(f"{Fore.CYAN}[*] Querying security APIs...")
@@ -1519,8 +1574,9 @@ class SubdomainEnumerator:
             self.github_code_search,
             self.dns_enumeration,
             self.reverse_dns_lookup,
-            # AI enhancement AFTER gathering traditional data
-            self.openrouter_enhancement
+            # AI enhancements AFTER gathering traditional data
+            self.openrouter_enhancement,
+            self.grok_enhancement
         ]
         
         for method in discovery_methods:
@@ -2201,6 +2257,20 @@ class SubdomainEnumerator:
             except Exception as e:
                 print(f"{Fore.RED}[!] OpenRouter initialization failed: {e}")
         
+        # Initialize Grok (xAI) if API key provided
+        if 'grok' in self.api_keys:
+            try:
+                from grok_integration import GrokSubdomainEnhancer
+                self.grok_enhancer = GrokSubdomainEnhancer(
+                    self.api_keys['grok'],
+                    getattr(self, 'grok_model', 'grok-beta')
+                )
+                print(f"{Fore.GREEN}[+] Grok AI integration enabled (xAI)")
+            except ImportError:
+                print(f"{Fore.YELLOW}[!] Grok integration module not found")
+            except Exception as e:
+                print(f"{Fore.RED}[!] Grok initialization failed: {e}")
+        
         # Passive discovery
         self.run_passive_discovery()
         
@@ -2264,9 +2334,13 @@ Examples:
     parser.add_argument('--censys-id', help='Censys API ID')
     parser.add_argument('--censys-secret', help='Censys API secret')
     parser.add_argument('--github-token', help='GitHub API token')
+    # AI Integration
     parser.add_argument('--openrouter-key', help='OpenRouter API key for AI-powered subdomain generation')
     parser.add_argument('--openrouter-model', default='anthropic/claude-3.5-sonnet',
                        help='OpenRouter model to use (default: anthropic/claude-3.5-sonnet)')
+    parser.add_argument('--grok-key', help='xAI Grok API key for AI-powered subdomain generation (FREE alternative)')
+    parser.add_argument('--grok-model', default='grok-beta',
+                       help='Grok model to use (default: grok-beta, also: grok-vision-beta)')
     
     args = parser.parse_args()
     
@@ -2293,6 +2367,8 @@ Examples:
         api_keys['github'] = args.github_token
     if args.openrouter_key:
         api_keys['openrouter'] = args.openrouter_key
+    if args.grok_key:
+        api_keys['grok'] = args.grok_key
     
     # Initialize and run enumeration
     enumerator = SubdomainEnumerator(
@@ -2307,9 +2383,11 @@ Examples:
         api_keys=api_keys
     )
     
-    # Set OpenRouter model if provided
+    # Set AI model preferences if provided
     if args.openrouter_key:
         enumerator.openrouter_model = args.openrouter_model
+    if args.grok_key:
+        enumerator.grok_model = args.grok_model
     
     try:
         enumerator.run()
@@ -2321,3 +2399,4 @@ Examples:
 
 if __name__ == "__main__":
     main()
+
