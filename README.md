@@ -4,7 +4,7 @@
 
 🚀 **Next-Generation Subdomain Discovery with AI-Powered Intelligence**
 
-SubGrab is a high-performance, multi-threaded subdomain enumeration tool designed for security researchers, penetration testers, and bug bounty hunters. Enhanced with **OpenRouter AI integration**, it combines traditional reconnaissance techniques with advanced artificial intelligence to uncover subdomains that other tools might miss.
+SubGrab is a high-performance, multi-threaded subdomain enumeration tool designed for security researchers, penetration testers, and bug bounty hunters. Enhanced with **OpenRouter AI** and **Grok AI**  integration, it combines traditional reconnaissance techniques with advanced artificial intelligence to uncover subdomains that other tools might miss.
 
 ---
 
