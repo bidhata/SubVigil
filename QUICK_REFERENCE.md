@@ -46,9 +46,10 @@ python subgrab.py target.com \
 | Argument | Description | Example |
 |----------|-------------|---------|
 | `--grok-key` | xAI Grok API key (FREE) | `xai-abc123` |
-| `--grok-model` | Grok model to use | `grok-beta` |
+| `--grok-model` | Grok model to use | `grok-3` |
 | `--openrouter-key` | OpenRouter API key | `sk-or-abc123` |
 | `--openrouter-model` | OpenRouter model | `anthropic/claude-3.5-sonnet` |
+| `--whoisxml-key` | WhoisXML API key (500 free) | `at_xxxxx` |
 | `--fast` | Skip intensive tasks | - |
 | `--stealth` | Add random delays | - |
 | `--threads` | Number of threads | `50` (default) |
@@ -58,11 +59,12 @@ python subgrab.py target.com \
 
 ## API Key Configuration
 
-Edit `shodan.json`:
+Edit `api_keys.json`:
 ```json
 {
   "grok": "xai-YOUR-KEY",
   "openrouter": "sk-or-YOUR-KEY",
+  "whoisxml": "at_YOUR-KEY",
   "shodan": "",
   "virustotal": "",
   "securitytrails": "",
@@ -95,8 +97,10 @@ After scan completes, check `example.com_results/`:
 
 | Model | Best For | Speed | Cost |
 |-------|----------|-------|------|
-| `grok-beta` | General use ⭐ Recommended | ⚡⚡⚡ | FREE |
-| `grok-vision-beta` | Complex patterns | ⚡⚡ | FREE |
+| `grok-3` | General use ⭐ Recommended | ⚡⚡⚡ | $ |
+| `grok-3-mini` | Quick scans | ⚡⚡⚡⚡ | ¢ |
+| `grok-4` | Complex patterns | ⚡⚡ | $$ |
+| `grok-4.1-fast` | Large scans, 2M context | ⚡⚡⚡ | $ |
 
 ---
 
@@ -148,14 +152,14 @@ ls -la grok_integration.py
 
 ---
 
-## Cost (Grok FREE Tier)
+## Cost (Grok Pricing)
 
-**$25 FREE credits/month = Approximately:**
-- 200+ small scans
-- 50-100 medium scans
-- 25-30 large scans
+**Grok 3: $0.30/1M input, $0.50/1M output tokens**
+- Small scan: ~$0.01-0.05
+- Medium scan: ~$0.05-0.15
+- Large scan: ~$0.15-0.50
 
-**Most users stay FREE!** 🎉
+**Very affordable for most scans!** 🎉
 
 ---
 
@@ -166,8 +170,6 @@ ls -la grok_integration.py
 | `README.md` | Main documentation |
 | `README_Grok.md` | Detailed Grok guide |
 | `AI_COMPARISON.md` | AI options comparison |
-| `CHANGELOG.md` | Version history |
-| `GROK_INTEGRATION_SUMMARY.md` | Integration summary |
 
 ---
 
@@ -204,6 +206,6 @@ python subgrab.py example.com --grok-key xai-KEY --shodan-key SHODAN --virustota
 
 ---
 
-**Version:** 2.1.0 | **Date:** 2026-01-28
+**Version:** 2.1.0 | **Date:** 2026-02-12
 
 **Made with ❤️ for the Security Community**

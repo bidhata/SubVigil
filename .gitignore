@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# Scan results (generated at runtime)
+*_results/
+
+# API keys (sensitive — never commit)
+api_keys.json
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+.DS_Store?
+._*
+
+# Logs
+*.log
+
+# Windows binaries (distributed via Releases)
+*.exe
+*.dll
+
+# Gemini / Agent metadata
+.gemini/
+.agent/

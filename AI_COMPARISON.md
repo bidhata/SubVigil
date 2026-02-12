@@ -2,9 +2,9 @@
 
 ## Quick Decision Guide
 
-### 🆓 **Want FREE AI?** → Use **Grok**
-- $25/month FREE credits
-- No credit card required
+### 🆓 **Want Affordable AI?** → Use **Grok**
+- Free credits for new accounts
+- Very affordable token pricing
 - High-quality results
 - Perfect for bug bounty hunters
 
@@ -24,14 +24,14 @@
 
 | Feature | Grok (xAI) | OpenRouter | SubGrab Built-in |
 |---------|-----------|------------|------------------|
-| **Cost** | FREE ($25/mo) | $5-10 to start | FREE |
+| **Cost** | Low ($) | $5-10 to start | FREE |
 | **Setup Time** | 5 minutes | 5 minutes | 0 minutes |
 | **AI Quality** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
 | **Pattern Recognition** | Excellent | Excellent | Good |
 | **Subdomain Count** | +200-300% | +200-350% | Baseline |
 | **Speed** | Fast | Fast | Very Fast |
 | **Learning Curve** | Easy | Easy | None |
-| **Free Tier** | Yes | No | Yes |
+| **Free Tier** | Credits | No | Yes |
 | **Best For** | Budget users | Quality seekers | Quick scans |
 
 ---
@@ -47,9 +47,9 @@ python subgrab.py target.com --grok-key xai-xxxxx
 ```
 
 **Benefits:**
-- Completely FREE
+- Very affordable
 - High-quality AI assistance
-- No ongoing costs
+- Low ongoing costs
 
 ---
 
@@ -108,16 +108,13 @@ Legend: ✅ Full Support | ⚠️ Basic Support | ❌ Not Supported
 
 ### Expected Costs per Scan
 
-| Scan Size | Grok (FREE) | OpenRouter | Dual AI |
+| Scan Size | Grok | OpenRouter | Dual AI |
 |-----------|------------|------------|---------|
-| Small (0-100 subs) | $0 | $0.20-0.50 | $0.20-0.50 |
-| Medium (100-1000) | $0 | $0.50-1.50 | $0.50-1.50 |
-| Large (1000+) | $0 | $1.50-3.00 | $1.50-3.00 |
+| Small (0-100 subs) | $0.01-0.05 | $0.20-0.50 | $0.25-0.55 |
+| Medium (100-1000) | $0.05-0.15 | $0.50-1.50 | $0.55-1.65 |
+| Large (1000+) | $0.15-0.50 | $1.50-3.00 | $1.65-3.50 |
 
-**Grok FREE tier ($25/month) covers approximately:**
-- 50-100 medium scans per month
-- 200+ small scans per month
-- 25-30 large scans per month
+**Grok is extremely affordable for regular use!**
 
 ---
 
@@ -127,8 +124,10 @@ Legend: ✅ Full Support | ⚠️ Basic Support | ❌ Not Supported
 
 | Model | Use Case | Speed | Cost |
 |-------|----------|-------|------|
-| `grok-beta` | General use (recommended) | ⚡⚡⚡ | FREE |
-| `grok-vision-beta` | Complex patterns | ⚡⚡ | FREE |
+| `grok-3` | General use (recommended) | ⚡⚡⚡ | $ |
+| `grok-3-mini` | Quick scans | ⚡⚡⚡⚡ | ¢ |
+| `grok-4` | Complex patterns | ⚡⚡ | $$ |
+| `grok-4.1-fast` | Large scans, 2M context | ⚡⚡⚡ | $ |
 
 ### OpenRouter Models
 
@@ -186,11 +185,11 @@ Legend: ✅ Full Support | ⚠️ Basic Support | ❌ Not Supported
 
 ### For Bug Bounty Hunters
 
-**Grok (FREE):**
-- Investment: $0
+**Grok (Low Cost):**
+- Investment: ~$0.05 per scan
 - Average subdomain increase: +250%
 - Extra bugs found per scan: 2-5
-- **ROI: Infinite** ♾️
+- **ROI: Excellent** 📈
 
 **OpenRouter:**
 - Investment: ~$1 per scan
@@ -264,14 +263,14 @@ python subgrab.py target.com
 
 - **Best FREE Option**: Grok (xAI) ⭐
 - **Best Quality**: Claude 3.5 Sonnet via OpenRouter
-- **Best Value**: Grok (FREE tier)
+- **Best Value**: Grok (very low cost)
 - **Best Coverage**: Dual AI (Grok + OpenRouter)
 - **Fastest**: Built-in methods
 - **Most Versatile**: Grok
 
 ### 💡 Our Recommendation
 
-**Start with Grok (it's FREE!)** then add OpenRouter if you need:
+**Start with Grok (very affordable!)** then add OpenRouter if you need:
 - Maximum subdomain discovery
 - Model validation
 - Professional-grade results

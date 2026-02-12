@@ -30,7 +30,7 @@ SubGrab stands out with its robust feature set and AI-driven capabilities, makin
 - **DNS Enumeration**: Supports brute force, SRV records, and zone transfers.
 - **Web Archives**: Extracts subdomains from Wayback Machine, CommonCrawl, and other archives.
 - **Search Engine Reconnaissance**: Uses Google dorks and other search engines for indexed subdomains.
-- **Enhanced RapidDNS**: Advanced pagination support to extract ALL available subdomains (7000+ for large domains).
+- **C99 Subdomain Finder**: Automated scan retrieval from subdomainfinder.c99.nl with IP and Cloudflare status data.
 - **Threat Intelligence Sources**: AlienVault OTX, Anubis, ThreatCrowd, HackerTarget, Robtex, Sitedossier.
 - **Premium APIs**: BeVigil, BufferOver, C99.nl, Chaos, FullHunt, IntelX, Netlas, LeakIX, ZoomEye.
 - **Additional Sources**: FOFA, Hunter, Quake, WhoisXML, BuiltWith, Facebook Graph API.
@@ -72,8 +72,8 @@ SubGrab's **OpenRouter API integration** enhances subdomain discovery with cutti
 |----------------------|------------|----------------------------|-------------|--------|
 | Claude 3.5 Sonnet    | Anthropic  | Best overall               | ⭐⭐⭐⭐⭐ | Medium |
 | Claude 3 Haiku       | Anthropic  | Fast & cost-effective      | ⭐⭐⭐⭐  | Low    |
-| **Grok Beta**        | **xAI**    | **FREE tier available**    | ⭐⭐⭐⭐⭐ | **FREE/Low** |
-| Grok Vision Beta     | xAI        | Vision + reasoning         | ⭐⭐⭐⭐  | Low    |
+| **Grok 3**           | **xAI**    | **General use (recommended)** | ⭐⭐⭐⭐⭐ | **Low** |
+| Grok 4               | xAI        | Complex pattern analysis   | ⭐⭐⭐⭐⭐ | Medium |
 | GPT-4o               | OpenAI     | High-quality analysis      | ⭐⭐⭐⭐⭐ | High   |
 | GPT-4o Mini          | OpenAI     | Balanced performance       | ⭐⭐⭐⭐  | Medium |
 | Gemini Pro 1.5       | Google     | Good alternative           | ⭐⭐⭐⭐  | Medium |
@@ -151,7 +151,7 @@ python subgrab.py example.com \
 # Grok with specific model
 python subgrab.py example.com \
   --grok-key xai-xxxxx \
-  --grok-model grok-beta
+  --grok-model grok-3
 
 # AI with Claude 3.5 Sonnet (OpenRouter)
 python subgrab.py example.com \
@@ -200,10 +200,12 @@ With the new sources, SubGrab can now discover significantly more subdomains:
 ```bash
 usage: subgrab.py [-h] [--threads THREADS] [--timeout TIMEOUT] [--fast] [--stealth]
                   [--proxy-file PROXY_FILE] [--wordlist WORDLIST] [--nameservers NAMESERVERS]
-                  [--openrouter-key OPENROUTER_KEY] [--openrouter-model OPENROUTER_MODEL]
                   [--shodan-key SHODAN_KEY] [--securitytrails-key SECURITYTRAILS_KEY]
                   [--virustotal-key VIRUSTOTAL_KEY] [--censys-id CENSYS_ID]
                   [--censys-secret CENSYS_SECRET] [--github-token GITHUB_TOKEN]
+                  [--whoisxml-key WHOISXML_KEY]
+                  [--openrouter-key OPENROUTER_KEY] [--openrouter-model OPENROUTER_MODEL]
+                  [--grok-key GROK_KEY] [--grok-model GROK_MODEL]
                   domain
 
 positional arguments:
@@ -223,7 +225,7 @@ AI Integration:
   --openrouter-key OPENROUTER_KEY     OpenRouter API key
   --openrouter-model OPENROUTER_MODEL OpenRouter model (default: anthropic/claude-3.5-sonnet)
   --grok-key GROK_KEY                 xAI Grok API key (FREE tier available)
-  --grok-model GROK_MODEL             Grok model (default: grok-beta, also: grok-vision-beta)
+  --grok-model GROK_MODEL             Grok model (default: grok-3, also: grok-3-mini, grok-4, grok-4.1-fast)
 
 API Keys:
   --shodan-key SHODAN_KEY             Shodan API key
@@ -232,6 +234,7 @@ API Keys:
   --censys-id CENSYS_ID               Censys API ID
   --censys-secret CENSYS_SECRET       Censys API secret
   --github-token GITHUB_TOKEN         GitHub API token
+  --whoisxml-key WHOISXML_KEY         WhoisXML API key (500 free credits)
   
 Note: 25+ API sources supported! Use GUI for easy configuration of all API keys.
 ```
@@ -290,16 +293,16 @@ python subgrab.py example.com \
 #### Grok (xAI) - FREE Option ⭐ Recommended
 1. Visit [console.x.ai](https://console.x.ai) or [x.ai/api](https://x.ai/api).
 2. Sign up for a free account.
-3. Get **$25 FREE credits per month** during beta (as of 2026).
+3. Free credits available for new accounts.
 4. Generate an API key from the console.
 5. Use the key with `--grok-key xai-xxxxx`.
 
 **Why Grok?**
-- 💰 **FREE** $25/month credits (beta)
-- 🚀 High-quality AI from xAI (Elon Musk's company)
+- 💰 Free credits for new accounts
+- 🚀 High-quality AI from xAI
 - ⚡ Fast and efficient
 - 🔌 OpenAI-compatible API
-- 🆓 No credit card required for free tier
+- 🆓 Very affordable token pricing
 
 #### OpenRouter Setup
 1. Visit [openrouter.ai](https://openrouter.ai).
@@ -433,6 +436,7 @@ Interactive dashboard with:
 | Service          | Purpose                  | Free Tier        | Rate Limit        |
 |------------------|--------------------------|------------------|-------------------|
 | OpenRouter       | AI subdomain generation  | ❌               | Model dependent   |
+| Grok (xAI)       | AI subdomain generation  | ✅ Free credits  | Model dependent   |
 | Shodan           | Infrastructure discovery | ✅ Limited       | 1 req/sec         |
 | VirusTotal       | Domain intelligence      | ✅ 4 req/min     | 4 req/min         |
 | SecurityTrails   | DNS history             | ✅ 50 req/month  | Varies            |
@@ -464,7 +468,7 @@ Interactive dashboard with:
 | FOFA             | Cyberspace assets       | 💰 Paid         | High              |
 | Hunter           | Threat intelligence     | 💰 Paid         | High              |
 | Quake            | Cyberspace mapping      | 💰 Paid         | High              |
-| WhoisXML         | Domain intelligence     | 💰 Paid         | High              |
+| WhoisXML         | Subdomain lookup        | ✅ 500 credits   | High              |
 | BuiltWith        | Technology profiler     | 💰 Paid         | Medium            |
 | Facebook         | Social platform API     | 💰 Paid         | Low               |
 
@@ -509,7 +513,7 @@ subgrab_gui.exe
 
 ### 🌐 Passive Methods
 - **Enhanced Certificate Transparency**: Comprehensive crt.sh parsing (4000+ certificates), CertSpotter integration.
-- **Advanced RapidDNS**: Systematic pagination to extract ALL available subdomains (7000+ for large domains).
+- **C99 Subdomain Finder**: Automated scan retrieval from subdomainfinder.c99.nl with IP and Cloudflare data.
 - **Threat Intelligence**: AlienVault OTX (500+ subdomains), Anubis (20000+ subdomains), ThreatCrowd, HackerTarget.
 - **DNS Intelligence**: Brute forcing, SRV records, zone transfers, reverse DNS, Robtex, Sitedossier.
 - **Web Archives**: Wayback Machine, CommonCrawl, and Archive.today for historical data.
@@ -559,11 +563,14 @@ subgrab_gui.exe
 
 ---
 
-## 🚀 Recent Enhancements (v2.0)
+## 🚀 Recent Enhancements (v2.1)
 
 ### 🎯 Major Improvements
+- **WhoisXML Subdomain API**: Comprehensive subdomain lookup with 500 free credits
+- **AI Retry Logic**: Automatic retry with exponential backoff for transient API errors (502/503/504)
+- **Grok AI Integration**: xAI Grok support for affordable AI-powered subdomain discovery
 - **25+ Discovery Sources**: Expanded from 15 to 25+ enumeration techniques
-- **Enhanced RapidDNS**: Advanced pagination support extracting ALL available subdomains (7000+ for large domains)
+- **C99 Subdomain Finder**: Automated scan retrieval with IP and Cloudflare status data
 - **Comprehensive Certificate Transparency**: Processes 4000+ certificates with improved parsing
 - **Free Threat Intelligence**: AlienVault OTX, Anubis (20K+ subdomains), ThreatCrowd, HackerTarget
 - **Premium API Support**: 15+ premium sources including BeVigil, C99.nl, FullHunt, IntelX, Netlas
@@ -572,7 +579,7 @@ subgrab_gui.exe
 ### 📊 Performance Improvements
 - **22,000+ Subdomains**: Real example of example.com going from 5 to 22,705 subdomains
 - **Intelligent Rate Limiting**: Respectful crawling with automatic backoff
-- **Comprehensive Coverage**: 49% coverage of RapidDNS data (3823/7803 for ericsson.net)
+- **Comprehensive Coverage**: Extensive subdomain extraction from multiple scan sources
 - **Multiple Extraction Methods**: Table parsing, regex extraction, JSON API calls
 
 ### 🎨 GUI Enhancements

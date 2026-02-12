@@ -46,7 +46,7 @@ class SubGrabGUI:
         self.openrouter_key_var = tk.StringVar()
         self.openrouter_model_var = tk.StringVar(value="anthropic/claude-3.5-sonnet")
         self.grok_key_var = tk.StringVar()
-        self.grok_model_var = tk.StringVar(value="grok-beta")
+        self.grok_model_var = tk.StringVar(value="grok-3")
         
         # Additional API Keys variables
         self.bevigil_key_var = tk.StringVar()
@@ -228,8 +228,9 @@ class SubGrabGUI:
 • Web Archives (Wayback Machine)
 • Search Engines (Google dorks)
 • Security APIs (VirusTotal, SecurityTrails, Censys, Shodan)
+• WhoisXML Subdomain Lookup (API key required)
 • GitHub Code Search
-• RapidDNS Database
+• C99 Subdomain Finder
 • Reverse DNS Lookups"""
         
         ttk.Label(methods_frame, text=methods_text, justify=tk.LEFT).grid(row=0, column=0, sticky=tk.W)
@@ -290,6 +291,7 @@ class SubGrabGUI:
             ("Shodan API Key:", self.shodan_key_var, "https://shodan.io/"),
             ("SecurityTrails API Key:", self.securitytrails_key_var, "https://securitytrails.com/"),
             ("VirusTotal API Key:", self.virustotal_key_var, "https://virustotal.com/"),
+            ("WhoisXML API Key:", self.whoisxml_key_var, "https://whoisxmlapi.com/"),
             ("Censys API ID:", self.censys_id_var, "https://censys.io/"),
             ("Censys API Secret:", self.censys_secret_var, ""),
         ]
@@ -324,7 +326,7 @@ class SubGrabGUI:
         grok_model_frame.grid(row=current_row, column=1, sticky=(tk.W, tk.E), pady=(0, 5), padx=(10, 0))
         grok_model_frame.columnconfigure(0, weight=1)
         
-        grok_models = ["grok-beta", "grok-2-1212", "grok-2-vision-1212"]
+        grok_models = ["grok-3", "grok-3-mini", "grok-4", "grok-4.1-fast"]
         
         grok_combo = ttk.Combobox(grok_model_frame, textvariable=self.grok_model_var, 
                                   values=grok_models, state="readonly", width=40)
@@ -387,7 +389,6 @@ class SubGrabGUI:
             ("FOFA API Key:", self.fofa_key_var, "https://fofa.so/"),
             ("Hunter API Key:", self.hunter_key_var, "https://hunter.qianxin.com/"),
             ("Quake API Key:", self.quake_key_var, "https://quake.360.cn/"),
-            ("WhoisXML API Key:", self.whoisxml_key_var, "https://whoisxmlapi.com/"),
             ("BuiltWith API Key:", self.builtwith_key_var, "https://builtwith.com/"),
             ("Facebook Token:", self.facebook_token_var, "https://developers.facebook.com/"),
         ]
@@ -547,7 +548,7 @@ class SubGrabGUI:
                 
                 # Load AI API keys
                 self.grok_key_var.set(api_data.get('grok', ''))
-                self.grok_model_var.set(api_data.get('grok_model', 'grok-beta'))
+                self.grok_model_var.set(api_data.get('grok_model', 'grok-3'))
                 self.openrouter_key_var.set(api_data.get('openrouter', ''))
                 self.openrouter_model_var.set(api_data.get('openrouter_model', 'anthropic/claude-3.5-sonnet'))
                 
@@ -625,6 +626,8 @@ class SubGrabGUI:
             cmd.extend(['--censys-secret', self.censys_secret_var.get().strip()])
         if self.github_token_var.get().strip():
             cmd.extend(['--github-token', self.github_token_var.get().strip()])
+        if self.whoisxml_key_var.get().strip():
+            cmd.extend(['--whoisxml-key', self.whoisxml_key_var.get().strip()])
         
         # Add AI enhancement keys
         if self.grok_key_var.get().strip():

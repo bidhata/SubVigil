@@ -7,8 +7,8 @@ tqdm>=4.64.0
 ratelimit>=2.2.1
 shodan>=1.28.0
 
-# GUI dependencies
-tkinter  # Usually included with Python
+# Optional: For enhanced HTML parsing speed
+lxml>=4.9.0
 
 # Optional: For enhanced functionality
 urllib3>=1.26.0

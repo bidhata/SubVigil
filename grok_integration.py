@@ -18,13 +18,13 @@ class GrokSubdomainEnhancer:
     Grok AI-powered subdomain discovery enhancement using xAI API
     """
     
-    def __init__(self, api_key: str, model: str = "grok-beta"):
+    def __init__(self, api_key: str, model: str = "grok-3"):
         """
         Initialize Grok integration
         
         Args:
             api_key: xAI API key (get from console.x.ai)
-            model: Model to use (default: grok-beta, also: grok-vision-beta)
+            model: Model to use (default: grok-3, also: grok-3-mini, grok-4, grok-4.1-fast)
         """
         self.api_key = api_key
         self.model = model
@@ -35,42 +35,63 @@ class GrokSubdomainEnhancer:
         }
     
     def _make_request(self, prompt: str, max_tokens: int = 1000) -> Optional[str]:
-        """Make request to Grok API (OpenAI-compatible endpoint)"""
-        try:
-            payload = {
-                "model": self.model,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are an expert cybersecurity researcher specialized in subdomain enumeration and reconnaissance."
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                "max_tokens": max_tokens,
-                "temperature": 0.7,
-                "stream": False
-            }
-            
-            response = requests.post(
-                f"{self.base_url}/chat/completions",
-                headers=self.headers,
-                json=payload,
-                timeout=60
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                return data['choices'][0]['message']['content']
-            else:
-                print(f"[!] Grok API error: {response.status_code} - {response.text[:100]}")
-                return None
+        """Make request to Grok API (OpenAI-compatible endpoint) with retry logic"""
+        payload = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are an expert cybersecurity researcher specialized in subdomain enumeration and reconnaissance."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "max_tokens": max_tokens,
+            "temperature": 0.7,
+            "stream": False
+        }
+        
+        max_retries = 3
+        retry_codes = {429, 502, 503, 504}
+        
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(
+                    f"{self.base_url}/chat/completions",
+                    headers=self.headers,
+                    json=payload,
+                    timeout=60
+                )
                 
-        except Exception as e:
-            print(f"[!] Grok request error: {e}")
-            return None
+                if response.status_code in retry_codes and attempt < max_retries - 1:
+                    wait = 2 ** attempt * 3  # 3s, 6s, 12s
+                    print(f"[!] Grok API returned {response.status_code}, retrying in {wait}s (attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(wait)
+                    continue
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    return data['choices'][0]['message']['content']
+                else:
+                    print(f"[!] Grok API error: {response.status_code} - {response.text[:100]}")
+                    return None
+                
+            except requests.exceptions.ConnectionError as e:
+                if attempt < max_retries - 1:
+                    wait = 2 ** attempt * 3
+                    print(f"[!] Grok connection error, retrying in {wait}s (attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(wait)
+                    continue
+                print(f"[!] Grok API connection failed after {max_retries} attempts: {e}")
+                return None
+            except Exception as e:
+                print(f"[!] Grok request error: {e}")
+                return None
+        
+        print(f"[!] Grok API failed after {max_retries} attempts")
+        return None
     
     def generate_intelligent_subdomains(
         self, 
@@ -379,14 +400,14 @@ Output ONLY new variations, one per line."""
         return enhanced
 
 
-def integrate_grok_with_subgrab(enumerator, grok_key: str, model: str = "grok-beta"):
+def integrate_grok_with_subgrab(enumerator, grok_key: str, model: str = "grok-3"):
     """
     Integration function to add Grok capabilities to existing SubdomainEnumerator
     
     Args:
         enumerator: SubdomainEnumerator instance
         grok_key: xAI Grok API key
-        model: Model to use (grok-beta or grok-vision-beta)
+        model: Model to use (default: grok-3, also: grok-3-mini, grok-4, grok-4.1-fast)
     """
     enhancer = GrokSubdomainEnhancer(grok_key, model)
     

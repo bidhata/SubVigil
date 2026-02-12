@@ -150,7 +150,7 @@ The AI can analyze web content to find:
 [+] certificate_transparency: 23 subdomains found
 [+] web_archives: 12 subdomains found
 [+] search_engines: 8 subdomains found
-[+] rapiddns: 15 subdomains found
+[+] c99_subdomain_finder: 15 subdomains found
 [+] security_apis: 31 subdomains found
 [+] github_code_search: 5 subdomains found
 [+] openrouter_enhancement: 87 subdomains found  ← AI-generated

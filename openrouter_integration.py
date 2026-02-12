@@ -31,39 +31,61 @@ class OpenRouterSubdomainEnhancer:
         }
         
     def _make_request(self, prompt: str, max_tokens: int = 1000) -> Optional[str]:
-        """Make request to OpenRouter API"""
-        try:
-            # Ensure prompt is properly encoded
-            clean_prompt = prompt.encode('ascii', 'ignore').decode('ascii')
-            
-            payload = {
-                "model": self.model,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are a cybersecurity expert specializing in subdomain enumeration and reconnaissance. Provide only the requested subdomain lists without explanations unless specifically asked."
-                    },
-                    {
-                        "role": "user", 
-                        "content": clean_prompt
-                    }
-                ],
-                "max_tokens": max_tokens,
-                "temperature": 0.7
-            }
-            
-            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
-            response.raise_for_status()
-            
-            data = response.json()
-            content = data['choices'][0]['message']['content']
-            
-            # Ensure response content is ASCII-safe
-            return content.encode('ascii', 'ignore').decode('ascii')
-            
-        except Exception as e:
-            print(f"OpenRouter API error: {e}")
-            return None
+        """Make request to OpenRouter API with retry logic for transient errors"""
+        # Ensure prompt is properly encoded
+        clean_prompt = prompt.encode('ascii', 'ignore').decode('ascii')
+        
+        payload = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a cybersecurity expert specializing in subdomain enumeration and reconnaissance. Provide only the requested subdomain lists without explanations unless specifically asked."
+                },
+                {
+                    "role": "user", 
+                    "content": clean_prompt
+                }
+            ],
+            "max_tokens": max_tokens,
+            "temperature": 0.7
+        }
+        
+        max_retries = 3
+        retry_codes = {429, 502, 503, 504}
+        
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=60)
+                
+                if response.status_code in retry_codes and attempt < max_retries - 1:
+                    wait = 2 ** attempt * 3  # 3s, 6s, 12s
+                    print(f"[!] OpenRouter API returned {response.status_code}, retrying in {wait}s (attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(wait)
+                    continue
+                
+                response.raise_for_status()
+                
+                data = response.json()
+                content = data['choices'][0]['message']['content']
+                
+                # Ensure response content is ASCII-safe
+                return content.encode('ascii', 'ignore').decode('ascii')
+                
+            except requests.exceptions.ConnectionError as e:
+                if attempt < max_retries - 1:
+                    wait = 2 ** attempt * 3
+                    print(f"[!] OpenRouter connection error, retrying in {wait}s (attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(wait)
+                    continue
+                print(f"OpenRouter API connection failed after {max_retries} attempts: {e}")
+                return None
+            except Exception as e:
+                print(f"OpenRouter API error: {e}")
+                return None
+        
+        print(f"OpenRouter API failed after {max_retries} attempts")
+        return None
     
     def generate_intelligent_subdomains(self, domain: str, existing_subdomains: List[str] = None, context: str = "") -> Set[str]:
         """

@@ -89,7 +89,7 @@ class SubdomainEnumerator:
             'dev', 'staging', 'admin', 'api', 'app', 'blog', 'cdn', 'chat', 'demo',
             'docs', 'forum', 'help', 'mobile', 'news', 'portal', 'shop', 'support',
             'vpn', 'wiki', 'secure', 'static', 'assets', 'img', 'video', 'search',
-            'beta', 'alpha', 'prod', 'production', 'uat', 'qa', 'staging', 'dev',
+            'beta', 'alpha', 'prod', 'production', 'uat', 'qa',
             'mail1', 'mail3', 'mx', 'mx1', 'mx2', 'pop3', 'imap', 'smtp1', 'smtp2',
             'ns', 'dns', 'dns1', 'dns2', 'subdomain', 'host', 'server', 'web1', 'web2'
         ]
@@ -99,23 +99,23 @@ class SubdomainEnumerator:
             'amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
             'github.io': ['There isn\'t a GitHub Pages site here'],
             'herokuapp.com': ['No such app'],
-            'azurewebsites.net': ['Web App - Unavailable'],
+            'azurewebsites.net': ['Web App - Unavailable', '404 Web Site not found', 'The resource you are looking for has been removed'],
             'cloudfront.net': ['The request could not be satisfied'],
             'surge.sh': ['project not found'],
             'bitbucket.io': ['Repository not found'],
             'fastly.com': ['Fastly error: unknown domain'],
             'helpjuice.com': ['We could not find what you\'re looking for'],
-            'desk.com': ['Please try again or try Desk.com'],
+            'desk.com': ['Please try again or try Desk.com', 'Sorry, this help center no longer exists'],
             'campaignmonitor.com': ['Double check the URL'],
             'statuspage.io': ['You are being redirected'],
             'uservoice.com': ['This UserVoice subdomain is currently available'],
-            'ghost.io': ['The thing you were looking for is no longer here'],
+            'ghost.io': ['The thing you were looking for is no longer here', '404 Ghost'],
             'zendesk.com': ['Help Center Closed'],
             'tilda.cc': ['Domain has been assigned'],
             'wordpress.com': ['Do you want to register'],
             'pantheonsite.io': ['The gods are wise'],
             'gitbook.com': ['An error occurred'],
-            'azurewebsites.net': ['404 Web Site not found', 'The resource you are looking for has been removed'],
+
             'cloudapp.net': ['404 Web Site not found', 'No such host'],
             'blob.core.windows.net': ['The specified blob does not exist'],
             'trafficmanager.net': ['Resource Not Found'],
@@ -133,7 +133,7 @@ class SubdomainEnumerator:
             'contently.com': ['Page Not Found'],
             'helpscoutdocs.com': ['Docs not found'],
             'bigcartel.com': ['Oops! We couldn\'t find that page'],
-            'desk.com': ['Please try again or try Desk.com'],
+
             'myshopify.com': ['Sorry, this shop is currently unavailable'],
             'readme.io': ['Project doesn\'t exist... yet!'],
             'unbouncepages.com': ['The requested URL was not found'],
@@ -165,7 +165,7 @@ class SubdomainEnumerator:
             'cloudfunctions.net': ['Error: Not Found', '404 Google Cloud Functions'],
             'firebaseio.com': ['Firebase Database Not Found'],
             'web.app': ['Firebase Hosting Not Found'],
-            'ghost.io': ['404 Ghost'],
+
             'hatenablog.com': ['404 Hatena Blog'],
             'hatenadiary.com': ['404 Hatena Diary'],
             'hatenadiary.jp': ['404 Hatena Diary'],
@@ -258,7 +258,6 @@ class SubdomainEnumerator:
             'hubspotusercontent.br': ['404 HubSpot'],
             'hubspotusercontent.ar': ['404 HubSpot'],
             'hubspotusercontent.cl': ['404 HubSpot'],
-            'hubspotusercontent.co': ['404 HubSpot'],
             'hubspotusercontent.pe': ['404 HubSpot'],
             'hubspotusercontent.ve': ['404 HubSpot'],
             'hubspotusercontent.ec': ['404 HubSpot'],
@@ -443,7 +442,7 @@ class SubdomainEnumerator:
             },
             {
                 'name': 'CommonCrawl Index',
-                'url': f"https://index.commoncrawl.org/CC-MAIN-2023-50-index?url=*.{self.domain}/*&output=json&fl=url",
+                'url': f"https://index.commoncrawl.org/CC-MAIN-2025-08-index?url=*.{self.domain}/*&output=json&fl=url",
                 'timeout': 12
             }
         ]
@@ -549,16 +548,16 @@ class SubdomainEnumerator:
         
         return subdomains
 
-    def rapiddns(self):
-        """RapidDNS and alternative DNS enumeration sources"""
+    def c99_subdomain_finder(self):
+        """C99 Subdomain Finder and alternative DNS enumeration sources"""
         print(f"{Fore.CYAN}[*] Searching DNS databases...")
         subdomains = set()
         
         # Multiple DNS database sources for better reliability
         dns_sources = [
             {
-                'name': 'RapidDNS',
-                'method': self._try_rapiddns
+                'name': 'C99 SubFinder',
+                'method': self._try_c99
             },
             {
                 'name': 'DNSdumpster API',
@@ -585,330 +584,174 @@ class SubdomainEnumerator:
         
         return subdomains
     
-    def _try_rapiddns(self):
-        """Try RapidDNS with comprehensive extraction to get ALL 7803+ domains"""
+    def _try_c99(self):
+        """Extract subdomains from C99 SubdomainFinder (subdomainfinder.c99.nl).
+        
+        The c99 scan page embeds ALL subdomain data in the HTML table.
+        Uses curl to download (bypasses Cloudflare bot detection) and
+        BeautifulSoup to parse the table - replicating the site's
+        'Download JSON' button logic server-side.
+        
+        Tries multiple recent scan dates to find valid results.
+        """
         subdomains = set()
         
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Referer': 'https://rapiddns.io/',
-            'Cache-Control': 'no-cache',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-        
         try:
-            session = self.get_session()
-            base_url = f"https://rapiddns.io/subdomain/{self.domain}"
+            import tempfile
+            from datetime import timedelta
             
-            print(f"{Fore.YELLOW}[*] Attempting to get ALL {self.domain} subdomains from RapidDNS...")
+            # Generate scan date URLs to try (today and recent past dates)
+            today = datetime.now()
+            scan_dates = []
+            for days_back in range(0, 14):
+                d = today - timedelta(days=days_back)
+                scan_dates.append(d.strftime('%Y-%m-%d'))
             
-            # Method 1: Try the main page first
-            response = session.get(base_url, headers=headers, timeout=30)
-            if response.status_code != 200:
-                print(f"{Fore.RED}[!] RapidDNS returned status {response.status_code}")
+            content = None
+            curl_available = True  # Track if curl exists so we don't retry on every date
+            
+            print(f"{Fore.YELLOW}[*] Searching C99 scans for {self.domain} (last 14 days)...")
+            
+            for scan_date in scan_dates:
+                url = f"https://subdomainfinder.c99.nl/scans/{scan_date}/{self.domain}"
+                
+                if curl_available:
+                    # Use curl to bypass Cloudflare bot detection
+                    # (Python requests gets blocked, returning only a ~450KB placeholder)
+                    tmp_fd, tmp_file = tempfile.mkstemp(suffix='.html')
+                    os.close(tmp_fd)  # Close the fd, curl will write to the path
+                    try:
+                        cmd = [
+                            'curl', '-s', '-L',
+                            '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                            '-H', 'Accept-Language: en-US,en;q=0.5',
+                            '-H', 'Referer: https://subdomainfinder.c99.nl/',
+                            '--max-time', '180',
+                            '-o', tmp_file,
+                            '-w', '%{http_code}',
+                            url
+                        ]
+                        
+                        result = subprocess.run(cmd, capture_output=True, text=True, timeout=190)
+                        http_code = result.stdout.strip()
+                        
+                        if result.returncode == 0 and os.path.exists(tmp_file):
+                            file_size = os.path.getsize(tmp_file)
+                            
+                            if http_code == '404' or file_size < 1000:
+                                continue  # No scan for this date, try next
+                            
+                            # A valid scan page is typically > 100KB
+                            if file_size > 100000 and http_code == '200':
+                                with open(tmp_file, 'r', encoding='utf-8', errors='ignore') as f:
+                                    content = f.read()
+                                print(f"{Fore.GREEN}[+] Found C99 scan: {scan_date} ({file_size:,} bytes)")
+                                break
+                            else:
+                                print(f"{Fore.YELLOW}[!] Scan {scan_date}: too small ({file_size:,} bytes) or HTTP {http_code}")
+                                
+                    except subprocess.TimeoutExpired:
+                        print(f"{Fore.YELLOW}[!] Timeout downloading scan page for {scan_date}")
+                    except FileNotFoundError:
+                        print(f"{Fore.RED}[!] curl not found - falling back to requests (may be blocked by Cloudflare)")
+                        curl_available = False  # Don't try curl again on subsequent dates
+                    finally:
+                        try:
+                            if os.path.exists(tmp_file):
+                                os.unlink(tmp_file)
+                        except Exception:
+                            pass
+                
+                # Fallback: try requests if curl is unavailable
+                if not curl_available:
+                    try:
+                        headers = {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                            'Referer': 'https://subdomainfinder.c99.nl/',
+                        }
+                        session = self.get_session()
+                        response = session.get(url, headers=headers, timeout=120)
+                        if response.status_code == 404:
+                            continue
+                        if response.status_code == 200 and len(response.text) > 100000:
+                            content = response.text
+                            print(f"{Fore.GREEN}[+] Found C99 scan: {scan_date} ({len(content):,} bytes)")
+                            break
+                    except Exception:
+                        pass
+            
+            if not content:
+                print(f"{Fore.YELLOW}[!] No valid C99 scan found for {self.domain} in the last 14 days")
                 return subdomains
             
-            soup = BeautifulSoup(response.text, 'html.parser')
-            page_subdomains = self._extract_subdomains_from_page(soup, response.text)
-            subdomains.update(page_subdomains)
-            print(f"{Fore.GREEN}[+] Initial page: Found {len(page_subdomains)} subdomains")
+            # Parse the HTML - replicate the c99 'Download JSON' button logic:
+            # The JS iterates all <tr> rows and checks for elements with class:
+            #   .sd (subdomain link text)
+            #   .ip (IP link text)  
+            #   .cf img[data-cf] (Cloudflare status)
+            print(f"{Fore.CYAN}[*] Parsing C99 scan results...")
             
-            # Method 2: Try to get ALL results with different approaches
-            all_results_urls = [
-                # Try different limits to get all results at once
-                f"{base_url}?limit=10000",
-                f"{base_url}?limit=20000", 
-                f"{base_url}?show=all",
-                f"{base_url}?all=true",
-                f"{base_url}?count=10000",
-                f"{base_url}?max=10000",
-                
-                # Try different formats
-                f"https://rapiddns.io/s/{self.domain}",
-                f"https://rapiddns.io/domain/{self.domain}",
-                f"https://rapiddns.io/samesite/{self.domain}",
-                
-                # Try API-like endpoints
-                f"https://rapiddns.io/api/subdomain/{self.domain}",
-                f"https://rapiddns.io/ajax/subdomain/{self.domain}",
-                
-                # Try with different parameters
-                f"{base_url}?format=json",
-                f"{base_url}?output=json",
-                f"{base_url}?type=all",
-            ]
-            
-            # Method 3: Systematic pagination - RapidDNS uses ?page=N
-            print(f"{Fore.YELLOW}[*] Starting systematic pagination...")
-            
-            # First, let's try to determine how many pages we need
-            # If we have ~7803 subdomains and assuming ~100 per page, we need ~78 pages
-            # Let's be more aggressive and try more pages
-            max_pages_to_try = 200  # Try up to 200 pages to get all 7803
-            
-            consecutive_empty_pages = 0
-            max_consecutive_empty_pages = 5
-            
-            for page in range(2, max_pages_to_try + 1):  # Start from page 2 (we already got page 1)
-                page_url = f"{base_url}?page={page}"
-                
-                try:
-                    # Show progress every 10 pages
-                    if page % 10 == 0:
-                        print(f"{Fore.CYAN}[*] Progress: Page {page}, Total subdomains: {len(subdomains)}")
-                    
-                    time.sleep(1.5)  # Increase delay to avoid rate limiting
-                    
-                    page_response = session.get(page_url, headers=headers, timeout=20)
-                    
-                    if page_response.status_code == 200:
-                        page_soup = BeautifulSoup(page_response.text, 'html.parser')
-                        page_subdomains = self._extract_subdomains_from_page(page_soup, page_response.text)
-                        
-                        new_subdomains = page_subdomains - subdomains
-                        if new_subdomains:
-                            subdomains.update(new_subdomains)
-                            consecutive_empty_pages = 0  # Reset counter
-                            
-                            if page % 5 == 0 or len(new_subdomains) > 50:  # Log every 5th page or big finds
-                                print(f"{Fore.GREEN}[+] Page {page}: Found {len(new_subdomains)} new subdomains (total: {len(subdomains)})")
-                            
-                            # If we're getting close to 7803, we're on the right track
-                            if len(subdomains) > 7000:
-                                print(f"{Fore.CYAN}[*] Getting close to target! Current: {len(subdomains)}/7803")
-                            elif len(subdomains) > 5000:
-                                print(f"{Fore.CYAN}[*] Good progress! Current: {len(subdomains)}/7803")
-                        else:
-                            consecutive_empty_pages += 1
-                            if page % 10 == 0:  # Only log every 10th empty page to reduce noise
-                                print(f"{Fore.YELLOW}[!] Page {page}: No new subdomains (consecutive empty: {consecutive_empty_pages})")
-                            
-                            # Stop if we get too many consecutive empty pages
-                            if consecutive_empty_pages >= max_consecutive_empty_pages:
-                                print(f"{Fore.YELLOW}[!] Stopping after {consecutive_empty_pages} consecutive empty pages")
-                                break
-                    else:
-                        if page_response.status_code == 429:  # Rate limited
-                            print(f"{Fore.YELLOW}[!] Page {page}: Rate limited (429) - waiting longer...")
-                            time.sleep(5)  # Wait 5 seconds before continuing
-                            # Don't count rate limits as empty pages
-                        elif page_response.status_code == 404:
-                            print(f"{Fore.YELLOW}[!] Page {page} not found - likely reached end of results")
-                            break
-                        else:
-                            print(f"{Fore.YELLOW}[!] Page {page}: HTTP {page_response.status_code}")
-                            consecutive_empty_pages += 1
-                
-                except Exception as e:
-                    print(f"{Fore.YELLOW}[!] Error on page {page}: {str(e)[:30]}...")
-                    consecutive_empty_pages += 1
-                    continue
-            
-            # Method 4: Try some alternative pagination patterns as backup
-            backup_urls = []
-            for page in range(1, 20):  # Just try a few backup patterns
-                backup_urls.extend([
-                    f"{base_url}?p={page}",
-                    f"{base_url}?offset={page * 100}",
-                    f"{base_url}?start={page * 100}",
-                ])
-            
-            # Process backup URLs if we haven't reached the target
-            if len(subdomains) < 7000:  # Only try backup methods if we're still far from target
-                print(f"{Fore.YELLOW}[*] Trying backup URL patterns...")
-                
-                # Combine all backup URLs
-                all_backup_urls = all_results_urls + backup_urls
-                
-                processed = 0
-                max_attempts = 50  # Reduced since we already did systematic pagination
-                consecutive_empty = 0
-                max_consecutive_empty = 5
-                
-                for url in all_backup_urls[:max_attempts]:
-                    if consecutive_empty >= max_consecutive_empty:
-                        print(f"{Fore.YELLOW}[!] Stopping backup attempts after {max_consecutive_empty} consecutive empty results")
-                        break
-                    
-                    try:
-                        processed += 1
-                        time.sleep(0.5)
-                        
-                        response = session.get(url, headers=headers, timeout=15)
-                        
-                        if response.status_code == 200:
-                            soup = BeautifulSoup(response.text, 'html.parser')
-                            page_subdomains = self._extract_subdomains_from_page(soup, response.text)
-                            
-                            new_subdomains = page_subdomains - subdomains
-                            if new_subdomains:
-                                subdomains.update(new_subdomains)
-                                consecutive_empty = 0
-                                print(f"{Fore.GREEN}[+] Backup method: Found {len(new_subdomains)} new subdomains (total: {len(subdomains)})")
-                            else:
-                                consecutive_empty += 1
-                        
-                    except Exception:
-                        consecutive_empty += 1
-                        continue
-            
-            # Method 5: Try RapidDNS.io specific approaches
-            print(f"{Fore.YELLOW}[*] Trying RapidDNS.io specific extraction methods...")
-            
-            # Method 5a: Try the raw data endpoint that might exist
-            raw_endpoints = [
-                f"https://rapiddns.io/subdomain/{self.domain}?full=1",
-                f"https://rapiddns.io/subdomain/{self.domain}?raw=1", 
-                f"https://rapiddns.io/subdomain/{self.domain}?export=1",
-                f"https://rapiddns.io/subdomain/{self.domain}?download=1",
-                f"https://rapiddns.io/subdomain/{self.domain}?format=txt",
-                f"https://rapiddns.io/subdomain/{self.domain}?format=csv",
-                f"https://rapiddns.io/subdomain/{self.domain}?format=json",
-                f"https://rapiddns.io/subdomain/{self.domain}?view=all",
-                f"https://rapiddns.io/subdomain/{self.domain}?showall=1",
-            ]
-            
-            for endpoint in raw_endpoints:
-                try:
-                    raw_response = session.get(endpoint, headers=headers, timeout=20)
-                    if raw_response.status_code == 200:
-                        # Check if this gives us more data
-                        if 'json' in endpoint:
-                            try:
-                                json_data = raw_response.json()
-                                json_subdomains = self._extract_subdomains_from_json(json_data)
-                                new_subdomains = json_subdomains - subdomains
-                                if new_subdomains:
-                                    subdomains.update(new_subdomains)
-                                    print(f"{Fore.GREEN}[+] Raw JSON: Found {len(new_subdomains)} new subdomains")
-                            except:
-                                pass
-                        else:
-                            # Parse as text/HTML
-                            raw_soup = BeautifulSoup(raw_response.text, 'html.parser')
-                            raw_subdomains = self._extract_subdomains_from_page(raw_soup, raw_response.text)
-                            new_subdomains = raw_subdomains - subdomains
-                            if new_subdomains:
-                                subdomains.update(new_subdomains)
-                                print(f"{Fore.GREEN}[+] Raw endpoint: Found {len(new_subdomains)} new subdomains")
-                    
-                    time.sleep(0.5)
-                except:
-                    continue
-            
-            # Method 5b: Try to simulate "Load More" or infinite scroll
-            print(f"{Fore.YELLOW}[*] Simulating dynamic loading...")
-            
-            # Look for load more patterns in the original page
-            load_more_patterns = [
-                'load-more', 'loadmore', 'show-more', 'showmore', 
-                'next-page', 'nextpage', 'more-results', 'moreresults'
-            ]
-            
-            for pattern in load_more_patterns:
-                # Try POST requests that might trigger more data
-                post_urls = [
-                    f"https://rapiddns.io/subdomain/{self.domain}",
-                    f"https://rapiddns.io/ajax/subdomain/{self.domain}",
-                    f"https://rapiddns.io/api/subdomain/{self.domain}",
-                ]
-                
-                for post_url in post_urls:
-                    try:
-                        post_data = {
-                            'action': pattern,
-                            'domain': self.domain,
-                            'offset': len(subdomains),
-                            'limit': 1000,
-                            'page': 'all'
-                        }
-                        
-                        post_headers = headers.copy()
-                        post_headers['Content-Type'] = 'application/x-www-form-urlencoded'
-                        post_headers['X-Requested-With'] = 'XMLHttpRequest'
-                        
-                        post_response = session.post(post_url, data=post_data, headers=post_headers, timeout=15)
-                        
-                        if post_response.status_code == 200:
-                            try:
-                                # Try JSON first
-                                json_data = post_response.json()
-                                json_subdomains = self._extract_subdomains_from_json(json_data)
-                                new_subdomains = json_subdomains - subdomains
-                                if new_subdomains:
-                                    subdomains.update(new_subdomains)
-                                    print(f"{Fore.GREEN}[+] POST {pattern}: Found {len(new_subdomains)} new subdomains")
-                            except:
-                                # Try HTML parsing
-                                post_soup = BeautifulSoup(post_response.text, 'html.parser')
-                                post_subdomains = self._extract_subdomains_from_page(post_soup, post_response.text)
-                                new_subdomains = post_subdomains - subdomains
-                                if new_subdomains:
-                                    subdomains.update(new_subdomains)
-                                    print(f"{Fore.GREEN}[+] POST {pattern} HTML: Found {len(new_subdomains)} new subdomains")
-                        
-                        time.sleep(0.5)
-                    except:
-                        continue
-            
-            # Method 5c: Try to extract JavaScript data directly
+            # Use lxml for speed on large pages (8MB+), fall back to html.parser
             try:
-                script_content = ""
-                for script in soup.find_all('script'):
-                    if script.string:
-                        script_content += script.string + "\n"
-                
-                # Look for embedded data arrays or objects
-                data_patterns = [
-                    r'var\s+subdomains\s*=\s*(\[[^\]]+\])',
-                    r'var\s+data\s*=\s*(\[[^\]]+\])',
-                    r'subdomains\s*:\s*(\[[^\]]+\])',
-                    r'data\s*:\s*(\[[^\]]+\])',
-                    r'"subdomains"\s*:\s*(\[[^\]]+\])',
-                    r'"data"\s*:\s*(\[[^\]]+\])',
-                ]
-                
-                for pattern in data_patterns:
-                    matches = re.findall(pattern, script_content, re.DOTALL)
-                    for match in matches:
-                        try:
-                            # Try to parse as JSON
-                            import json
-                            data_array = json.loads(match)
-                            js_subdomains = self._extract_subdomains_from_json(data_array)
-                            new_subdomains = js_subdomains - subdomains
-                            if new_subdomains:
-                                subdomains.update(new_subdomains)
-                                print(f"{Fore.GREEN}[+] JavaScript data: Found {len(new_subdomains)} new subdomains")
-                        except:
-                            # Try regex extraction from the raw string
-                            js_matches = re.findall(r'([a-zA-Z0-9.-]+\.' + re.escape(self.domain) + r')', match)
-                            new_js_subdomains = set()
-                            for js_match in js_matches:
-                                if self._is_valid_subdomain(js_match):
-                                    new_js_subdomains.add(js_match)
-                            
-                            new_subdomains = new_js_subdomains - subdomains
-                            if new_subdomains:
-                                subdomains.update(new_subdomains)
-                                print(f"{Fore.GREEN}[+] JavaScript regex: Found {len(new_subdomains)} new subdomains")
-                        
-            except Exception as e:
-                print(f"{Fore.YELLOW}[!] Error analyzing JavaScript: {str(e)[:50]}...")
+                soup = BeautifulSoup(content, 'lxml')
+            except Exception:
+                soup = BeautifulSoup(content, 'html.parser')
             
-            print(f"{Fore.CYAN}[*] RapidDNS: Final count {len(subdomains)} subdomains (target was 7803+)")
+            sd_elements = soup.find_all(class_='sd')
+            print(f"{Fore.CYAN}[*] Found {len(sd_elements)} subdomain entries in scan")
+            
+            c99_data = []  # Store full data for JSON export
+            
+            for sd_elem in sd_elements:
+                subdomain_text = sd_elem.get_text(strip=True)
+                if not subdomain_text:
+                    continue
                 
-        except requests.exceptions.Timeout:
-            print(f"{Fore.YELLOW}[!] RapidDNS timeout - continuing with {len(subdomains)} subdomains found")
-        except requests.exceptions.ConnectionError:
-            print(f"{Fore.YELLOW}[!] RapidDNS connection failed - continuing with {len(subdomains)} subdomains found")
+                # Validate it belongs to our target domain (skip bare domain itself)
+                if not subdomain_text.endswith(f'.{self.domain}'):
+                    continue
+                
+                if self._is_valid_subdomain(subdomain_text):
+                    subdomains.add(subdomain_text)
+                    
+                    # Also extract IP and Cloudflare info for reporting
+                    row = sd_elem.find_parent('tr')
+                    if row:
+                        ip_elem = row.find(class_='ip')
+                        cf_elem = row.find(class_='cf')
+                        
+                        ip = ip_elem.get_text(strip=True) if ip_elem else ''
+                        cloudflare = None
+                        if cf_elem:
+                            img = cf_elem.find('img')
+                            if img and img.get('data-cf'):
+                                cloudflare = img['data-cf']
+                        
+                        c99_data.append({
+                            'subdomain': subdomain_text,
+                            'ip': ip,
+                            'cloudflare': cloudflare
+                        })
+                        
+                        # Cache the IP for subdomain_info
+                        if ip and subdomain_text not in self.subdomain_info:
+                            self.subdomain_info[subdomain_text] = {'ip': ip, 'source': 'c99'}
+            
+            # Save full C99 data as JSON for reference
+            if c99_data:
+                c99_json_path = os.path.join(self.output_dir, f'{self.domain}_c99_scan.json')
+                try:
+                    with open(c99_json_path, 'w', encoding='utf-8') as f:
+                        json.dump(c99_data, f, indent=2, ensure_ascii=False)
+                    print(f"{Fore.GREEN}[+] C99 scan data saved to {c99_json_path}")
+                except Exception:
+                    pass
+            
+            print(f"{Fore.CYAN}[*] C99 SubFinder: Extracted {len(subdomains)} unique subdomains")
+                
         except Exception as e:
-            print(f"{Fore.YELLOW}[!] RapidDNS error: {str(e)[:50]}... - continuing with {len(subdomains)} subdomains found")
+            print(f"{Fore.YELLOW}[!] C99 error: {str(e)[:80]} - continuing with {len(subdomains)} subdomains found")
             
         return subdomains
     
@@ -1196,6 +1039,49 @@ class SubdomainEnumerator:
             
         except Exception as e:
             print(f"{Fore.RED}[!] Grok AI error: {e}")
+        
+        return subdomains
+
+    def whoisxml_subdomain_lookup(self):
+        """Query WhoisXML API Subdomain Lookup for comprehensive subdomain data"""
+        if 'whoisxml' not in self.api_keys:
+            return set()
+        
+        print(f"{Fore.CYAN}[*] Querying WhoisXML Subdomain Lookup API...")
+        subdomains = set()
+        
+        try:
+            url = "https://subdomains.whoisxmlapi.com/api/v1"
+            params = {
+                'apiKey': self.api_keys['whoisxml'],
+                'domainName': self.domain,
+                'outputFormat': 'json'
+            }
+            response = self.get_session().get(url, params=params, timeout=60)
+            if response.status_code == 200:
+                data = response.json()
+                result = data.get('result', {})
+                total_count = result.get('count', 0)
+                records = result.get('records', [])
+                
+                for record in records:
+                    domain_name = record.get('domain', '')
+                    if not domain_name:
+                        continue
+                    # Strip wildcard prefix if present (e.g. "*.sub.domain.com")
+                    domain_name = domain_name.lstrip('*.')
+                    if domain_name.endswith(f'.{self.domain}') and self._is_valid_subdomain(domain_name):
+                        subdomains.add(domain_name)
+                
+                print(f"{Fore.GREEN}[+] WhoisXML: {len(subdomains)} valid subdomains from {total_count} total records")
+            elif response.status_code == 401:
+                print(f"{Fore.RED}[!] WhoisXML API: Invalid or expired API key")
+            elif response.status_code == 402:
+                print(f"{Fore.RED}[!] WhoisXML API: Out of API credits")
+            else:
+                print(f"{Fore.RED}[!] WhoisXML API returned status {response.status_code}")
+        except Exception as e:
+            print(f"{Fore.RED}[!] Error with WhoisXML API: {e}")
         
         return subdomains
 
@@ -1569,7 +1455,8 @@ class SubdomainEnumerator:
             self.certificate_transparency,
             self.web_archives,
             self.search_engines,
-            self.rapiddns,
+            self.c99_subdomain_finder,
+            self.whoisxml_subdomain_lookup,
             self.security_apis,
             self.github_code_search,
             self.dns_enumeration,
@@ -2263,7 +2150,7 @@ class SubdomainEnumerator:
                 from grok_integration import GrokSubdomainEnhancer
                 self.grok_enhancer = GrokSubdomainEnhancer(
                     self.api_keys['grok'],
-                    getattr(self, 'grok_model', 'grok-beta')
+                    getattr(self, 'grok_model', 'grok-3')
                 )
                 print(f"{Fore.GREEN}[+] Grok AI integration enabled (xAI)")
             except ImportError:
@@ -2334,13 +2221,14 @@ Examples:
     parser.add_argument('--censys-id', help='Censys API ID')
     parser.add_argument('--censys-secret', help='Censys API secret')
     parser.add_argument('--github-token', help='GitHub API token')
+    parser.add_argument('--whoisxml-key', help='WhoisXML API key for subdomain lookup (500 free credits)')
     # AI Integration
     parser.add_argument('--openrouter-key', help='OpenRouter API key for AI-powered subdomain generation')
     parser.add_argument('--openrouter-model', default='anthropic/claude-3.5-sonnet',
                        help='OpenRouter model to use (default: anthropic/claude-3.5-sonnet)')
-    parser.add_argument('--grok-key', help='xAI Grok API key for AI-powered subdomain generation (FREE alternative)')
-    parser.add_argument('--grok-model', default='grok-beta',
-                       help='Grok model to use (default: grok-beta, also: grok-vision-beta)')
+    parser.add_argument('--grok-key', help='xAI Grok API key for AI-powered subdomain generation')
+    parser.add_argument('--grok-model', default='grok-3',
+                       help='Grok model to use (default: grok-3, also: grok-3-mini, grok-4, grok-4.1-fast)')
     
     args = parser.parse_args()
     
@@ -2365,6 +2253,8 @@ Examples:
         api_keys['censys'] = {'id': args.censys_id, 'secret': args.censys_secret}
     if args.github_token:
         api_keys['github'] = args.github_token
+    if args.whoisxml_key:
+        api_keys['whoisxml'] = args.whoisxml_key
     if args.openrouter_key:
         api_keys['openrouter'] = args.openrouter_key
     if args.grok_key:

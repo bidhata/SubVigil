@@ -12,7 +12,7 @@
 
 | Feature | Benefit |
 |---------|---------|
-| 💰 **FREE Tier** | $25 FREE credits per month during beta |
+| 💰 **Free Credits** | Free credits for new accounts to get started |
 | 🎯 **High Quality** | State-of-the-art AI reasoning and pattern recognition |
 | ⚡ **Fast** | Quick response times for real-time enumeration |
 | 🔌 **Compatible** | OpenAI-compatible API - easy to integrate |
@@ -23,10 +23,11 @@
 
 | AI Model | Provider | Cost | Free Tier | Quality | Speed |
 |----------|----------|------|-----------|---------|-------|
-| **Grok Beta** | **xAI** | **FREE** | **$25/month** | **⭐⭐⭐⭐⭐** | **⚡⚡⚡** |
+| **Grok 3** | **xAI** | **$** | **Free Credits** | **⭐⭐⭐⭐⭐** | **⚡⚡⚡** |
+| Grok 4 | xAI | $$ | Free Credits | ⭐⭐⭐⭐⭐ | ⚡⚡ |
+| Grok 4.1 Fast | xAI | $ | Free Credits | ⭐⭐⭐⭐ | ⚡⚡⚡⚡ |
 | Claude 3.5 | Anthropic | $$ | Limited | ⭐⭐⭐⭐⭐ | ⚡⚡⚡ |
 | GPT-4o | OpenAI | $$$ | Very Limited | ⭐⭐⭐⭐⭐ | ⚡⚡ |
-| Gemini Pro | Google | $ | Good | ⭐⭐⭐⭐ | ⚡⚡⚡ |
 
 ---
 
@@ -51,10 +52,12 @@
 
 | Model | Description | Best For | Speed | Cost |
 |-------|-------------|----------|-------|------|
-| `grok-beta` | Primary Grok model | General subdomain analysis | Fast | Low |
-| `grok-vision-beta` | Vision-capable Grok | Complex pattern recognition | Medium | Low |
+| `grok-3` | Primary Grok model (default) | General subdomain analysis | Fast | $ |
+| `grok-3-mini` | Lightweight Grok | Quick scans, low cost | Very Fast | ¢ |
+| `grok-4` | Flagship reasoning model | Complex pattern analysis | Medium | $$ |
+| `grok-4.1-fast` | Speed-optimized with 2M context | Large scans, agentic use | Fast | $ |
 
-**Recommended:** Start with `grok-beta` for standard subdomain enumeration.
+**Recommended:** Start with `grok-3` for standard subdomain enumeration.
 
 ---
 
@@ -73,7 +76,7 @@ python subgrab.py example.com --grok-key xai-your-key-here
 # Specify Grok model
 python subgrab.py example.com \
   --grok-key xai-your-key-here \
-  --grok-model grok-beta
+  --grok-model grok-3
 
 # Combine with other tools for maximum coverage
 python subgrab.py example.com \
@@ -191,10 +194,9 @@ Example 3: enterprise.com
 
 ## 💰 Pricing & Credits
 
-### Free Tier (Beta)
+### Free Credits
 
-- **$25 FREE credits per month**
-- No credit card required
+- **Free credits for new accounts** to get started
 - Perfect for:
   - Bug bounty hunters
   - Security researchers
@@ -203,22 +205,22 @@ Example 3: enterprise.com
 
 ### Paid Tier
 
-- Pay-as-you-go after free credits
-- Competitive pricing
-- Volume discounts available
+- Pay-as-you-go pricing
+- Grok 3: $0.30/1M input, $0.50/1M output tokens
+- Grok 4: $3/1M input, $15/1M output tokens
 - **Check [x.ai/pricing](https://x.ai/pricing) for latest rates**
 
 ### Cost Estimation
 
 Typical SubGrab scan costs:
 
-| Domain Size | AI Requests | Estimated Cost | Free Tier |
-|-------------|-------------|----------------|-----------|
-| Small | 5-10 | $0.10-0.30 | ✅ Yes |
-| Medium | 15-30 | $0.40-0.90 | ✅ Yes |
-| Large | 40-80 | $1.00-2.50 | ✅ Yes |
+| Domain Size | AI Requests | Estimated Cost (Grok 3) |
+|-------------|-------------|-------------------------|
+| Small | 5-10 | $0.01-0.05 |
+| Medium | 15-30 | $0.05-0.15 |
+| Large | 40-80 | $0.15-0.50 |
 
-**Most scans stay within the FREE tier!** 🎉
+**Very affordable for most scans!** 🎉
 
 ---
 
@@ -229,7 +231,7 @@ Typical SubGrab scan costs:
 ```bash
 python subgrab.py example.com \
   --grok-key xai-your-key-here \
-  --grok-model grok-beta
+  --grok-model grok-3
 ```
 
 ### Option 2: Config File
@@ -254,7 +256,7 @@ python subgrab.py example.com --config api_keys.json
 
 ```bash
 export GROK_API_KEY="xai-your-key-here"
-export GROK_MODEL="grok-beta"
+export GROK_MODEL="grok-3"
 
 python subgrab.py example.com
 ```
@@ -364,7 +366,7 @@ For better AI pattern recognition, provide context about the target:
 python subgrab.py TARGET --grok-key xai-KEY
 
 # Specify model
-python subgrab.py TARGET --grok-key xai-KEY --grok-model grok-beta
+python subgrab.py TARGET --grok-key xai-KEY --grok-model grok-3
 
 # Dual AI mode
 python subgrab.py TARGET --grok-key xai-KEY --openrouter-key sk-or-KEY
@@ -381,7 +383,7 @@ python subgrab.py TARGET \
 
 ```bash
 export GROK_API_KEY="xai-your-key"
-export GROK_MODEL="grok-beta"
+export GROK_MODEL="grok-3"
 ```
 
 ---
