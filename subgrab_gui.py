@@ -590,15 +590,18 @@ class SubGrabGUI:
         if not domain:
             raise ValueError("Target domain is required.")
 
-        script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subgrab.py")
-        if not os.path.exists(script):
-            script = filedialog.askopenfilename(
-                title="Locate subgrab.py",
-                filetypes=[("Python files", "*.py"), ("All files", "*.*")])
-            if not script:
-                raise ValueError("subgrab.py not found.")
-
-        cmd = [sys.executable, script, domain]
+        if getattr(sys, "frozen", False):
+            # Running as PyInstaller bundle — same exe handles CLI when domain is first arg
+            cmd = [sys.executable, domain]
+        else:
+            script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subgrab.py")
+            if not os.path.exists(script):
+                script = filedialog.askopenfilename(
+                    title="Locate subgrab.py",
+                    filetypes=[("Python files", "*.py"), ("All files", "*.*")])
+                if not script:
+                    raise ValueError("subgrab.py not found.")
+            cmd = [sys.executable, script, domain]
 
         if self.threads_var.get() != "50":
             cmd += ["-t", self.threads_var.get()]

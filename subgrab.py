@@ -28,6 +28,13 @@ from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore", category=requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
+
+def _base_dir() -> Path:
+    """Project root — works both normally and inside a PyInstaller bundle."""
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS)
+    return Path(__file__).parent
+
 # Third-party imports (install with: pip install requests dnspython colorama beautifulsoup4 tqdm shodan)
 try:
     from bs4 import BeautifulSoup
@@ -742,8 +749,8 @@ class SubdomainEnumerator:
     def run_passive_discovery(self):
         """Run all passive discovery modules from the modules/ folder."""
         print(f"{Fore.GREEN}[+] Starting passive discovery for {self.domain}")
-        modules_dir = Path(__file__).parent / "modules"
-        _root = str(Path(__file__).parent)
+        modules_dir = _base_dir() / "modules"
+        _root = str(_base_dir())
         if _root not in sys.path:
             sys.path.insert(0, _root)
         from modules.base import load_modules
@@ -788,10 +795,10 @@ class SubdomainEnumerator:
 
     def run_ai_engines(self):
         """Run all AI engine plugins from the ai_engine/ folder."""
-        ai_dir = Path(__file__).parent / "ai_engine"
+        ai_dir = _base_dir() / "ai_engine"
         if not ai_dir.exists():
             return
-        _root = str(Path(__file__).parent)
+        _root = str(_base_dir())
         if _root not in sys.path:
             sys.path.insert(0, _root)
         self._load_ai_config(ai_dir)
