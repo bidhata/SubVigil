@@ -1,93 +1,74 @@
-# SubGrab — Advanced Subdomain Enumeration Tool
+<div align="center">
 
-**Python 3.8+** | **MIT License** | **Windows / Linux / macOS**
+# 🔍 SubGrab
 
-SubGrab is a high-performance, multi-threaded subdomain enumeration tool designed for security researchers, penetration testers, and bug bounty hunters. It combines 11 modular passive discovery sources, active reconnaissance, and optional AI-powered pattern generation (Grok / OpenRouter) into a single CLI and GUI tool.
+### Advanced Subdomain Enumeration Tool
 
----
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE.txt)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-6366f1?style=flat-square)](https://github.com/bidhata/SubGrab/releases)
+[![Release](https://img.shields.io/github/v/release/bidhata/SubGrab?style=flat-square&color=f59e0b&label=Latest)](https://github.com/bidhata/SubGrab/releases)
+[![Stars](https://img.shields.io/github/stars/bidhata/SubGrab?style=flat-square&color=facc15)](https://github.com/bidhata/SubGrab/stargazers)
 
-## Table of Contents
+Multi-threaded subdomain enumeration combining **9 passive sources**, **active recon**, and **AI-powered pattern generation** into a single CLI and GUI tool — no Python required for the Windows binary.
 
-1. [Features](#features)
-2. [Architecture](#architecture)
-3. [Installation](#installation)
-4. [Quick Start](#quick-start)
-5. [CLI Reference](#cli-reference)
-6. [Passive Scanner Modules](#passive-scanner-modules)
-7. [Active Reconnaissance](#active-reconnaissance)
-8. [API Integrations](#api-integrations)
-9. [AI Integration](#ai-integration)
-10. [Output Formats](#output-formats)
-11. [Adding a New Scanner Module](#adding-a-new-scanner-module)
-12. [GUI Interface](#gui-interface)
-13. [Troubleshooting](#troubleshooting)
-14. [Contributing](#contributing)
-15. [License](#license)
+[**⬇️ Download Binary**](https://github.com/bidhata/SubGrab/releases) · [**📖 Quick Start**](#-quick-start) · [**🔌 Plugin Guide**](#-plugin-system) · [**🖥️ GUI**](#-gui-interface)
+
+</div>
 
 ---
 
-## Features
+## ✨ Features at a Glance
 
-### Passive Discovery
-- Certificate Transparency logs (crt.sh + CertSpotter)
-- Web archives (Wayback Machine + CommonCrawl — always uses latest index)
-- Search engine dorks (Google site:/inurl:)
-- C99 SubdomainFinder scan retrieval with three-tier HTML parsing fallback
-- DNS databases: DNSdumpster, HackerTarget
-- WhoisXML Subdomain Lookup API (500 free credits)
-- Security APIs: VirusTotal, SecurityTrails, Censys, Shodan
-- GitHub code search for domain leaks
-- DNS brute force with permutation expansion, SRV records, zone transfer
-- Reverse DNS sweeping across discovered IP ranges
-- AI-powered generation: Grok (xAI) and/or OpenRouter models
+<table>
+<tr>
+<td width="33%">
 
-### Active Reconnaissance
-- HTTP/HTTPS status code probing and technology fingerprinting
-- SSH port detection (port 22)
-- Port scanning for common services (HTTP, HTTPS, FTP, SMTP)
-- IP owner lookup via Shodan
-- Subdomain takeover detection across 50+ cloud/SaaS services
+**🌐 Passive Discovery**
+- Certificate Transparency logs
+- Web archives (Wayback / CommonCrawl)
+- Search engine dorks
+- C99 SubdomainFinder
+- DNS databases
+- Security APIs (Shodan, VT, Censys…)
+- GitHub code search
 
-### Analysis & Output
-- Wildcard DNS detection (eliminates false positives before scanning)
-- Subdomain takeover detection across AWS S3, Azure, GitHub Pages, Heroku, Netlify, Vercel, and 45+ more
-- Results in TXT, CSV, JSON, and interactive HTML with charts
-- Real-time progress bars via tqdm
+</td>
+<td width="33%">
+
+**🎯 Active Recon**
+- HTTP/HTTPS probing + fingerprinting
+- Port scanning (SSH, FTP, SMTP…)
+- Subdomain takeover detection (50+ services)
+- Shodan IP enrichment
+- Wildcard DNS filtering
+
+</td>
+<td width="33%">
+
+**🤖 AI Generation**
+- Grok (xAI) — free credits
+- OpenRouter — Claude 4, GPT-4o, Gemini…
+- Pattern analysis on discovered subdomains
+- Runs after traditional sources complete
+
+</td>
+</tr>
+</table>
 
 ---
 
-## Architecture
+## 📥 Installation
 
-SubGrab uses a **plugin-based module system** for passive discovery. Each scanner lives in its own file under `modules/` and is auto-discovered at runtime — no registration required.
+### Option A — Pre-built Binary (Windows, no Python needed)
 
 ```
-SubGrab-main/
-├── subgrab.py              # Main CLI entry point + SubdomainEnumerator class
-├── subgrab_gui.py          # Tkinter GUI wrapper
-├── openrouter_integration.py   # OpenRouter AI enhancer
-├── grok_integration.py         # Grok (xAI) AI enhancer
-├── requirements.txt
-├── start_subgrab_gui.bat   # Windows one-click launcher
-└── modules/
-    ├── base.py                          # BaseScanner ABC + load_modules()
-    ├── 01_certificate_transparency.py
-    ├── 02_web_archives.py
-    ├── 03_search_engines.py
-    ├── 04_dns_databases.py
-    ├── 05_whoisxml.py
-    ├── 06_security_apis.py
-    ├── 07_github_search.py
-    ├── 08_dns_bruteforce.py
-    ├── 09_reverse_dns.py
-    ├── 10_openrouter_ai.py
-    └── 11_grok_ai.py
+1. Download SubGrab-vX.X.X-windows-x64.zip from Releases
+2. Extract → double-click SubGrab.exe for GUI
+              or run SubGrab.exe example.com for CLI
 ```
 
-`SubdomainEnumerator.run_passive_discovery()` calls `load_modules()`, which sorts `modules/*.py` alphabetically and instantiates every `BaseScanner` subclass it finds. The numeric prefix controls execution order.
-
----
-
-## Installation
+### Option B — Run from Source
 
 **Requirements:** Python 3.8+
 
@@ -97,40 +78,39 @@ cd SubGrab
 pip install -r requirements.txt
 ```
 
-### Dependencies
+<details>
+<summary>📦 Dependencies</summary>
 
 | Package | Purpose |
 |---------|---------|
 | `requests` | HTTP client |
 | `dnspython` | DNS resolution, zone transfer, SRV |
 | `colorama` | Coloured terminal output |
-| `beautifulsoup4` | HTML parsing (C99 scan pages) |
-| `lxml` | Fast HTML parser (fallback: html.parser) |
+| `beautifulsoup4` | HTML parsing (C99 pages) |
+| `lxml` | Fast HTML parser |
 | `tqdm` | Progress bars |
 | `shodan` | Shodan API client |
-| `urllib3`, `certifi` | TLS/SSL support |
+
+</details>
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
-# Passive-only scan (no API keys required)
+# Passive-only (no API keys required)
 python subgrab.py example.com
 
-# Fast mode: skips DNS brute force and reverse DNS
+# Fast mode — skips brute force and reverse DNS
 python subgrab.py example.com --fast --threads 100
 
-# Stealth mode: random delays between requests
+# Stealth mode — random delays between requests
 python subgrab.py example.com --stealth
 
-# With Grok AI pattern generation (recommended free option)
+# AI-powered with Grok (free credits available)
 python subgrab.py example.com --grok-key xai-YOURKEY
 
-# With OpenRouter AI (Claude, GPT-4o, Gemini, etc.)
-python subgrab.py example.com --openrouter-key sk-or-YOURKEY --openrouter-model anthropic/claude-3.5-sonnet
-
-# Dual AI + Shodan + VirusTotal — maximum coverage
+# Full coverage — dual AI + all APIs
 python subgrab.py example.com \
   --grok-key xai-YOURKEY \
   --openrouter-key sk-or-YOURKEY \
@@ -139,267 +119,227 @@ python subgrab.py example.com \
   --threads 100
 
 # Launch GUI
-python subgrab_gui.py
+python subgrab_gui.py        # source
+# or
+SubGrab.exe                  # binary
 ```
 
 ---
 
-## CLI Reference
+## 📋 CLI Reference
 
 ```
-usage: subgrab.py [-h] [-t THREADS] [--timeout TIMEOUT] [--fast] [--stealth]
-                  [--proxy-file FILE] [--wordlist FILE] [--nameservers NS [NS ...]]
-                  [--shodan-key KEY] [--securitytrails-key KEY]
-                  [--virustotal-key KEY] [--censys-id ID] [--censys-secret SECRET]
-                  [--github-token TOKEN] [--whoisxml-key KEY]
-                  [--openrouter-key KEY] [--openrouter-model MODEL]
-                  [--grok-key KEY] [--grok-model MODEL]
-                  domain
+subgrab.py domain [options]
 ```
 
-### Positional
-
-| Argument | Description |
-|----------|-------------|
-| `domain` | Target domain (e.g. `example.com`) |
-
-### General Options
+### ⚙️ General Options
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-t, --threads` | `50` | Worker thread count (1–200) |
-| `--timeout` | `30` | HTTP/DNS request timeout in seconds |
-| `--fast` | off | Skip DNS brute force and reverse DNS (faster but less thorough) |
-| `--stealth` | off | Add 0.5–2.0s random delays between requests |
-| `--proxy-file FILE` | — | Path to newline-separated proxy list |
-| `--wordlist FILE` | built-in | Custom wordlist for DNS brute force |
-| `--nameservers NS...` | `8.8.8.8 8.8.4.4 1.1.1.1` | DNS resolvers to use |
+| `-t, --threads` | `50` | Worker threads (1–200) |
+| `--timeout` | `30` | Request timeout in seconds |
+| `--fast` | off | Skip brute force + reverse DNS |
+| `--stealth` | off | Add 0.5–2.0s random delays |
+| `--proxy-file FILE` | — | Newline-separated proxy list |
+| `--wordlist FILE` | built-in | Custom DNS brute force wordlist |
+| `--nameservers NS...` | `8.8.8.8 8.8.4.4 1.1.1.1` | DNS resolvers |
 
-### API Keys
+### 🔑 API Key Flags
 
 | Flag | Service | Free Tier |
 |------|---------|-----------|
-| `--shodan-key KEY` | Shodan | Limited |
-| `--securitytrails-key KEY` | SecurityTrails | 50 req/month |
-| `--virustotal-key KEY` | VirusTotal | 4 req/min |
-| `--censys-id ID` + `--censys-secret SECRET` | Censys | 250 req/month |
-| `--github-token TOKEN` | GitHub | 5,000 req/hour |
-| `--whoisxml-key KEY` | WhoisXML | 500 credits |
+| `--shodan-key` | Shodan | Limited |
+| `--securitytrails-key` | SecurityTrails | 50 req/month |
+| `--virustotal-key` | VirusTotal | 4 req/min |
+| `--censys-id` + `--censys-secret` | Censys | 250 req/month |
+| `--github-token` | GitHub | 5,000 req/hr |
+| `--whoisxml-key` | WhoisXML | 500 credits |
 
-### AI Options
+### 🤖 AI Flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--grok-key KEY` | — | xAI Grok API key |
-| `--grok-model MODEL` | `grok-3` | Grok model to use |
-| `--openrouter-key KEY` | — | OpenRouter API key |
-| `--openrouter-model MODEL` | `anthropic/claude-3.5-sonnet` | OpenRouter model |
+| `--grok-key` | — | xAI Grok API key |
+| `--grok-model` | `grok-3` | Model ID |
+| `--openrouter-key` | — | OpenRouter API key |
+| `--openrouter-model` | `anthropic/claude-sonnet-4-5` | Model ID |
 
-### Persistent API Key Configuration
-
-Store keys in `api_keys.json` at the project root so you don't have to pass them on every run (this file is `.gitignore`d):
-
-```json
-{
-  "grok": "xai-YOURKEY",
-  "openrouter": "sk-or-YOURKEY",
-  "shodan": "YOURKEY",
-  "virustotal": "YOURKEY",
-  "securitytrails": "YOURKEY",
-  "censys": {
-    "id": "YOURKEY",
-    "secret": "YOURSECRET"
-  },
-  "github": "YOURTOKEN",
-  "whoisxml": "YOURKEY"
-}
-```
-
-The GUI's **API Keys** tab loads and saves this file directly.
+> **Tip:** Store keys in `ai_engine/config.ini` or the GUI's API Keys tab — no need to pass them on every run.
 
 ---
 
-## Passive Scanner Modules
+## 🏗️ Architecture
 
-All modules live in `modules/` and inherit from `BaseScanner`. They are executed in filename order.
+```
+SubGrab/
+├── main.py                  ← unified entry point (GUI or CLI)
+├── subgrab.py               ← CLI engine + SubdomainEnumerator
+├── subgrab_gui.py           ← dark GUI (Catppuccin Mocha theme)
+├── SubGrab.spec             ← PyInstaller build spec
+├── requirements.txt
+├── start_subgrab_gui.bat    ← Windows one-click launcher
+│
+├── modules/                 ← passive scanner plugins (drop .py to add)
+│   ├── base.py              ← BaseScanner ABC + load_modules()
+│   ├── 01_certificate_transparency.py
+│   ├── 02_web_archives.py
+│   ├── 03_search_engines.py
+│   ├── 04_dns_databases.py
+│   ├── 05_whoisxml.py
+│   ├── 06_security_apis.py
+│   ├── 07_github_search.py
+│   ├── 08_dns_bruteforce.py
+│   └── 09_reverse_dns.py
+│
+└── ai_engine/               ← AI generation plugins
+    ├── base.py              ← BaseAIEngine + load_ai_engines()
+    ├── config.ini           ← API keys (not committed)
+    ├── openrouter_ai.py
+    └── grok_ai.py
+```
 
-| # | File | Class | Description | API Key Required | Fast-skip |
-|---|------|-------|-------------|-----------------|-----------|
-| 01 | `01_certificate_transparency.py` | `CertificateTransparency` | crt.sh (retry+backoff) · CertSpotter · Entrust CT · tls.bufferover.run · urlscan.io | — | No |
-| 02 | `02_web_archives.py` | `WebArchives` | Wayback Machine CDX + CommonCrawl (latest index auto-detected) | — | No |
-| 03 | `03_search_engines.py` | `SearchEngines` | Bing (paginated) · DuckDuckGo HTML · Yahoo · Google fallback | — | No |
-| 04 | `04_dns_databases.py` | `DnsDatabases` | C99 SubdomainFinder → DNSdumpster → HackerTarget (first with results wins) | — | No |
-| 05 | `05_whoisxml.py` | `WhoisXML` | WhoisXML Subdomain Lookup API | `whoisxml` | No |
-| 06 | `06_security_apis.py` | `SecurityAPIs` | VirusTotal, SecurityTrails, Censys, Shodan | optional per-API | No |
-| 07 | `07_github_search.py` | `GitHubSearch` | GitHub REST API (text-match header) + HTML scrape fallback | optional `github` | **Yes** |
-| 08 | `08_dns_bruteforce.py` | `DnsBruteforce` | Wordlist + permutations brute force, SRV records, zone transfer | — | No |
-| 09 | `09_reverse_dns.py` | `ReverseDNS` | Reverse DNS on ±10 IPs around each discovered address | — | **Yes** |
-| 10 | `10_openrouter_ai.py` | `OpenRouterAI` | Pattern-based subdomain generation via OpenRouter LLMs | — (key via CLI) | No |
-| 11 | `11_grok_ai.py` | `GrokAI` | Pattern-based subdomain generation via xAI Grok | — (key via CLI) | No |
+`run_passive_discovery()` loads every `BaseScanner` subclass from `modules/` alphabetically.  
+`run_ai_engines()` runs after passive discovery so AI sees real discovered patterns.
 
-**Fast-skip** modules (07, 09) are silently bypassed when `--fast` is passed.  
-**API-gated** modules (05, 06 sub-features) are skipped if the required key is absent.
+---
 
-### C99 Subdomain Finder — Parsing Resilience
+## 🔌 Passive Scanner Modules
 
-The C99 scanner uses a three-tier fallback to handle HTML layout changes:
+| # | Module | Sources | Key Required | Fast-skip |
+|---|--------|---------|:---:|:---:|
+| 01 | Certificate Transparency | crt.sh · CertSpotter · RapidDNS · urlscan.io | — | ✗ |
+| 02 | Web Archives | Wayback Machine CDX · CommonCrawl (latest index) | — | ✗ |
+| 03 | Search Engines | Bing (paginated) · DuckDuckGo · Yahoo · Google | — | ✗ |
+| 04 | DNS Databases | C99 SubFinder · HackerTarget | — | ✗ |
+| 05 | WhoisXML | Subdomain Lookup API | `whoisxml` | ✗ |
+| 06 | Security APIs | VirusTotal · SecurityTrails · Censys · Shodan | optional | ✗ |
+| 07 | GitHub Search | REST API + HTML fallback | optional | **✓** |
+| 08 | DNS Brute Force | Wordlist + permutations + SRV + zone transfer | — | ✗ |
+| 09 | Reverse DNS | ±10 IP sweep around discovered addresses | — | **✓** |
 
-1. Parse `class="sd"` elements (original layout)
+> **Fast-skip (✓):** module is bypassed when `--fast` is passed.
+
+<details>
+<summary>🧬 C99 Parsing — 3-tier fallback</summary>
+
+1. Parse `class="sd"` elements (primary layout)
 2. Try alternative class names: `subdomain`, `host`, `domain`, `sub`, `name`
 3. Regex sweep over raw HTML: `[\w][\w\-]*(?:\.[\w\-]+)*\.{domain}`
 
-When C99 results are found, IP addresses and Cloudflare status are also extracted and saved to `{domain}_c99_scan.json`.
+IP addresses and Cloudflare status are saved to `{domain}_c99_scan.json`.
 
-### DNS Brute Force — Permutation Expansion
+</details>
 
-For each word in the wordlist, `08_dns_bruteforce.py` generates:
+<details>
+<summary>🔤 DNS Brute Force — permutation expansion</summary>
+
+For each wordlist entry, the module generates:
 - Raw word
-- `{prefix}-{word}` and `{prefix}{word}` for prefixes: `dev test prod uat new old staging beta alpha`
-- `{word}-{suffix}` and `{word}{suffix}` for suffixes: `dev prod test api app web mobile`
+- `{prefix}-{word}` / `{prefix}{word}` for: `dev test prod uat new old staging beta alpha`
+- `{word}-{suffix}` / `{word}{suffix}` for: `dev prod test api app web mobile`
 - `{word}1` through `{word}9`
 
 All permutations are deduplicated and resolved in parallel via `ThreadPoolExecutor`.
 
----
-
-## Active Reconnaissance
-
-After passive discovery, `active_reconnaissance()` probes every found subdomain in parallel:
-
-- **HTTP/HTTPS probing**: status code, redirect chain, `Server` header, page title
-- **Port scanning**: 22 (SSH), 80 (HTTP), 443 (HTTPS), 21 (FTP), 25 (SMTP)
-- **Technology detection**: server banner, common framework patterns
-- **Shodan enrichment**: IP owner, open ports, CVEs (requires Shodan key + active subdomains)
-- **Takeover detection**: DNS CNAME resolution + HTTP body matching against 50+ service fingerprints
-
-Subdomain takeover coverage includes: AWS S3, Azure (Blob/App Service/CDN/Traffic Manager), GitHub Pages, Heroku, Netlify, Vercel, Fly.io, Render, Firebase, Fastly, Cloudfront, Surge.sh, Ghost, Zendesk, HelpJuice, Freshdesk, UserVoice, Intercom, Tumblr, WordPress.com, and more.
+</details>
 
 ---
 
-## API Integrations
+## 🎯 Active Reconnaissance
 
-### Free Sources (no key needed)
+After passive discovery, every found subdomain is probed in parallel:
 
-| Source | Method | Typical yield |
-|--------|--------|--------------|
-| crt.sh | CT JSON API — 3× retry with exponential backoff on rate-limit | High |
-| CertSpotter | CT issuance API | Medium |
-| Entrust CT Search | CT certificate subjectDN API | Medium |
-| tls.bufferover.run | TLS/forward-DNS dataset | Medium |
-| urlscan.io | Page domain index (1,000 results) | Medium |
-| Wayback Machine | CDX search API | Medium |
-| CommonCrawl | Index search API (latest index auto-fetched) | Medium |
-| Bing | Site dorks, paginated (10 pages) | Medium |
-| DuckDuckGo | HTML endpoint site dorks | Low–Medium |
-| Yahoo | Site dorks, paginated | Low–Medium |
-| Google | Site/inurl dorks (fallback — often blocked) | Low |
-| HackerTarget | hostsearch API | Medium |
-| DNSdumpster | Common-prefix DNS resolution | Low |
-| GitHub | REST API text-match + HTML scrape fallback | Low |
+| Check | What it does |
+|-------|-------------|
+| 🌐 HTTP/HTTPS | Status code, redirect chain, `Server` header, page title |
+| 🔌 Port scan | Checks ports 21, 22, 25, 80, 443 |
+| 🖥️ Tech detection | Server banner + common framework patterns |
+| 🔍 Shodan enrichment | Open ports, CVEs, IP owner (requires key) |
+| ⚠️ Takeover detection | CNAME resolution + HTTP body matching vs 50+ service fingerprints |
 
-### Key-Gated Sources
-
-| Service | Key Flag | Free Tier | Notes |
-|---------|----------|-----------|-------|
-| WhoisXML | `--whoisxml-key` | 500 credits | Subdomain lookup API |
-| VirusTotal | `--virustotal-key` | 4 req/min | Domain report |
-| SecurityTrails | `--securitytrails-key` | 50 req/month | Subdomain list |
-| Censys | `--censys-id` + `--censys-secret` | 250 req/month | Certificate search |
-| GitHub | `--github-token` | 5,000 req/hr | Code search (optional) |
-| Shodan | `--shodan-key` | Limited | Active IP scan only |
+**Takeover coverage:** AWS S3, Azure (Blob/App/CDN/Traffic Manager), GitHub Pages, Heroku, Netlify, Vercel, Fly.io, Render, Firebase, Fastly, CloudFront, Surge.sh, Zendesk, Ghost, Tumblr, WordPress.com, and 35+ more.
 
 ---
 
-## AI Integration
+## 🤖 AI Integration
 
-AI modules activate **after** all traditional passive sources have run, so the AI analyzes real discovered patterns rather than guessing blindly.
+AI modules activate **after** all traditional sources — the model analyses real discovered patterns, not guesses.
 
-### Workflow
+```
+Traditional sources  →  [api, api1, api2, dev-api, staging-api]
+                              ↓
+                     AI pattern analysis
+                              ↓
+                 [api3, api-v2, dev-api2, test-api, ...]
+```
 
-1. Traditional modules collect initial subdomains (e.g. `api`, `api1`, `dev-api`)
-2. AI receives the label list (domain suffix stripped)
-3. If ≥ 3 labels found → **pattern analysis mode**: AI generates candidates based on observed conventions
-4. If < 3 labels → **basic generation mode**: AI falls back to common industry patterns
-5. Generated candidates are validated for format then added to the main set
-
-### Grok (xAI) — Recommended Free Option
-
-Get a key at [console.x.ai](https://console.x.ai). Free credits available for new accounts.
+### Grok (xAI) — recommended free option
 
 ```bash
 python subgrab.py example.com --grok-key xai-YOURKEY
 python subgrab.py example.com --grok-key xai-YOURKEY --grok-model grok-3-mini
 ```
 
-| Model | Best For | Speed | Cost |
-|-------|----------|-------|------|
-| `grok-3` | General use — **recommended** | Fast | $ |
-| `grok-3-mini` | Quick/budget scans | Very fast | ¢ |
-| `grok-4` | Complex patterns | Moderate | $$ |
-| `grok-4.1-fast` | Large scans (2M context) | Fast | $ |
+| Model | Best for | Cost |
+|-------|---------|------|
+| `grok-3` | General use · **recommended** | $ |
+| `grok-3-fast` | Faster turnaround | $ |
+| `grok-3-mini` | Budget / quick scans | ¢ |
+| `grok-3-mini-fast` | Maximum speed | ¢ |
 
-**Typical cost:** $0.01–$0.50 per scan depending on subdomain count.
+Get a key → [console.x.ai](https://console.x.ai) (free credits for new accounts)
 
-### OpenRouter
-
-Access Claude, GPT-4o, Gemini, Llama and others through a single API. Sign up at [openrouter.ai](https://openrouter.ai) and add $5–10 credits.
+### OpenRouter — any LLM through one API
 
 ```bash
 python subgrab.py example.com \
   --openrouter-key sk-or-YOURKEY \
-  --openrouter-model anthropic/claude-3.5-sonnet
+  --openrouter-model anthropic/claude-sonnet-4-5
 ```
 
 | Model | Quality | Cost |
 |-------|---------|------|
-| `anthropic/claude-3.5-sonnet` | Best overall | $$$ |
-| `anthropic/claude-3-haiku` | Fast, affordable | $ |
-| `openai/gpt-4o` | High quality | $$$$ |
-| `openai/gpt-4o-mini` | Balanced | $$ |
-| `google/gemini-pro-1.5` | Good alternative | $$ |
-| `meta-llama/llama-3.1-8b-instruct` | Open source, cheap | ¢ |
+| `anthropic/claude-sonnet-4-5` | Excellent · **recommended** | $$ |
+| `anthropic/claude-opus-4` | Best overall | $$$$ |
+| `anthropic/claude-haiku-4-5` | Fast, affordable | $ |
+| `openai/gpt-4o` | High quality | $$$ |
+| `openai/o3-mini` | Reasoning | $$ |
+| `google/gemini-2.0-flash` | Fast + cheap | ¢ |
+| `deepseek/deepseek-r1` | Open source | ¢ |
 
-### Dual AI Mode
+Get a key → [openrouter.ai](https://openrouter.ai)
 
-Use both simultaneously for independent cross-validation:
+### Which AI strategy to use?
 
-```bash
-python subgrab.py example.com \
-  --grok-key xai-YOURKEY \
-  --openrouter-key sk-or-YOURKEY \
-  --openrouter-model anthropic/claude-3.5-sonnet
-```
-
-### Choosing an AI Strategy
-
-| Your situation | Recommendation |
-|----------------|---------------|
+| Situation | Recommendation |
+|-----------|---------------|
 | First time / no budget | Grok (free credits) |
-| Bug bounty — regular scans | Grok only |
-| Pentest engagement | Dual AI (Grok + Claude) |
+| Regular bug bounty | Grok only |
+| Pentest engagement | Dual AI — Grok + Claude |
 | Quick recon | `--fast`, no AI |
 | Maximum coverage | Dual AI + all API keys |
 
 ---
 
-## Output Formats
+## 📁 Output
 
-All results are written to `{domain}_results/`:
+All results written to **`{domain}_results/`**:
 
 ```
 example.com_results/
-├── all_subdomains.txt          # Full deduplicated list
-├── active_subdomains.txt       # HTTP/HTTPS responsive subdomains
-├── inactive_subdomains.txt     # Non-responsive subdomains
-├── ssh_enabled.txt             # Subdomains with port 22 open
-├── takeover_candidates.txt     # Potential takeover targets with reason
-├── scan_results.json           # Full structured report
-├── scan_results.csv            # Spreadsheet-compatible
-├── report.html                 # Interactive dashboard with charts
-└── {domain}_c99_scan.json      # C99 IP/Cloudflare data (if found)
+├── 📄 all_subdomains.txt        — full deduplicated list
+├── ✅ active_subdomains.txt     — HTTP/HTTPS responsive
+├── ❌ inactive_subdomains.txt   — non-responsive
+├── 🔑 ssh_enabled.txt           — port 22 open
+├── ⚠️  takeover_candidates.txt  — potential takeover targets
+├── 📊 scan_results.json         — full structured report
+├── 📊 scan_results.csv          — spreadsheet-compatible
+├── 🌐 report.html               — interactive dashboard with charts
+└── 🗄️  {domain}_c99_scan.json   — C99 IP + Cloudflare data
 ```
 
-### JSON Report Schema
+<details>
+<summary>📄 JSON report schema</summary>
 
 ```json
 {
@@ -407,9 +347,6 @@ example.com_results/
   "scan_date": "2026-04-18T12:00:00",
   "total_subdomains": 312,
   "active_subdomains": 187,
-  "inactive_subdomains": 125,
-  "ssh_enabled": 3,
-  "takeover_candidates": 2,
   "subdomains": {
     "api.example.com": {
       "ip": "93.184.216.34",
@@ -423,100 +360,70 @@ example.com_results/
 }
 ```
 
+</details>
+
 ---
 
-## Adding a New Scanner Module
+## 🧩 Plugin System
 
-The plugin system is fully automatic — **no registration, no config changes**.
+The plugin system is **fully automatic** — drop a `.py` file in `modules/` and it runs on the next scan. No registration. No config changes.
 
-| Action | What to do |
-|--------|-----------|
-| **Add** a scanner | Drop a `.py` file in `modules/` → active on next run |
-| **Remove** a scanner | Delete the file → gone on next run |
-| **Disable temporarily** | Rename to `_myfile.py` (leading `_` skips it) |
-| **Control order** | Prefix with two-digit number: `12_mysource.py` |
+| Action | How |
+|--------|-----|
+| ➕ Add scanner | Drop `.py` in `modules/` |
+| ➖ Remove scanner | Delete the file |
+| ⏸️ Disable temporarily | Rename to `_file.py` |
+| 🔢 Control order | Use numeric prefix: `12_mysource.py` |
 
-On every run the loader prints which plugins it found:
-```
-[*] Loaded 11 scanner plugin(s): Certificate Transparency, Web Archives, ...
-```
+### Zero-import template
 
-### Zero-Import Template
-
-`BaseScanner` and `Fore` are **pre-injected** into every plugin's namespace — no imports needed. Copy `modules/_TEMPLATE.py`, rename it, and fill in `name` and `run()`:
+`BaseScanner` and `Fore` are **pre-injected** — no imports needed:
 
 ```python
-# modules/12_my_source.py  — no imports required
+# modules/12_my_source.py
 
 class MySource(BaseScanner):
-    name         = "My Source"
-    description  = "One-line description shown in logs"
-
-    # optional — scanner is auto-skipped when key is absent:
-    requires_key   = None      # e.g. "shodan"
-
-    # optional — skip when --fast flag is passed:
-    fast_mode_skip = False
+    name           = "My Source"
+    description    = "One-line description"
+    requires_key   = None   # set to api_keys dict key to auto-skip if absent
+    fast_mode_skip = False  # set True to skip with --fast
 
     def run(self):
         subdomains = set()
-        try:
-            resp = self.get_session().get(
-                f"https://api.example.com/subdomains?q={self.domain}",
-                timeout=10,
-            )
-            for entry in resp.json():
-                host = entry.get("hostname", "").strip().lower()
-                if host.endswith(f".{self.domain}") and self.is_valid(host):
-                    subdomains.add(host)
-        except Exception as e:
-            print(f"{Fore.RED}[!] {self.name} error: {e}")
+        resp = self.get_session().get(
+            f"https://api.example.com/subdomains?q={self.domain}", timeout=10)
+        for entry in resp.json():
+            host = entry.get("hostname", "").strip().lower()
+            if host.endswith(f".{self.domain}") and self.is_valid(host):
+                subdomains.add(host)
         return subdomains
 ```
 
-That's the complete file. No imports, no boilerplate, no registration anywhere.
-
-### How Pre-injection Works
-
-`load_modules()` in `modules/base.py` injects `BaseScanner` and `Fore` into each plugin module's namespace *before* executing it. Existing plugins that already import them explicitly continue to work — the injected names are simply overwritten by the import.
-
-### BaseScanner — Available Inside `run()`
+<details>
+<summary>📚 BaseScanner API reference</summary>
 
 | Member | Type | Description |
 |--------|------|-------------|
 | `self.domain` | `str` | Target domain |
 | `self.api_keys` | `dict` | All configured API keys |
-| `self.subdomains` | `set` | Subdomains found so far by earlier modules |
-| `self.subdomain_info` | `dict` | Per-subdomain metadata dict |
-| `self.output_dir` | `str` | Path to results directory |
-| `self.fast_mode` | `bool` | `True` when `--fast` was passed |
+| `self.subdomains` | `set` | Subdomains found so far |
+| `self.subdomain_info` | `dict` | Per-subdomain metadata |
+| `self.output_dir` | `str` | Results directory path |
+| `self.fast_mode` | `bool` | `True` when `--fast` passed |
 | `self.threads` | `int` | Thread count |
-| `self.timeout` | `int` | Request timeout in seconds |
+| `self.timeout` | `int` | Request timeout (seconds) |
 | `self.wordlist` | `str\|None` | Custom wordlist path |
-| `self.default_wordlist` | `list` | Built-in wordlist |
 | `self.get_session()` | method | Thread-local `requests.Session` |
-| `self.get_resolver()` | method | Thread-local `dns.resolver.Resolver` |
-| `self.resolve_domain(sub)` | method | Resolve subdomain → `list[str]` IPs or `None` |
-| `self.is_valid(sub)` | method | Validate subdomain format → `bool` |
-| `self.stealth_delay()` | method | Sleep 0.5–2s when `--stealth` is on |
-| `self.shodan_scan()` | method | Run Shodan scan on active IPs (needs key) |
-| `self.extract_from_json(data)` | method | Extract subdomains from arbitrary JSON |
-| `self.extract_from_page(soup, text)` | method | Extract subdomains from BeautifulSoup + text |
-| `Fore.RED/GREEN/CYAN/YELLOW` | colorama | Pre-injected color constants for `print()` |
+| `self.get_resolver()` | method | Thread-local DNS resolver |
+| `self.resolve_domain(sub)` | method | Resolve subdomain → IPs or `None` |
+| `self.is_valid(sub)` | method | Validate subdomain format |
+| `self.stealth_delay()` | method | Sleep 0.5–2s in stealth mode |
+| `Fore.RED/GREEN/CYAN/YELLOW` | colorama | Pre-injected color constants |
 
-### `requires_key` and `fast_mode_skip`
+</details>
 
-```python
-# Skip this scanner unless --whoisxml-key was provided
-requires_key = "whoisxml"
-
-# Skip this scanner when --fast is passed
-fast_mode_skip = True
-```
-
-The runner checks both flags before instantiating the class — your `run()` method is never called if the condition isn't met. You don't need to check inside `run()`.
-
-### Real Example — adding AlienVault OTX in 15 lines
+<details>
+<summary>💡 Real example — AlienVault OTX in 15 lines</summary>
 
 ```python
 # modules/12_alienvault.py
@@ -529,8 +436,7 @@ class AlienVault(BaseScanner):
         subdomains = set()
         try:
             url = f"https://otx.alienvault.com/api/v1/indicators/domain/{self.domain}/passive_dns"
-            data = self.get_session().get(url, timeout=15).json()
-            for record in data.get("passive_dns", []):
+            for record in self.get_session().get(url, timeout=15).json().get("passive_dns", []):
                 host = record.get("hostname", "").lower().strip()
                 if host.endswith(f".{self.domain}") and self.is_valid(host):
                     subdomains.add(host)
@@ -539,87 +445,108 @@ class AlienVault(BaseScanner):
         return subdomains
 ```
 
-Drop `12_alienvault.py` in `modules/` → appears in the next scan's plugin list automatically.
+Drop it in `modules/` — that's it.
+
+</details>
 
 ---
 
-## GUI Interface
+## 🖥️ GUI Interface
 
 ```bash
-python subgrab_gui.py
-# Windows:
-start_subgrab_gui.bat
+python subgrab_gui.py     # from source
+start_subgrab_gui.bat     # Windows one-click
+SubGrab.exe               # binary — double-click
 ```
 
-The GUI provides:
-- Domain input and scan configuration
-- API Keys tab with fields for all services and direct "Get Key" links
-- Save / Load configuration to `api_keys.json`
-- Real-time scrolling output window
-- Direct access to results folder
+| Feature | Detail |
+|---------|--------|
+| 🎨 Theme | Full Catppuccin Mocha dark theme |
+| 📐 Layout | Horizontal split — config sidebar + live terminal |
+| 🔑 API Keys tab | Show/hide toggles · direct "Get Key" links · auto-save on exit |
+| ⚙️ Advanced tab | DNS nameservers · custom wordlist · proxy file |
+| 📟 Terminal | ANSI-stripped coloured output · Copy · Clear |
+| 📊 Stats bar | Live subdomain count · active count · elapsed timer |
+| ✅ Validation | Real-time domain format check (green/red border) |
 
 ---
 
-## Troubleshooting
+## 🛠️ Troubleshooting
 
-### Certificate Transparency returns fewer results than expected
+<details>
+<summary>CT returns fewer results than expected</summary>
 
-crt.sh rate-limits heavy users. The module retries up to 3 times with exponential backoff (10s → 20s → 40s) and falls back to 4 independent CT sources (CertSpotter, Entrust, tls.bufferover.run, urlscan.io) — all run regardless of crt.sh status, so a rate-limit never zeros out the total.
+crt.sh rate-limits heavy users. The module retries 3× with exponential backoff and falls back to CertSpotter, RapidDNS, and urlscan.io — all four run regardless of crt.sh status.
 
-### No results from C99
+</details>
 
-C99 results require a public scan to exist for your domain within the last 14 days. If no scan is found, the tool automatically falls back to DNSdumpster then HackerTarget.
+<details>
+<summary>No C99 results</summary>
 
-### Google returns empty results
+C99 requires a public scan to exist within the last 14 days. If none is found, the tool falls back to HackerTarget automatically.
 
-Google frequently blocks automated requests. The search engine module will log a warning and continue — other sources are unaffected.
+</details>
 
-### DNS brute force is slow
+<details>
+<summary>Google / Yahoo return 0 results</summary>
 
-Reduce permutation size by using a shorter wordlist and lowering thread count if you hit DNS rate limits:
+Search engines frequently block automated requests. Other sources are unaffected — the tool logs a warning and continues.
+
+</details>
+
+<details>
+<summary>DNS brute force is slow</summary>
+
+Use a shorter wordlist and reduce threads to avoid hitting DNS rate limits:
+
 ```bash
 python subgrab.py example.com --wordlist small.txt --threads 20
 ```
 
-### AI returns no subdomains
+</details>
 
-- Grok: verify the key at [console.x.ai](https://console.x.ai) and check your credit balance
-- OpenRouter: check [openrouter.ai](https://openrouter.ai) dashboard for balance and rate limits
-- Both require at least 3 discovered subdomains to enter pattern-analysis mode
+<details>
+<summary>AI returns no subdomains</summary>
 
-### "401 Unauthorized" from any API
+Both AI engines require **at least 3 discovered subdomains** to enter pattern-analysis mode. Check API key validity and credit balance at the respective console ([console.x.ai](https://console.x.ai) / [openrouter.ai](https://openrouter.ai)).
 
-The API key is invalid or expired. Re-generate it from the provider's console.
+</details>
 
-### "429 Too Many Requests"
+<details>
+<summary>401 Unauthorized / 429 Too Many Requests</summary>
 
-Rate limit hit. Use `--stealth` to add delays, or wait before re-running.
+- **401** — API key is invalid or expired. Regenerate it from the provider console.
+- **429** — Rate limit hit. Add `--stealth` for delays, or wait before re-running.
 
-### Windows encoding errors in reports
-
-The tool writes all files with `encoding='utf-8'`. Open reports in an editor that supports UTF-8 (VS Code, Notepad++, etc.).
+</details>
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-source`)
-3. Add your scanner module in `modules/` following the template above
-4. Test against a domain you own or have permission to enumerate
-5. Submit a pull request with a clear description
+2. Create a feature branch: `git checkout -b feature/new-source`
+3. Add your scanner in `modules/` following the template above
+4. Test against a domain you own or have written permission to enumerate
+5. Open a pull request with a clear description
 
-For bug reports, open an issue on GitHub.
-
----
-
-## License
-
-MIT License — see [LICENSE.txt](LICENSE.txt) for full text.
-
-**Use only on domains you own or have explicit written permission to test.**  
-The authors accept no liability for misuse.
+Bug reports → [open an issue](https://github.com/bidhata/SubGrab/issues)
 
 ---
 
-**Author:** Krishnendu Paul — [GitHub](https://github.com/bidhata/SubGrab) | [LinkedIn](https://www.linkedin.com/in/krishpaul/)
+## 📄 License
+
+[MIT License](LICENSE.txt) — free to use, modify, and distribute.
+
+> ⚠️ **Use only on domains you own or have explicit written permission to test.**  
+> The authors accept no liability for misuse.
+
+---
+
+<div align="center">
+
+Made by [Krishnendu Paul](https://www.linkedin.com/in/krishpaul/) &nbsp;·&nbsp; [@bidhata](https://github.com/bidhata)
+
+⭐ Star this repo if it helped you
+
+</div>
