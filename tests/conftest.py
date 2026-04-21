@@ -24,12 +24,22 @@ def mock_enumerator():
     m.wildcard_ips = set()
     m.resolve_domain.return_value = ["1.2.3.4"]
     m._is_valid_subdomain.return_value = True
+    m.stealth = False
+    m.proxies = []
+    m.nameservers = ['8.8.8.8', '8.8.4.4', '1.1.1.1']
+    m.get_session.return_value = MagicMock()
+    m.get_resolver.return_value = MagicMock()
+    m.stealth_delay.return_value = None
+    m.shodan_scan.return_value = set()
+    m._extract_subdomains_from_json.return_value = set()
+    m._extract_subdomains_from_page.return_value = set()
     return m
 
 
 @pytest.fixture
-def enumerator():
+def enumerator(tmp_path, monkeypatch):
     """Real SubdomainEnumerator with DNS wildcard detection patched out."""
+    monkeypatch.chdir(tmp_path)
     from subgrab import SubdomainEnumerator
     with patch.object(SubdomainEnumerator, '_detect_wildcards'):
         e = SubdomainEnumerator("example.com", threads=5, timeout=10)
