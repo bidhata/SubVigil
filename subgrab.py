@@ -711,11 +711,13 @@ class SubdomainEnumerator:
                         reader, writer = await asyncio.wait_for(
                             asyncio.open_connection(subdomain, port), timeout=3
                         )
-                        info['ports'].append(port)
-                        if port == 22:
-                            info['ssh_open'] = True
-                        writer.close()
-                        await writer.wait_closed()
+                        try:
+                            info['ports'].append(port)
+                            if port == 22:
+                                info['ssh_open'] = True
+                        finally:
+                            writer.close()
+                            await writer.wait_closed()
                     except Exception:
                         pass
 
@@ -1668,9 +1670,15 @@ Examples:
 
     # Parse port list
     scan_ports = None
-    if args.ports:
+    if args.ports is not None:
         try:
-            scan_ports = [int(p.strip()) for p in args.ports.split(',') if p.strip()]
+            parsed = [int(p.strip()) for p in args.ports.split(',') if p.strip()]
+            if not parsed:
+                print(f"{Fore.YELLOW}[!] --ports is empty, using default port list")
+            elif any(p < 1 or p > 65535 for p in parsed):
+                print(f"{Fore.RED}[!] --ports contains out-of-range values (must be 1–65535), using default")
+            else:
+                scan_ports = parsed
         except ValueError:
             print(f"{Fore.RED}[!] Invalid --ports value, using default port list")
             scan_ports = None
