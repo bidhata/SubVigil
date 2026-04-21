@@ -188,16 +188,13 @@ class DnsDatabases(BaseScanner):
         print(f"{Fore.CYAN}[*] C99 SubFinder: Extracted {len(subdomains)} unique subdomains")
         return subdomains
 
-    def _try_dnsdumpster(self):
+    def _try_dnsdumpster(self) -> set[str]:
         subdomains = set()
         common_subs = ["www", "mail", "ftp", "admin", "api", "blog", "dev", "test", "staging"]
         for sub in common_subs:
-            try:
-                full = f"{sub}.{self.domain}"
-                socket.gethostbyname(full)
+            full = f"{sub}.{self.domain}"
+            if self.resolve_domain(full):
                 subdomains.add(full)
-            except Exception:
-                pass
         return subdomains
 
     def _try_hackertarget(self):
