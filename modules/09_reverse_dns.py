@@ -1,4 +1,4 @@
-import socket
+import dns.reversename
 
 from colorama import Fore
 from modules.base import BaseScanner
@@ -9,7 +9,7 @@ class ReverseDNS(BaseScanner):
     description = "Reverse DNS lookups on IP neighbours"
     fast_mode_skip = True
 
-    def run(self):
+    def run(self) -> set[str]:
         print(f"{Fore.CYAN}[*] Performing reverse DNS lookups...")
         subdomains = set()
 
@@ -28,7 +28,9 @@ class ReverseDNS(BaseScanner):
                     # Scan ±10 neighbours; range end is exclusive so +11 covers last+10
                     for i in range(max(1, last - 10), min(255, last + 11)):
                         try:
-                            hostname = socket.gethostbyaddr(f"{base_ip}.{i}")[0].lower()
+                            ptr_name = dns.reversename.from_address(f"{base_ip}.{i}")
+                            answers = self.get_resolver().resolve(ptr_name, 'PTR')
+                            hostname = str(answers[0]).rstrip('.').lower()
                             if hostname.endswith(f".{self.domain}") and self.is_valid(hostname):
                                 subdomains.add(hostname)
                         except Exception:

@@ -6,20 +6,30 @@ class SecurityAPIs(BaseScanner):
     name = "Security APIs"
     description = "VirusTotal, SecurityTrails, Censys, Shodan"
 
-    def run(self):
+    def run(self) -> set[str]:
         print(f"{Fore.CYAN}[*] Querying security APIs...")
         subdomains = set()
 
         if "virustotal" in self.api_keys:
             try:
-                url = "https://www.virustotal.com/vtapi/v2/domain/report"
-                params = {"apikey": self.api_keys["virustotal"], "domain": self.domain}
-                response = self.get_session().get(url, params=params, timeout=30)
-                if response.status_code == 200:
+                headers = {"x-apikey": self.api_keys["virustotal"]}
+                url = f"https://www.virustotal.com/api/v3/domains/{self.domain}/subdomains"
+                cursor = None
+                for _ in range(10):
+                    params = {"limit": 40}
+                    if cursor:
+                        params["cursor"] = cursor
+                    response = self.get_session().get(url, headers=headers, params=params, timeout=30)
+                    if response.status_code != 200:
+                        break
                     data = response.json()
-                    for subdomain in data.get("subdomains", []):
-                        if subdomain.endswith(f".{self.domain}"):
-                            subdomains.add(subdomain)
+                    for item in data.get("data", []):
+                        name = item.get("id", "")
+                        if name.endswith(f".{self.domain}"):
+                            subdomains.add(name)
+                    cursor = data.get("meta", {}).get("cursor")
+                    if not cursor:
+                        break
             except Exception as e:
                 print(f"{Fore.RED}[!] Error with VirusTotal: {e}")
 
