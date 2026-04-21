@@ -124,3 +124,12 @@ def test_bruteforce_permutation_cap_default_wordlist(mock_enumerator):
     assert len(submitted) <= 500, (
         f"Default wordlist should produce at most 500 permutations, got {len(submitted)}"
     )
+
+
+def test_no_global_warnings_filterwarnings_in_subgrab():
+    """subgrab.py must not use warnings.filterwarnings to suppress InsecureRequestWarning."""
+    from pathlib import Path
+    src = (Path(__file__).parent.parent / "subgrab.py").read_text(encoding='utf-8', errors='replace')
+    assert "warnings.filterwarnings" not in src, (
+        "Remove warnings.filterwarnings; use urllib3.disable_warnings() in get_session() instead"
+    )

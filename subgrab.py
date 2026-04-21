@@ -25,8 +25,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
 from pathlib import Path
 from datetime import datetime
-import warnings
-warnings.filterwarnings("ignore", category=requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 
 def _base_dir() -> Path:
@@ -276,6 +274,8 @@ class SubdomainEnumerator:
     def get_session(self):
         """Get thread-local session"""
         if not hasattr(self.thread_local, 'session'):
+            import urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             self.thread_local.session = requests.Session()
             self.thread_local.session.verify = False
             self.thread_local.session.timeout = self.timeout
