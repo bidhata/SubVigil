@@ -102,3 +102,93 @@ def test_info_lock_exists_on_enumerator(enumerator):
     assert hasattr(enumerator, '_info_lock'), "_info_lock not found on enumerator"
     assert isinstance(enumerator._info_lock, type(threading.Lock())), \
         "_info_lock must be a threading.Lock"
+
+
+def test_port_scan_populates_ports(enumerator):
+    """Open ports appear in info['ports'] after async recon."""
+    enumerator.subdomains = {"test.example.com"}
+    enumerator.fast_mode = False
+    enumerator.scan_ports = [80, 443]
+
+    async def fake_open_connection(host, port, **kw):
+        reader = MagicMock()
+        writer = MagicMock()
+        writer.close = MagicMock()
+        writer.wait_closed = AsyncMock()
+        return reader, writer
+
+    with patch.object(enumerator, 'resolve_domain', return_value=['1.2.3.4']), \
+         patch.object(enumerator, 'check_subdomain_takeover', return_value=False), \
+         patch("asyncio.open_connection", side_effect=fake_open_connection), \
+         patch("aiohttp.ClientSession") as mock_cs:
+        mock_session = MagicMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_response = MagicMock()
+        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_response.__aexit__ = AsyncMock(return_value=False)
+        mock_response.status = 200
+        mock_response.headers = {"Server": "nginx", "Content-Type": "text/plain"}
+        mock_session.get.return_value = mock_response
+        mock_cs.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_cs.return_value.__aexit__ = AsyncMock(return_value=False)
+        asyncio.run(enumerator._async_active_recon())
+
+    info = enumerator.subdomain_info.get("test.example.com", {})
+    assert sorted(info.get("ports", [])) == [80, 443]
+
+
+def test_ssh_detected_via_port_scan(enumerator):
+    """Port 22 being open sets ssh_open=True."""
+    enumerator.subdomains = {"test.example.com"}
+    enumerator.fast_mode = False
+    enumerator.scan_ports = [22]
+
+    async def fake_open_connection(host, port, **kw):
+        reader = MagicMock()
+        writer = MagicMock()
+        writer.close = MagicMock()
+        writer.wait_closed = AsyncMock()
+        return reader, writer
+
+    with patch.object(enumerator, 'resolve_domain', return_value=['1.2.3.4']), \
+         patch.object(enumerator, 'check_subdomain_takeover', return_value=False), \
+         patch("asyncio.open_connection", side_effect=fake_open_connection), \
+         patch("aiohttp.ClientSession") as mock_cs:
+        mock_session = MagicMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.get.side_effect = Exception("no HTTP")
+        mock_cs.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_cs.return_value.__aexit__ = AsyncMock(return_value=False)
+        asyncio.run(enumerator._async_active_recon())
+
+    info = enumerator.subdomain_info.get("test.example.com", {})
+    assert info.get("ssh_open") is True
+    assert 22 in info.get("ports", [])
+
+
+def test_fast_mode_skips_port_scan(enumerator):
+    """In fast_mode, no port connections are attempted."""
+    enumerator.subdomains = {"test.example.com"}
+    enumerator.fast_mode = True
+    enumerator.scan_ports = [22, 80]
+
+    connection_attempts = []
+
+    async def spy_open_connection(host, port, **kw):
+        connection_attempts.append(port)
+        raise ConnectionRefusedError()
+
+    with patch.object(enumerator, 'resolve_domain', return_value=['1.2.3.4']), \
+         patch("asyncio.open_connection", side_effect=spy_open_connection), \
+         patch("aiohttp.ClientSession") as mock_cs:
+        mock_session = MagicMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.get.side_effect = Exception("no HTTP")
+        mock_cs.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_cs.return_value.__aexit__ = AsyncMock(return_value=False)
+        asyncio.run(enumerator._async_active_recon())
+
+    assert connection_attempts == [], "fast_mode should skip all port connections"

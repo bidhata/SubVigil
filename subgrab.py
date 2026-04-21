@@ -47,8 +47,9 @@ except ImportError as e:
 init(autoreset=True)
 
 class SubdomainEnumerator:
-    def __init__(self, domain, threads=50, timeout=30, fast_mode=False, stealth=False, 
-                 proxies=None, wordlist=None, nameservers=None, api_keys=None):
+    def __init__(self, domain, threads=50, timeout=30, fast_mode=False, stealth=False,
+                 proxies=None, wordlist=None, nameservers=None, api_keys=None,
+                 scan_ports: list[int] | None = None):
         self.domain = domain
         self.threads = threads
         self.timeout = timeout
@@ -58,6 +59,7 @@ class SubdomainEnumerator:
         self.wordlist = wordlist
         self.nameservers = nameservers or ['8.8.8.8', '8.8.4.4', '1.1.1.1']
         self.api_keys = api_keys or {}
+        self.scan_ports: list[int] = scan_ports if scan_ports is not None else [21, 22, 25, 80, 443, 8080, 8443, 3306, 5432, 6379, 27017]
 
         # Results storage
         self.subdomains = set()
@@ -703,16 +705,19 @@ class SubdomainEnumerator:
                 except Exception:
                     continue
 
-            if not self.fast_mode:
-                try:
-                    reader, writer = await asyncio.wait_for(
-                        asyncio.open_connection(subdomain, 22), timeout=5
-                    )
-                    info['ssh_open'] = True
-                    writer.close()
-                    await writer.wait_closed()
-                except Exception:
-                    pass
+            if not self.fast_mode and self.scan_ports:
+                for port in self.scan_ports:
+                    try:
+                        reader, writer = await asyncio.wait_for(
+                            asyncio.open_connection(subdomain, port), timeout=3
+                        )
+                        info['ports'].append(port)
+                        if port == 22:
+                            info['ssh_open'] = True
+                        writer.close()
+                        await writer.wait_closed()
+                    except Exception:
+                        pass
 
             if not self.fast_mode:
                 vulnerable = await asyncio.to_thread(
@@ -1628,10 +1633,12 @@ Examples:
                        help='Enable stealth mode with random delays')
     parser.add_argument('--proxy-file', help='File containing proxy list')
     parser.add_argument('--wordlist', help='Custom wordlist file')
-    parser.add_argument('--nameservers', nargs='+', 
+    parser.add_argument('--nameservers', nargs='+',
                        default=['8.8.8.8', '8.8.4.4', '1.1.1.1'],
                        help='DNS nameservers to use')
-    
+    parser.add_argument('--ports', default=None,
+                       help='Comma-separated ports to probe in active recon (default: 21,22,25,80,443,8080,8443,3306,5432,6379,27017)')
+
     # API keys
     parser.add_argument('--shodan-key', help='Shodan API key')
     parser.add_argument('--securitytrails-key', help='SecurityTrails API key')
@@ -1658,6 +1665,15 @@ Examples:
                 proxies = [line.strip() for line in f if line.strip()]
         except Exception:
             print(f"{Fore.RED}[!] Could not read proxy file")
+
+    # Parse port list
+    scan_ports = None
+    if args.ports:
+        try:
+            scan_ports = [int(p.strip()) for p in args.ports.split(',') if p.strip()]
+        except ValueError:
+            print(f"{Fore.RED}[!] Invalid --ports value, using default port list")
+            scan_ports = None
     
     # Prepare API keys
     api_keys = {}
@@ -1688,7 +1704,8 @@ Examples:
         proxies=proxies,
         wordlist=args.wordlist,
         nameservers=args.nameservers,
-        api_keys=api_keys
+        api_keys=api_keys,
+        scan_ports=scan_ports,
     )
     
     # Set AI model preferences if provided
