@@ -21,6 +21,7 @@ class SecurityAPIs(BaseScanner):
                         params["cursor"] = cursor
                     response = self.get_session().get(url, headers=headers, params=params, timeout=30)
                     if response.status_code != 200:
+                        print(f"{Fore.RED}[!] VirusTotal returned HTTP {response.status_code}")
                         break
                     data = response.json()
                     for item in data.get("data", []):

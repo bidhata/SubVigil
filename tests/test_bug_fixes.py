@@ -233,3 +233,51 @@ def test_virustotal_v3_api(mock_enumerator):
         "VT v3 requires 'x-apikey' header, not query param"
     )
     assert headers["x-apikey"] == "test_key_123"
+
+
+def test_virustotal_v3_pagination(mock_enumerator):
+    import importlib
+    from pathlib import Path
+    from unittest.mock import MagicMock
+
+    mock_enumerator.api_keys = {"virustotal": "test_key"}
+    mock_enumerator.domain = "example.com"
+
+    page1 = {
+        "data": [{"id": "api.example.com", "type": "domain"}],
+        "meta": {"cursor": "cursor_abc"}
+    }
+    page2 = {
+        "data": [{"id": "www.example.com", "type": "domain"}],
+        "meta": {}
+    }
+
+    session_mock = MagicMock()
+    resp1 = MagicMock()
+    resp1.status_code = 200
+    resp1.json.return_value = page1
+    resp2 = MagicMock()
+    resp2.status_code = 200
+    resp2.json.return_value = page2
+    session_mock.get.side_effect = [resp1, resp2]
+    mock_enumerator.get_session.return_value = session_mock
+
+    mod_path = Path(__file__).parent.parent / "modules" / "06_security_apis.py"
+    spec = importlib.util.spec_from_file_location("test_06_sec_apis_pag", mod_path)
+    mod = importlib.util.module_from_spec(spec)
+    from modules.base import BaseScanner
+    mod.BaseScanner = BaseScanner
+    from unittest.mock import MagicMock as MM
+    mod.Fore = MM()
+    spec.loader.exec_module(mod)
+
+    scanner = mod.SecurityAPIs(mock_enumerator)
+    result = scanner.run()
+
+    assert "api.example.com" in result
+    assert "www.example.com" in result
+    assert session_mock.get.call_count == 2
+    # Second call should include the cursor
+    _, kwargs = session_mock.get.call_args_list[1]
+    params = kwargs.get("params", {})
+    assert params.get("cursor") == "cursor_abc"

@@ -1,3 +1,5 @@
+import dns.exception
+import dns.resolver
 import dns.reversename
 
 from colorama import Fore
@@ -26,14 +28,18 @@ class ReverseDNS(BaseScanner):
                         continue
                     base_ip = ".".join(ip_parts[:3])
                     # Scan ±10 neighbours; range end is exclusive so +11 covers last+10
-                    for i in range(max(1, last - 10), min(255, last + 11)):
+                    for i in range(max(1, last - 10), min(254, last + 11)):
                         try:
                             ptr_name = dns.reversename.from_address(f"{base_ip}.{i}")
                             answers = self.get_resolver().resolve(ptr_name, 'PTR')
+                            if not answers:
+                                continue
                             hostname = str(answers[0]).rstrip('.').lower()
                             if hostname.endswith(f".{self.domain}") and self.is_valid(hostname):
                                 subdomains.add(hostname)
-                        except Exception:
+                        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer,
+                                dns.resolver.Timeout, dns.exception.DNSException,
+                                IndexError):
                             pass
         except Exception as e:
             print(f"{Fore.RED}[!] Error with reverse DNS: {e}")
