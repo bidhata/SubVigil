@@ -746,11 +746,14 @@ class SubdomainEnumerator:
                 for sub in self.subdomains
             ]
             results: list[dict] = []
-            with tqdm(total=len(tasks), desc="Active Reconnaissance") as pbar:
-                for coro in asyncio.as_completed(tasks):
-                    result = await coro
-                    results.append(result)
-                    pbar.update(1)
+            total = len(tasks)
+            report_every = max(1, total // 10)
+            for i, coro in enumerate(asyncio.as_completed(tasks), 1):
+                result = await coro
+                results.append(result)
+                if i % report_every == 0 or i == total:
+                    active_so_far = sum(1 for r in results if r['active'])
+                    print(f"{Fore.CYAN}[*] Active recon: {i}/{total} checked, {active_so_far} active so far", flush=True)
 
         with self._info_lock:
             for info in results:
