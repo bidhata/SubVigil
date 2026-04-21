@@ -9,7 +9,7 @@ class GitHubSearch(BaseScanner):
     description = "Search GitHub code and repos for domain mentions"
     fast_mode_skip = True
 
-    def run(self):
+    def run(self) -> set[str]:
         print(f"{Fore.CYAN}[*] Searching GitHub code...")
         subdomains = set()
 
@@ -25,7 +25,7 @@ class GitHubSearch(BaseScanner):
 
     # ------------------------------------------------------------------ #
 
-    def _extract(self, text):
+    def _extract(self, text: str) -> set[str]:
         pattern = (
             r"([a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?"
             r"(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\."
@@ -38,7 +38,7 @@ class GitHubSearch(BaseScanner):
                 found.add(m)
         return found
 
-    def _api_code_search(self, has_token):
+    def _api_code_search(self, has_token: bool) -> set[str]:
         subdomains = set()
         headers = {
             # Required to receive text_matches in the response
@@ -65,8 +65,7 @@ class GitHubSearch(BaseScanner):
                     print(f"{Fore.YELLOW}[!] GitHub API: {msg[:80]}")
                     break
                 if r.status_code == 422:
-                    # Unauthenticated code search now requires login
-                    print(f"{Fore.YELLOW}[!] GitHub: code search requires auth token (--github-token)")
+                    print(f"{Fore.YELLOW}[!] GitHub: API code search requires auth token; falling back to web scrape")
                     break
                 if r.status_code != 200:
                     print(f"{Fore.YELLOW}[!] GitHub API: HTTP {r.status_code}")
@@ -91,7 +90,7 @@ class GitHubSearch(BaseScanner):
 
         return subdomains
 
-    def _web_search(self):
+    def _web_search(self) -> set[str]:
         """Scrape github.com/search HTML as a no-auth fallback."""
         subdomains = set()
         queries = [
