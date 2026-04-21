@@ -12,7 +12,7 @@ class DnsBruteforce(BaseScanner):
     name = "DNS Brute Force"
     description = "Wordlist brute force, SRV records, zone transfer"
 
-    def run(self):
+    def run(self) -> set[str]:
         print(f"{Fore.CYAN}[*] Performing DNS enumeration...")
         subdomains = set()
 
@@ -40,6 +40,10 @@ class DnsBruteforce(BaseScanner):
                 permutations.append(f"{word}{i}")
 
         permutations = list(set(permutations))
+
+        if not self.wordlist and len(permutations) > 500:
+            print(f"{Fore.YELLOW}[!] DNS brute force: capping default permutations at 500 (use --wordlist for full scan)")
+            permutations = permutations[:500]
 
         def check_subdomain(word):
             subdomain = f"{word}.{self.domain}"

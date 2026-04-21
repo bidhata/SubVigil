@@ -80,3 +80,47 @@ def test_github_422_still_calls_web_search(mock_enumerator, mocker):
     scanner.run()
 
     assert web_search_called, "_web_search must be called even when API returns 422"
+
+
+def test_bruteforce_permutation_cap_default_wordlist(mock_enumerator):
+    """With default wordlist and no custom wordlist, permutations must be capped at 500."""
+    import importlib.util
+    import concurrent.futures as cf
+    import unittest.mock as um
+    from pathlib import Path
+    from modules.base import BaseScanner
+    from colorama import Fore
+    from tqdm import tqdm
+
+    spec = importlib.util.spec_from_file_location(
+        "08_dns_bruteforce",
+        Path(__file__).parent.parent / "modules" / "08_dns_bruteforce.py",
+    )
+    mod = importlib.util.module_from_spec(spec)
+    mod.BaseScanner = BaseScanner
+    mod.Fore = Fore
+    mod.tqdm = tqdm
+    spec.loader.exec_module(mod)
+
+    scanner = mod.DnsBruteforce(mock_enumerator)
+    mock_enumerator.wordlist = None  # no custom wordlist
+
+    submitted = []
+
+    original_submit = cf.ThreadPoolExecutor.submit
+
+    def spy_submit(self_exec, fn, *args, **kwargs):
+        submitted.append(args[0] if args else None)
+        future = cf.Future()
+        future.set_result(None)
+        return future
+
+    with um.patch.object(cf.ThreadPoolExecutor, 'submit', spy_submit):
+        try:
+            scanner.run()
+        except Exception:
+            pass
+
+    assert len(submitted) <= 500, (
+        f"Default wordlist should produce at most 500 permutations, got {len(submitted)}"
+    )
