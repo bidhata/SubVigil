@@ -1,3 +1,5 @@
+import re
+
 from colorama import Fore
 from modules.base import BaseScanner
 
@@ -7,7 +9,7 @@ class WhoisXML(BaseScanner):
     description = "WhoisXML Subdomain Lookup API"
     requires_key = "whoisxml"
 
-    def run(self):
+    def run(self) -> set[str]:
         print(f"{Fore.CYAN}[*] Querying WhoisXML Subdomain Lookup API...")
         subdomains = set()
 
@@ -29,7 +31,7 @@ class WhoisXML(BaseScanner):
                     domain_name = record.get("domain", "")
                     if not domain_name:
                         continue
-                    domain_name = domain_name.lstrip("*.")
+                    domain_name = re.sub(r'^(\*\.)+', '', domain_name)
                     if domain_name.endswith(f".{self.domain}") and self.is_valid(domain_name):
                         subdomains.add(domain_name)
 
