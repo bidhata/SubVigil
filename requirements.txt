@@ -5,6 +5,7 @@ colorama>=0.4.4
 beautifulsoup4>=4.11.0
 tqdm>=4.64.0
 shodan>=1.28.0
+aiohttp>=3.9.0
 
 # Optional: For enhanced HTML parsing speed
 lxml>=4.9.0
