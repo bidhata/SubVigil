@@ -72,7 +72,7 @@ async def test_check_subdomain_async_ssh_detected(enumerator):
 
     async def mock_open_connection(host, port):
         reader = MagicMock()
-        writer = AsyncMock()
+        writer = MagicMock()                           # close() is sync on StreamWriter
         writer.wait_closed = AsyncMock(return_value=None)
         return reader, writer
 

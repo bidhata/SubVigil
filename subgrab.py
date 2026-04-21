@@ -729,8 +729,8 @@ class SubdomainEnumerator:
         return info
 
     async def _async_active_recon(self) -> None:
-        semaphore = asyncio.Semaphore(100)
-        connector = aiohttp.TCPConnector(ssl=False, limit=200)
+        semaphore = asyncio.Semaphore(self.threads)
+        connector = aiohttp.TCPConnector(ssl=False, limit=max(self.threads * 2, 50))
         timeout_cfg = aiohttp.ClientTimeout(total=self.timeout, connect=10)
 
         async with aiohttp.ClientSession(
