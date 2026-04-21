@@ -7,6 +7,7 @@ https://www.linkedin.com/in/krishpaul/
 """
 
 import argparse
+import asyncio
 import csv
 import dns.resolver
 import dns.zone
@@ -39,9 +40,10 @@ try:
     from colorama import Fore, init
     from tqdm import tqdm
     import shodan
+    import aiohttp
 except ImportError as e:
     print(f"Missing required dependency: {e}")
-    print("Install with: pip install requests dnspython colorama beautifulsoup4 tqdm shodan")
+    print("Install with: pip install requests dnspython colorama beautifulsoup4 tqdm shodan aiohttp")
     sys.exit(1)
 
 init(autoreset=True)
@@ -70,7 +72,8 @@ class SubdomainEnumerator:
      
         # Thread-local storage
         self.thread_local = threading.local()
-        
+        self._info_lock = threading.Lock()
+
         # Wildcard detection
         self.wildcard_ips = set()
         self._detect_wildcards()
@@ -661,90 +664,106 @@ class SubdomainEnumerator:
         
         return False
 
-    def active_reconnaissance(self):
-        """Perform active reconnaissance on discovered subdomains"""
-        print(f"{Fore.CYAN}[*] Performing active reconnaissance...")
-        
-        def check_subdomain_active(subdomain):
-            info = {
-                'subdomain': subdomain,
-                'active': False,
-                'status_code': None,
-                'server': None,
-                'title': None,
-                'ip': None,
-                'ssh_open': False,
-                'takeover_vulnerable': False,
-                'ports': []
-            }
-            
-            # Resolve IP
-            ips = self.resolve_domain(subdomain)
-            if ips:
-                info['ip'] = ips[0]
-            else:
-                return info
-            
-            # HTTP/HTTPS check
-            for protocol in ['https', 'http']:
+    async def _check_subdomain_async(
+        self,
+        subdomain: str,
+        session: aiohttp.ClientSession,
+        semaphore: asyncio.Semaphore,
+    ) -> dict:
+        info: dict = {
+            'subdomain': subdomain,
+            'active': False,
+            'status_code': None,
+            'server': None,
+            'title': None,
+            'ip': None,
+            'ssh_open': False,
+            'takeover_vulnerable': False,
+            'ports': [],
+        }
+
+        ips = self.resolve_domain(subdomain)
+        if not ips:
+            return info
+        info['ip'] = ips[0]
+
+        async with semaphore:
+            for protocol in ('https', 'http'):
                 try:
                     url = f"{protocol}://{subdomain}"
-                    response = self.get_session().get(url, timeout=10, allow_redirects=True)
-                    info['active'] = True
-                    info['status_code'] = response.status_code
-                    info['server'] = response.headers.get('Server', 'Unknown')
-                    
-                    # Extract title
-                    if 'text/html' in response.headers.get('Content-Type', ''):
-                        soup = BeautifulSoup(response.text, 'html.parser')
-                        title_tag = soup.find('title')
-                        if title_tag and title_tag.text:
-                            info['title'] = title_tag.text.strip()[:100]
-                    
+                    async with session.get(url, allow_redirects=True) as response:
+                        info['active'] = True
+                        info['status_code'] = response.status
+                        info['server'] = response.headers.get('Server', 'Unknown')
+                        if 'text/html' in response.headers.get('Content-Type', ''):
+                            text = await response.text(errors='replace')
+                            soup = BeautifulSoup(text, 'html.parser')
+                            title_tag = soup.find('title')
+                            if title_tag and title_tag.text:
+                                info['title'] = title_tag.text.strip()[:100]
                     break
                 except Exception:
                     continue
-            
-            # SSH check
+
             if not self.fast_mode:
                 try:
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.settimeout(5)
-                    result = sock.connect_ex((subdomain, 22))
-                    if result == 0:
-                        info['ssh_open'] = True
-                        self.ssh_enabled.add(subdomain)
-                    sock.close()
+                    reader, writer = await asyncio.wait_for(
+                        asyncio.open_connection(subdomain, 22), timeout=5
+                    )
+                    info['ssh_open'] = True
+                    writer.close()
+                    await writer.wait_closed()
                 except Exception:
                     pass
-            
-            # Takeover check
+
             if not self.fast_mode:
-                if self.check_subdomain_takeover(subdomain):
+                vulnerable = await asyncio.to_thread(
+                    self.check_subdomain_takeover, subdomain
+                )
+                if vulnerable:
                     info['takeover_vulnerable'] = True
-                    self.takeover_candidates.add(subdomain)
-            
-            # Note: Shodan IP scanning is now done separately via shodan_active_ip_scan()
-            # after active recon completes, to scan only active subdomain IPs
-            
-            # Categorize
-            if info['active']:
-                self.active_subdomains.add(subdomain)
-            else:
-                self.inactive_subdomains.add(subdomain)
-            
-            self.subdomain_info[subdomain] = info
-            self.stealth_delay()
-            
-            return info
-        
-        # Process all subdomains
-        with ThreadPoolExecutor(max_workers=self.threads) as executor:
-            futures = [executor.submit(check_subdomain_active, sub) for sub in self.subdomains]
-            with tqdm(total=len(futures), desc="Active Reconnaissance") as pbar:
-                for future in as_completed(futures):
-                    future.result()
+
+        if self.stealth:
+            await asyncio.sleep(random.uniform(0.5, 2.0))
+
+        return info
+
+    async def _async_active_recon(self) -> None:
+        semaphore = asyncio.Semaphore(100)
+        connector = aiohttp.TCPConnector(ssl=False, limit=200)
+        timeout_cfg = aiohttp.ClientTimeout(total=self.timeout, connect=10)
+
+        async with aiohttp.ClientSession(
+            connector=connector, timeout=timeout_cfg
+        ) as session:
+            tasks = [
+                self._check_subdomain_async(sub, session, semaphore)
+                for sub in self.subdomains
+            ]
+            results: list[dict] = []
+            with tqdm(total=len(tasks), desc="Active Reconnaissance") as pbar:
+                for coro in asyncio.as_completed(tasks):
+                    result = await coro
+                    results.append(result)
                     pbar.update(1)
+
+        with self._info_lock:
+            for info in results:
+                sub = info['subdomain']
+                self.subdomain_info[sub] = info
+                if info['active']:
+                    self.active_subdomains.add(sub)
+                else:
+                    self.inactive_subdomains.add(sub)
+                if info['ssh_open']:
+                    self.ssh_enabled.add(sub)
+                if info['takeover_vulnerable']:
+                    self.takeover_candidates.add(sub)
+
+    def active_reconnaissance(self) -> None:
+        """Perform active reconnaissance on discovered subdomains."""
+        print(f"{Fore.CYAN}[*] Performing active reconnaissance...")
+        asyncio.run(self._async_active_recon())
 
     def run_passive_discovery(self):
         """Run all passive discovery modules from the modules/ folder."""
