@@ -59,10 +59,10 @@ class BaseAIEngine:
     requires_key: str | None = None
     fast_mode_skip: bool = False
 
-    def __init__(self, enumerator):
+    def __init__(self, enumerator) -> None:
         self.enumerator = enumerator
 
-    def run(self) -> set:
+    def run(self) -> set[str]:
         raise NotImplementedError
 
     # ------------------------------------------------------------------ #
@@ -70,43 +70,43 @@ class BaseAIEngine:
     # ------------------------------------------------------------------ #
 
     @property
-    def domain(self):
+    def domain(self) -> str:
         return self.enumerator.domain
 
     @property
-    def timeout(self):
+    def timeout(self) -> int:
         return self.enumerator.timeout
 
     @property
-    def threads(self):
+    def threads(self) -> int:
         return self.enumerator.threads
 
     @property
-    def api_keys(self):
+    def api_keys(self) -> dict:
         return self.enumerator.api_keys
 
     @property
-    def subdomains(self):
+    def subdomains(self) -> set[str]:
         return self.enumerator.subdomains
 
     @property
-    def subdomain_info(self):
+    def subdomain_info(self) -> dict:
         return self.enumerator.subdomain_info
 
     @property
-    def output_dir(self):
+    def output_dir(self) -> str:
         return self.enumerator.output_dir
 
     @property
-    def fast_mode(self):
+    def fast_mode(self) -> bool:
         return self.enumerator.fast_mode
 
     @property
-    def wordlist(self):
+    def wordlist(self) -> str | None:
         return self.enumerator.wordlist
 
     @property
-    def default_wordlist(self):
+    def default_wordlist(self) -> list[str]:
         return self.enumerator.default_wordlist
 
     def get_session(self):
@@ -115,10 +115,10 @@ class BaseAIEngine:
     def get_resolver(self):
         return self.enumerator.get_resolver()
 
-    def resolve_domain(self, subdomain):
+    def resolve_domain(self, subdomain: str) -> list[str] | None:
         return self.enumerator.resolve_domain(subdomain)
 
-    def is_valid(self, subdomain):
+    def is_valid(self, subdomain: str) -> bool:
         return self.enumerator._is_valid_subdomain(subdomain)
 
 
