@@ -6,7 +6,6 @@ Tries each in order, stops after the first that returns results.
 import json
 import os
 import re
-import socket
 import subprocess
 import tempfile
 from datetime import datetime, timedelta

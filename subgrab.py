@@ -18,11 +18,9 @@ import os
 import random
 import re
 import requests
-import socket
 import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
 from pathlib import Path
 from datetime import datetime

@@ -103,7 +103,9 @@ def test_bruteforce_permutation_cap_default_wordlist(mock_enumerator):
     spec.loader.exec_module(mod)
 
     scanner = mod.DnsBruteforce(mock_enumerator)
-    mock_enumerator.wordlist = None  # no custom wordlist
+    # Use enough words to generate >500 permutations (each word × 27 variants ≈ 27 each)
+    mock_enumerator.wordlist = None
+    mock_enumerator.default_wordlist = [f"word{i}" for i in range(25)]  # 25 × 27 = 675 > 500
 
     submitted = []
 
@@ -123,6 +125,9 @@ def test_bruteforce_permutation_cap_default_wordlist(mock_enumerator):
 
     assert len(submitted) <= 500, (
         f"Default wordlist should produce at most 500 permutations, got {len(submitted)}"
+    )
+    assert len(submitted) == 500, (
+        f"Cap should be exactly 500 when exceeded, got {len(submitted)}"
     )
 
 
