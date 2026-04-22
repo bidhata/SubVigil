@@ -79,45 +79,15 @@ class BaseScanner:
     # Proxies — access enumerator state without boilerplate               #
     # ------------------------------------------------------------------ #
 
-    @property
-    def domain(self) -> str:
-        return self.enumerator.domain
+    _PROXY_ATTRS = frozenset({
+        'domain', 'timeout', 'threads', 'api_keys', 'subdomains',
+        'subdomain_info', 'output_dir', 'fast_mode', 'wordlist', 'default_wordlist',
+    })
 
-    @property
-    def timeout(self) -> int:
-        return self.enumerator.timeout
-
-    @property
-    def threads(self) -> int:
-        return self.enumerator.threads
-
-    @property
-    def api_keys(self) -> dict:
-        return self.enumerator.api_keys
-
-    @property
-    def subdomains(self) -> set[str]:
-        return self.enumerator.subdomains
-
-    @property
-    def subdomain_info(self) -> dict:
-        return self.enumerator.subdomain_info
-
-    @property
-    def output_dir(self) -> str:
-        return self.enumerator.output_dir
-
-    @property
-    def fast_mode(self) -> bool:
-        return self.enumerator.fast_mode
-
-    @property
-    def wordlist(self) -> str | None:
-        return self.enumerator.wordlist
-
-    @property
-    def default_wordlist(self) -> list[str]:
-        return self.enumerator.default_wordlist
+    def __getattr__(self, name: str):
+        if name in type(self)._PROXY_ATTRS:
+            return getattr(self.enumerator, name)
+        raise AttributeError(f"{type(self).__name__!r} has no attribute {name!r}")
 
     def get_session(self):
         return self.enumerator.get_session()

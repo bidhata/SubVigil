@@ -145,20 +145,15 @@ class SubdomainEnumerator:
             'render.com': ['404 Not Found', 'Render Application Error'],
             'digitaloceanspaces.com': ['NoSuchKey', 'The specified key does not exist'],
             's3.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website-us-east-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website-us-west-2.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website-eu-west-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.ap-south-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.ca-central-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.eu-central-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.eu-west-2.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.eu-west-3.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.sa-east-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website-us-west-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.ap-northeast-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.ap-northeast-2.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.ap-southeast-1.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
-            's3-website.ap-southeast-2.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist'],
+            # Legacy regions use '-' separator; newer regions use '.' — both are valid AWS website endpoints
+            **{f's3-website{sep}{region}.amazonaws.com': ['NoSuchBucket', 'The specified bucket does not exist']
+               for sep, region in [
+                   ('-', 'us-east-1'), ('-', 'us-west-2'), ('-', 'us-west-1'), ('-', 'eu-west-1'),
+                   ('.', 'ap-south-1'), ('.', 'ca-central-1'), ('.', 'eu-central-1'),
+                   ('.', 'eu-west-2'), ('.', 'eu-west-3'), ('.', 'sa-east-1'),
+                   ('.', 'ap-northeast-1'), ('.', 'ap-northeast-2'),
+                   ('.', 'ap-southeast-1'), ('.', 'ap-southeast-2'),
+               ]},
             'googleapis.com': ['Error 404 (Not Found)', 'Google Cloud Storage - Not Found'],
             'storage.googleapis.com': ['NoSuchKey', 'The specified key does not exist'],
             'appspot.com': ['Error: Not Found', '404 Google App Engine'],
@@ -177,31 +172,11 @@ class SubdomainEnumerator:
             'wixsite.com': ['404 Wix'],
             'wix.com': ['404 Wix'],
             'weebly.com': ['404 Weebly'],
-            'webnode.com': ['404 Webnode'],
-            'webnode.hu': ['404 Webnode'],
-            'webnode.sk': ['404 Webnode'],
-            'webnode.cz': ['404 Webnode'],
-            'webnode.ro': ['404 Webnode'],
-            'webnode.pt': ['404 Webnode'],
-            'webnode.cl': ['404 Webnode'],
-            'webnode.mx': ['404 Webnode'],
-            'webnode.com.br': ['404 Webnode'],
-            'webnode.com.ar': ['404 Webnode'],
-            'webnode.com.co': ['404 Webnode'],
-            'webnode.com.ve': ['404 Webnode'],
-            'webnode.com.pe': ['404 Webnode'],
-            'webnode.com.ec': ['404 Webnode'],
-            'webnode.com.bo': ['404 Webnode'],
-            'webnode.com.py': ['404 Webnode'],
-            'webnode.com.uy': ['404 Webnode'],
-            'webnode.com.cr': ['404 Webnode'],
-            'webnode.com.pa': ['404 Webnode'],
-            'webnode.com.gt': ['404 Webnode'],
-            'webnode.com.sv': ['404 Webnode'],
-            'webnode.com.hn': ['404 Webnode'],
-            'webnode.com.ni': ['404 Webnode'],
-            'webnode.com.do': ['404 Webnode'],
-            'webnode.com.pr': ['404 Webnode'],
+            **{f'webnode.{t}': ['404 Webnode'] for t in [
+                'com','hu','sk','cz','ro','pt','cl','mx','com.br','com.ar',
+                'com.co','com.ve','com.pe','com.ec','com.bo','com.py',
+                'com.uy','com.cr','com.pa','com.gt','com.sv','com.hn','com.ni','com.do','com.pr',
+            ]},
             'squarespace.com': ['404 Squarespace'],
             'square.site': ['404 Square'],
             'squareup.com': ['404 Square'],
@@ -209,69 +184,13 @@ class SubdomainEnumerator:
             'godaddysites.com': ['404 GoDaddy'],
             'secureserver.net': ['404 Secure Server'],
             'hubspot.com': ['404 HubSpot'],
-            'hubspotusercontent.com': ['404 HubSpot'],
-            'hubspotusercontent.net': ['404 HubSpot'],
-            'hubspotusercontent.org': ['404 HubSpot'],
-            'hubspotusercontent.io': ['404 HubSpot'],
-            'hubspotusercontent.co': ['404 HubSpot'],
-            'hubspotusercontent.eu': ['404 HubSpot'],
-            'hubspotusercontent.asia': ['404 HubSpot'],
-            'hubspotusercontent.africa': ['404 HubSpot'],
-            'hubspotusercontent.me': ['404 HubSpot'],
-            'hubspotusercontent.us': ['404 HubSpot'],
-            'hubspotusercontent.ca': ['404 HubSpot'],
-            'hubspotusercontent.com.au': ['404 HubSpot'],
-            'hubspotusercontent.co.uk': ['404 HubSpot'],
-            'hubspotusercontent.in': ['404 HubSpot'],
-            'hubspotusercontent.jp': ['404 HubSpot'],
-            'hubspotusercontent.de': ['404 HubSpot'],
-            'hubspotusercontent.fr': ['404 HubSpot'],
-            'hubspotusercontent.es': ['404 HubSpot'],
-            'hubspotusercontent.it': ['404 HubSpot'],
-            'hubspotusercontent.pt': ['404 HubSpot'],
-            'hubspotusercontent.nl': ['404 HubSpot'],
-            'hubspotusercontent.se': ['404 HubSpot'],
-            'hubspotusercontent.no': ['404 HubSpot'],
-            'hubspotusercontent.dk': ['404 HubSpot'],
-            'hubspotusercontent.fi': ['404 HubSpot'],
-            'hubspotusercontent.pl': ['404 HubSpot'],
-            'hubspotusercontent.ru': ['404 HubSpot'],
-            'hubspotusercontent.cn': ['404 HubSpot'],
-            'hubspotusercontent.tw': ['404 HubSpot'],
-            'hubspotusercontent.hk': ['404 HubSpot'],
-            'hubspotusercontent.sg': ['404 HubSpot'],
-            'hubspotusercontent.id': ['404 HubSpot'],
-            'hubspotusercontent.th': ['404 HubSpot'],
-            'hubspotusercontent.vn': ['404 HubSpot'],
-            'hubspotusercontent.ph': ['404 HubSpot'],
-            'hubspotusercontent.my': ['404 HubSpot'],
-            'hubspotusercontent.kr': ['404 HubSpot'],
-            'hubspotusercontent.tr': ['404 HubSpot'],
-            'hubspotusercontent.sa': ['404 HubSpot'],
-            'hubspotusercontent.ae': ['404 HubSpot'],
-            'hubspotusercontent.il': ['404 HubSpot'],
-            'hubspotusercontent.za': ['404 HubSpot'],
-            'hubspotusercontent.ng': ['404 HubSpot'],
-            'hubspotusercontent.ke': ['404 HubSpot'],
-            'hubspotusercontent.eg': ['404 HubSpot'],
-            'hubspotusercontent.mx': ['404 HubSpot'],
-            'hubspotusercontent.br': ['404 HubSpot'],
-            'hubspotusercontent.ar': ['404 HubSpot'],
-            'hubspotusercontent.cl': ['404 HubSpot'],
-            'hubspotusercontent.pe': ['404 HubSpot'],
-            'hubspotusercontent.ve': ['404 HubSpot'],
-            'hubspotusercontent.ec': ['404 HubSpot'],
-            'hubspotusercontent.bo': ['404 HubSpot'],
-            'hubspotusercontent.py': ['404 HubSpot'],
-            'hubspotusercontent.uy': ['404 HubSpot'],
-            'hubspotusercontent.cr': ['404 HubSpot'],
-            'hubspotusercontent.pa': ['404 HubSpot'],
-            'hubspotusercontent.gt': ['404 HubSpot'],
-            'hubspotusercontent.sv': ['404 HubSpot'],
-            'hubspotusercontent.hn': ['404 HubSpot'],
-            'hubspotusercontent.ni': ['404 HubSpot'],
-            'hubspotusercontent.do': ['404 HubSpot'],
-            'hubspotusercontent.pr': ['404 HubSpot']
+            **{f'hubspotusercontent.{t}': ['404 HubSpot'] for t in [
+                'com','net','org','io','co','eu','asia','africa','me','us','ca',
+                'com.au','co.uk','in','jp','de','fr','es','it','pt','nl','se','no',
+                'dk','fi','pl','ru','cn','tw','hk','sg','id','th','vn','ph','my',
+                'kr','tr','sa','ae','il','za','ng','ke','eg','mx','br','ar','cl',
+                'pe','ve','ec','bo','py','uy','cr','pa','gt','sv','hn','ni','do','pr',
+            ]}
         }
 
     def get_session(self):
@@ -328,6 +247,33 @@ class SubdomainEnumerator:
         if self.stealth:
             time.sleep(random.uniform(0.5, 2.0))
 
+    def _build_ip_map(self, active_only=True) -> dict:
+        """Return a mapping of IP -> [subdomain, ...] from subdomain_info.
+
+        Args:
+            active_only: When True (default) only include subdomains whose
+                         'active' flag is truthy.
+        """
+        ip_map = {}
+        for subdomain, info in self.subdomain_info.items():
+            if not info or not info.get('ip'):
+                continue
+            if active_only and not info.get('active', False):
+                continue
+            ip = info['ip']
+            ip_map.setdefault(ip, []).append(subdomain)
+        return ip_map
+
+    def _apply_shodan_owner(self, sub: str, host: dict) -> None:
+        """Write ip_owner / ip_org / ip_isp from a Shodan host record into subdomain_info."""
+        ip_org   = host.get('org', '')
+        ip_isp   = host.get('isp', '')
+        ip_owner = ip_org or ip_isp or 'Unknown'
+        if sub in self.subdomain_info:
+            self.subdomain_info[sub]['ip_owner'] = ip_owner
+            self.subdomain_info[sub]['ip_org']   = ip_org
+            self.subdomain_info[sub]['ip_isp']   = ip_isp
+
     def shodan_scan(self):
         """Perform Shodan scanning on discovered IPs (active subdomains only)"""
         if 'shodan' not in self.api_keys:
@@ -340,16 +286,9 @@ class SubdomainEnumerator:
             api = shodan.Shodan(self.api_keys['shodan'])
             
             # Only scan IPs from active subdomains
-            unique_ips = set()
-            ip_to_subdomains = {}  # Track which subdomains map to each IP
-            for subdomain, info in self.subdomain_info.items():
-                if info and info.get('ip') and info.get('active', False):
-                    ip = info['ip']
-                    unique_ips.add(ip)
-                    if ip not in ip_to_subdomains:
-                        ip_to_subdomains[ip] = []
-                    ip_to_subdomains[ip].append(subdomain)
-            
+            ip_to_subdomains = self._build_ip_map(active_only=True)
+            unique_ips = set(ip_to_subdomains.keys())
+
             if not unique_ips:
                 print(f"{Fore.YELLOW}[!] No active subdomain IPs to scan with Shodan")
                 return subdomains
@@ -360,17 +299,9 @@ class SubdomainEnumerator:
                 try:
                     host = api.host(ip)
                     
-                    # Capture IP owner/organization name
-                    ip_org = host.get('org', '')
-                    ip_isp = host.get('isp', '')
-                    ip_owner = ip_org or ip_isp or 'Unknown'
-                    
                     # Store org info for all subdomains mapped to this IP
                     for sub in ip_to_subdomains.get(ip, []):
-                        if sub in self.subdomain_info:
-                            self.subdomain_info[sub]['ip_owner'] = ip_owner
-                            self.subdomain_info[sub]['ip_org'] = ip_org
-                            self.subdomain_info[sub]['ip_isp'] = ip_isp
+                        self._apply_shodan_owner(sub, host)
                     
                     # Add any hostnames that match our domain
                     for hostname in host.get('hostnames', []):
@@ -422,15 +353,8 @@ class SubdomainEnumerator:
             api = shodan.Shodan(self.api_keys['shodan'])
             
             # Collect unique IPs from active subdomains only
-            unique_ips = {}
-            for subdomain in self.active_subdomains:
-                info = self.subdomain_info.get(subdomain, {})
-                ip = info.get('ip')
-                if ip:
-                    if ip not in unique_ips:
-                        unique_ips[ip] = []
-                    unique_ips[ip].append(subdomain)
-            
+            unique_ips = self._build_ip_map(active_only=True)
+
             if not unique_ips:
                 print(f"{Fore.YELLOW}[!] No active IPs to scan")
                 return
@@ -444,20 +368,15 @@ class SubdomainEnumerator:
                     scanned += 1
                     
                     # Extract IP owner information
-                    ip_org = host.get('org', '')
-                    ip_isp = host.get('isp', '')
                     ip_asn = host.get('asn', '')
-                    ip_owner = ip_org or ip_isp or 'Unknown'
-                    
+
                     # Extract open ports
                     ports = host.get('ports', [])
-                    
+
                     # Update all subdomains that share this IP
                     for sub in associated_subdomains:
+                        self._apply_shodan_owner(sub, host)
                         if sub in self.subdomain_info:
-                            self.subdomain_info[sub]['ip_owner'] = ip_owner
-                            self.subdomain_info[sub]['ip_org'] = ip_org
-                            self.subdomain_info[sub]['ip_isp'] = ip_isp
                             self.subdomain_info[sub]['ip_asn'] = ip_asn
                             # Merge ports (don't overwrite existing)
                             existing_ports = self.subdomain_info[sub].get('ports', [])
@@ -480,6 +399,7 @@ class SubdomainEnumerator:
                                     if port == 6379:
                                         self.subdomain_info[sub]['redis'] = True
                     
+                    ip_owner = host.get('org', '') or host.get('isp', '') or 'Unknown'
                     print(f"{Fore.GREEN}[+] Shodan [{scanned}/{len(unique_ips)}] {ip} -> {ip_owner} | Ports: {ports}")
                     self.stealth_delay()
                     
@@ -921,53 +841,55 @@ class SubdomainEnumerator:
             rows = ""
             for subdomain in sorted(subdomain_list):
                 info = self.subdomain_info.get(subdomain, {})
-                status = "Active" if info.get('active', False) else "Inactive"
-                status_badge = f'<span class="status-badge status-{status.lower()}">{status}</span>'
-                
-                ssh_badge = f'<span class="status-badge status-{"warning" if info.get("ssh_open", False) else "inactive"}">{"Yes" if info.get("ssh_open", False) else "No"}</span>'
-                takeover_badge = f'<span class="status-badge status-{"danger" if info.get("takeover_vulnerable", False) else "inactive"}">{"Yes" if info.get("takeover_vulnerable", False) else "No"}</span>'
-                
+                active   = info.get('active', False)
+                ssh_on   = info.get('ssh_open', False)
+                tak_on   = info.get('takeover_vulnerable', False)
+
+                status_badge   = f'<span class="badge {"b-active" if active else "b-inactive"}">{"Active" if active else "Inactive"}</span>'
+                ssh_badge      = f'<span class="badge {"b-warning" if ssh_on else "b-inactive"}">{"Yes" if ssh_on else "No"}</span>'
+                takeover_badge = f'<span class="badge {"b-danger"  if tak_on else "b-inactive"}">{"Yes" if tak_on else "No"}</span>'
+
                 ports_html = ""
                 for port in info.get('ports', []):
-                    port_class = "port-badge"
                     if port in [80, 443, 8080, 8443]:
-                        port_class += " port-web"
+                        cls = "p-web"
                     elif port in [22, 21, 23]:
-                        port_class += " port-admin"
+                        cls = "p-admin"
                     elif port in [3306, 5432, 27017, 6379]:
-                        port_class += " port-db"
+                        cls = "p-db"
                     else:
-                        port_class += " port-other"
-                    ports_html += f'<span class="{port_class}">{port}</span>'
-                
-                title_display = (info.get('title') or '')[:60] + ('...' if len((info.get('title') or '')) > 60 else '')
-                
-                # Build IP cell with owner tooltip popup
-                ip_addr = info.get('ip', '')
+                        cls = "p-other"
+                    ports_html += f'<span class="port {cls}">{port}</span>'
+
+                title_raw     = info.get('title') or ''
+                title_display = title_raw[:60] + ('…' if len(title_raw) > 60 else '')
+
+                ip_addr  = info.get('ip', '')
                 ip_owner = info.get('ip_owner', '')
-                ip_org = info.get('ip_org', '')
-                ip_isp = info.get('ip_isp', '')
-                ip_asn = info.get('ip_asn', '')
-                
+                ip_org   = info.get('ip_org', '')
+                ip_isp   = info.get('ip_isp', '')
+                ip_asn   = info.get('ip_asn', '')
+
                 if ip_owner and ip_addr:
-                    # Build detailed tooltip content
-                    tooltip_lines = [f'Owner: {ip_owner}']
+                    parts = [f'Owner: {ip_owner}']
                     if ip_org and ip_org != ip_owner:
-                        tooltip_lines.append(f'Org: {ip_org}')
+                        parts.append(f'Org: {ip_org}')
                     if ip_isp and ip_isp != ip_owner and ip_isp != ip_org:
-                        tooltip_lines.append(f'ISP: {ip_isp}')
+                        parts.append(f'ISP: {ip_isp}')
                     if ip_asn:
-                        tooltip_lines.append(f'ASN: {ip_asn}')
-                    tooltip_text = ' | '.join(tooltip_lines)
-                    # Escape HTML special chars in tooltip
-                    tooltip_text = tooltip_text.replace('&', '&amp;').replace('"', '&quot;').replace("'", '&#39;').replace('<', '&lt;').replace('>', '&gt;')
-                    ip_html = f'<span class="ip-tooltip" data-tooltip="{tooltip_text}">{ip_addr}<span class="ip-owner-popup"><strong>IP Owner</strong><br>{tooltip_text.replace(" | ", "<br>")}</span></span>'
+                        parts.append(f'ASN: {ip_asn}')
+                    tip = ' | '.join(parts)
+                    tip = tip.replace('&', '&amp;').replace('"', '&quot;').replace("'", '&#39;').replace('<', '&lt;').replace('>', '&gt;')
+                    ip_html = (f'<span class="ip-wrap">'
+                               f'<span class="ip-val">{ip_addr}'
+                               f'<span class="ip-popup"><strong>IP Owner</strong>{tip.replace(" | ", "<br>")}</span>'
+                               f'</span></span>')
                 else:
                     ip_html = ip_addr
-                
+
                 rows += f"""
                     <tr>
-                        <td><a href="https://{subdomain}" target="_blank" class="subdomain-link">{subdomain}</a></td>
+                        <td><a href="https://{subdomain}" target="_blank" class="sub-link">{subdomain}</a></td>
                         <td>{status_badge}</td>
                         <td>{info.get('status_code', '')}</td>
                         <td>{info.get('server', '')}</td>
@@ -989,582 +911,464 @@ class SubdomainEnumerator:
         security_subdomains = self.ssh_enabled.union(self.takeover_candidates)
         security_rows = generate_table_rows(security_subdomains)
         
-        html_content = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>SubGrab Report - {self.domain}</title>
-            <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-            <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-            <style>
-                :root {{
-                    --primary-color: #2563eb;
-                    --success-color: #059669;
-                    --warning-color: #d97706;
-                    --danger-color: #dc2626;
-                    --inactive-color: #6b7280;
-                    --bg-primary: #ffffff;
-                    --bg-secondary: #f8fafc;
-                    --border-color: #e2e8f0;
-                    --text-primary: #1e293b;
-                    --text-secondary: #64748b;
-                }}
-                
-                * {{
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }}
-                
-                body {{
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    background-color: var(--bg-secondary);
-                    color: var(--text-primary);
-                    line-height: 1.6;
-                }}
-                
-                .container {{
-                    max-width: 1400px;
-                    margin: 0 auto;
-                    padding: 2rem 1rem;
-                }}
-                
-                .header {{
-                    background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
-                    color: white;
-                    padding: 2rem;
-                    border-radius: 12px;
-                    margin-bottom: 2rem;
-                    text-align: center;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                }}
-                
-                .header h1 {{
-                    font-size: 2rem;
-                    font-weight: 700;
-                    margin-bottom: 0.5rem;
-                }}
-                
-                .header h2 {{
-                    font-size: 1.25rem;
-                    font-weight: 500;
-                    opacity: 0.9;
-                    margin-bottom: 0.5rem;
-                }}
-                
-                .header p {{
-                    opacity: 0.8;
-                    font-size: 0.9rem;
-                }}
-                
-                .stats-grid {{
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 1rem;
-                    margin-bottom: 2rem;
-                }}
-                
-                .stat-card {{
-                    background: var(--bg-primary);
-                    padding: 1.5rem;
-                    border-radius: 8px;
-                    text-align: center;
-                    border: 1px solid var(--border-color);
-                    transition: transform 0.2s ease, box-shadow 0.2s ease;
-                }}
-                
-                .stat-card:hover {{
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                }}
-                
-                .stat-number {{
-                    font-size: 2rem;
-                    font-weight: 700;
-                    margin-bottom: 0.5rem;
-                }}
-                
-                .stat-label {{
-                    color: var(--text-secondary);
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                }}
-                
-                .tabs {{
-                    background: var(--bg-primary);
-                    border-radius: 8px;
-                    border: 1px solid var(--border-color);
-                    overflow: hidden;
-                }}
-                
-                .tab-nav {{
-                    display: flex;
-                    background: var(--bg-secondary);
-                    border-bottom: 1px solid var(--border-color);
-                    overflow-x: auto;
-                }}
-                
-                .tab-button {{
-                    background: none;
-                    border: none;
-                    padding: 1rem 1.5rem;
-                    cursor: pointer;
-                    font-weight: 500;
-                    color: var(--text-secondary);
-                    border-bottom: 3px solid transparent;
-                    transition: all 0.2s ease;
-                    white-space: nowrap;
-                }}
-                
-                .tab-button:hover {{
-                    background: rgba(37, 99, 235, 0.05);
-                    color: var(--primary-color);
-                }}
-                
-                .tab-button.active {{
-                    color: var(--primary-color);
-                    border-bottom-color: var(--primary-color);
-                    background: var(--bg-primary);
-                }}
-                
-                .tab-content {{
-                    display: none;
-                    padding: 1.5rem;
-                }}
-                
-                .tab-content.active {{
-                    display: block;
-                }}
-                
-                .table-container {{
-                    overflow-x: auto;
-                    border-radius: 6px;
-                    border: 1px solid var(--border-color);
-                }}
-                
-                table {{
-                    width: 100%;
-                    border-collapse: collapse;
-                    background: var(--bg-primary);
-                }}
-                
-                th {{
-                    background: var(--bg-secondary);
-                    padding: 0.75rem;
-                    text-align: left;
-                    font-weight: 600;
-                    color: var(--text-primary);
-                    border-bottom: 1px solid var(--border-color);
-                    font-size: 0.875rem;
-                }}
-                
-                td {{
-                    padding: 0.75rem;
-                    border-bottom: 1px solid var(--border-color);
-                    font-size: 0.875rem;
-                }}
-                
-                tr:hover {{
-                    background: rgba(37, 99, 235, 0.02);
-                }}
-                
-                .subdomain-link {{
-                    color: var(--primary-color);
-                    text-decoration: none;
-                    font-weight: 500;
-                }}
-                
-                .subdomain-link:hover {{
-                    text-decoration: underline;
-                }}
-                
-                .status-badge {{
-                    display: inline-block;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 4px;
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.025em;
-                }}
-                
-                .status-active {{
-                    background: rgba(5, 150, 105, 0.1);
-                    color: var(--success-color);
-                }}
-                
-                .status-inactive {{
-                    background: rgba(107, 114, 128, 0.1);
-                    color: var(--inactive-color);
-                }}
-                
-                .status-warning {{
-                    background: rgba(217, 119, 6, 0.1);
-                    color: var(--warning-color);
-                }}
-                
-                .status-danger {{
-                    background: rgba(220, 38, 38, 0.1);
-                    color: var(--danger-color);
-                }}
-                
-                .port-badge {{
-                    display: inline-block;
-                    padding: 0.125rem 0.375rem;
-                    margin: 0.125rem;
-                    border-radius: 3px;
-                    font-size: 0.7rem;
-                    font-weight: 500;
-                }}
-                
-                .port-web {{
-                    background: rgba(37, 99, 235, 0.1);
-                    color: var(--primary-color);
-                }}
-                
-                .port-admin {{
-                    background: rgba(217, 119, 6, 0.1);
-                    color: var(--warning-color);
-                }}
-                
-                .port-db {{
-                    background: rgba(5, 150, 105, 0.1);
-                    color: var(--success-color);
-                }}
-                
-                .port-other {{
-                    background: rgba(107, 114, 128, 0.1);
-                    color: var(--inactive-color);
-                }}
-                
-                /* IP Owner tooltip popup */
-                .ip-tooltip {{
-                    position: relative;
-                    cursor: pointer;
-                    color: var(--primary-color);
-                    font-weight: 500;
-                    border-bottom: 1px dashed var(--primary-color);
-                }}
-                
-                .ip-owner-popup {{
-                    visibility: hidden;
-                    opacity: 0;
-                    position: absolute;
-                    bottom: 125%;
-                    left: 50%;
-                    transform: translateX(-50%) translateY(5px);
-                    background: linear-gradient(135deg, #1e293b, #334155);
-                    color: #f1f5f9;
-                    padding: 0.75rem 1rem;
-                    border-radius: 8px;
-                    font-size: 0.75rem;
-                    line-height: 1.5;
-                    white-space: nowrap;
-                    z-index: 1000;
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
-                    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
-                    pointer-events: none;
-                }}
-                
-                .ip-owner-popup strong {{
-                    color: #60a5fa;
-                    font-size: 0.7rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    display: block;
-                    margin-bottom: 0.25rem;
-                    padding-bottom: 0.25rem;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                }}
-                
-                .ip-owner-popup::after {{
-                    content: '';
-                    position: absolute;
-                    top: 100%;
-                    left: 50%;
-                    margin-left: -6px;
-                    border-width: 6px;
-                    border-style: solid;
-                    border-color: #334155 transparent transparent transparent;
-                }}
-                
-                .ip-tooltip:hover .ip-owner-popup {{
-                    visibility: visible;
-                    opacity: 1;
-                    transform: translateX(-50%) translateY(0);
-                }}
-                
-                /* DataTables customization */
-                .dataTables_wrapper {{
-                    font-size: 0.875rem;
-                }}
-                
-                .dataTables_filter input {{
-                    border: 1px solid var(--border-color);
-                    border-radius: 4px;
-                    padding: 0.5rem;
-                    margin-left: 0.5rem;
-                }}
-                
-                .dataTables_length select {{
-                    border: 1px solid var(--border-color);
-                    border-radius: 4px;
-                    padding: 0.25rem;
-                    margin: 0 0.5rem;
-                }}
-                
-                .dataTables_paginate .paginate_button {{
-                    padding: 0.5rem 0.75rem;
-                    margin: 0 0.125rem;
-                    border-radius: 4px;
-                    border: 1px solid var(--border-color);
-                    background: var(--bg-primary);
-                    color: var(--text-primary);
-                }}
-                
-                .dataTables_paginate .paginate_button:hover {{
-                    background: var(--primary-color);
-                    color: white;
-                    border-color: var(--primary-color);
-                }}
-                
-                .dataTables_paginate .paginate_button.current {{
-                    background: var(--primary-color);
-                    color: white;
-                    border-color: var(--primary-color);
-                }}
-                
-                @media (max-width: 768px) {{
-                    .container {{
-                        padding: 1rem 0.5rem;
-                    }}
-                    
-                    .header {{
-                        padding: 1.5rem;
-                    }}
-                    
-                    .header h1 {{
-                        font-size: 1.5rem;
-                    }}
-                    
-                    .stats-grid {{
-                        grid-template-columns: repeat(2, 1fr);
-                    }}
-                    
-                    .tab-button {{
-                        padding: 0.75rem 1rem;
-                        font-size: 0.875rem;
-                    }}
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h2><a href="https://github.com/bidhata/SubGrab">SubGrab</a> by @bidhata</h2>
-                    <h1> Report for {self.domain}</h1>
-                    <p>Generated on {datetime.now().strftime('%B %d, %Y at %H:%M:%S')}</p>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" style="color: var(--primary-color);">{len(self.subdomains)}</div>
-                        <div class="stat-label">Total Subdomains</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" style="color: var(--success-color);">{len(self.active_subdomains)}</div>
-                        <div class="stat-label">Active</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" style="color: var(--inactive-color);">{len(self.inactive_subdomains)}</div>
-                        <div class="stat-label">Inactive</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" style="color: var(--warning-color);">{len(self.ssh_enabled)}</div>
-                        <div class="stat-label">SSH Enabled</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" style="color: var(--danger-color);">{len(self.takeover_candidates)}</div>
-                        <div class="stat-label">Takeover Risk</div>
-                    </div>
-                </div>
-                
-                <div class="tabs">
-                    <div class="tab-nav">
-                        <button class="tab-button active" onclick="showTab('overview')">Overview</button>
-                        <button class="tab-button" onclick="showTab('all')">All Subdomains ({len(self.subdomains)})</button>
-                        <button class="tab-button" onclick="showTab('active')">Active ({len(self.active_subdomains)})</button>
-                        <button class="tab-button" onclick="showTab('inactive')">Inactive ({len(self.inactive_subdomains)})</button>
-                        <button class="tab-button" onclick="showTab('security')">Security ({len(security_subdomains)})</button>
-                    </div>
-                    
-                    <div id="overview" class="tab-content active">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Scan Summary</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
-                            <div>
-                                <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Discovery Methods</h4>
-                                <ul style="list-style: none; padding: 0;">
-                                    <li style="padding: 0.25rem 0;">✓ Certificate Transparency</li>
-                                    <li style="padding: 0.25rem 0;">✓ DNS Enumeration</li>
-                                    <li style="padding: 0.25rem 0;">✓ Web Archives</li>
-                                    <li style="padding: 0.25rem 0;">✓ Search Engines</li>
-                                    <li style="padding: 0.25rem 0;">✓ Security APIs</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Key Findings</h4>
-                                <ul style="list-style: none; padding: 0;">
-                                    <li style="padding: 0.25rem 0;">🌐 {len(self.active_subdomains)} active web services</li>
-                                    <li style="padding: 0.25rem 0;">🔒 {len(self.ssh_enabled)} SSH-enabled hosts</li>
-                                    <li style="padding: 0.25rem 0;">⚠️ {len(self.takeover_candidates)} potential takeover risks</li>
-                                    <li style="padding: 0.25rem 0;">📊 {len(self.inactive_subdomains)} inactive subdomains</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="all" class="tab-content">
-                        <div class="table-container">
-                            <table id="allTable">
-                                <thead>
-                                    <tr>
-                                        <th>Subdomain</th>
-                                        <th>Status</th>
-                                        <th>Code</th>
-                                        <th>Server</th>
-                                        <th>Title</th>
-                                        <th>IP</th>
-                                        <th>SSH</th>
-                                        <th>Takeover</th>
-                                        <th>Ports</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {all_rows}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div id="active" class="tab-content">
-                        <div class="table-container">
-                            <table id="activeTable">
-                                <thead>
-                                    <tr>
-                                        <th>Subdomain</th>
-                                        <th>Status</th>
-                                        <th>Code</th>
-                                        <th>Server</th>
-                                        <th>Title</th>
-                                        <th>IP</th>
-                                        <th>SSH</th>
-                                        <th>Takeover</th>
-                                        <th>Ports</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {active_rows}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div id="inactive" class="tab-content">
-                        <div class="table-container">
-                            <table id="inactiveTable">
-                                <thead>
-                                    <tr>
-                                        <th>Subdomain</th>
-                                        <th>Status</th>
-                                        <th>Code</th>
-                                        <th>Server</th>
-                                        <th>Title</th>
-                                        <th>IP</th>
-                                        <th>SSH</th>
-                                        <th>Takeover</th>
-                                        <th>Ports</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {inactive_rows}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div id="security" class="tab-content">
-                        <div class="table-container">
-                            <table id="securityTable">
-                                <thead>
-                                    <tr>
-                                        <th>Subdomain</th>
-                                        <th>Status</th>
-                                        <th>Code</th>
-                                        <th>Server</th>
-                                        <th>Title</th>
-                                        <th>IP</th>
-                                        <th>SSH</th>
-                                        <th>Takeover</th>
-                                        <th>Ports</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {security_rows}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <script>
-                function showTab(tabName) {{
-                    // Hide all tab contents
-                    const contents = document.querySelectorAll('.tab-content');
-                    contents.forEach(content => content.classList.remove('active'));
-                    
-                    // Remove active class from all buttons
-                    const buttons = document.querySelectorAll('.tab-button');
-                    buttons.forEach(button => button.classList.remove('active'));
-                    
-                    // Show selected tab content
-                    document.getElementById(tabName).classList.add('active');
-                    
-                    // Add active class to clicked button
-                    event.target.classList.add('active');
-                }}
-                
-                $(document).ready(function() {{
-                    const tableConfig = {{
-                        responsive: true,
-                        pageLength: 25,
-                        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                        order: [[0, 'asc']],
-                        language: {{
-                            search: "Search:",
-                            lengthMenu: "Show _MENU_ entries",
-                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                            paginate: {{
-                                first: "First",
-                                last: "Last",
-                                next: "Next",
-                                previous: "Previous"
-                            }}
-                        }}
-                    }};
-                    
-                    $('#allTable').DataTable(tableConfig);
-                    $('#activeTable').DataTable(tableConfig);
-                    $('#inactiveTable').DataTable(tableConfig);
-                    $('#securityTable').DataTable(tableConfig);
-                }});
-            </script>
-        </body>
-        </html>
-        """
+        html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SubGrab Report — {self.domain}</title>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<style>
+:root {{
+  --blue:   #2563eb;
+  --green:  #059669;
+  --amber:  #d97706;
+  --red:    #dc2626;
+  --gray:   #6b7280;
+  --bg:     #f8fafc;
+  --white:  #ffffff;
+  --border: #e2e8f0;
+  --text:   #0f172a;
+  --muted:  #64748b;
+}}
+*,*::before,*::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+body {{
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}}
+.page {{ max-width: 1400px; margin: 0 auto; padding: 24px 20px; }}
+
+/* Header */
+.rpt-header {{
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: 6px;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}}
+.rpt-eyebrow {{
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--blue);
+  margin-bottom: 4px;
+}}
+.rpt-domain {{
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}}
+.rpt-meta {{
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.9;
+}}
+
+/* Stats strip */
+.stats {{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}}
+.stat {{
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 18px;
+}}
+.stat.s-blue  {{ border-top-color: var(--blue);  }}
+.stat.s-green {{ border-top-color: var(--green); }}
+.stat.s-gray  {{ border-top-color: var(--gray);  }}
+.stat.s-amber {{ border-top-color: var(--amber); }}
+.stat.s-red   {{ border-top-color: var(--red);   }}
+.stat-val  {{ font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 3px; }}
+.stat.s-blue  .stat-val {{ color: var(--blue);  }}
+.stat.s-green .stat-val {{ color: var(--green); }}
+.stat.s-gray  .stat-val {{ color: var(--gray);  }}
+.stat.s-amber .stat-val {{ color: var(--amber); }}
+.stat.s-red   .stat-val {{ color: var(--red);   }}
+.stat-lbl {{
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+}}
+
+/* Panel + tabs */
+.panel {{ background: var(--white); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }}
+.tab-nav {{
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  overflow-x: auto;
+}}
+.tab-btn {{
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 11px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}}
+.tab-btn:hover {{ color: var(--blue); }}
+.tab-btn.active {{ color: var(--blue); border-bottom-color: var(--blue); background: var(--white); }}
+.tab-pane {{ display: none; padding: 20px; }}
+.tab-pane.active {{ display: block; }}
+
+/* Overview */
+.ov-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 20px; }}
+.ov-section h4 {{
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}}
+.ov-list {{ list-style: none; }}
+.ov-list li {{
+  padding: 4px 0;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}}
+.ov-list li::before {{
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  flex-shrink: 0;
+}}
+.ov-list li.c-green::before {{ background: var(--green); }}
+.ov-list li.c-amber::before {{ background: var(--amber); }}
+.ov-list li.c-red::before   {{ background: var(--red);   }}
+.ov-list li.c-gray::before  {{ background: var(--gray);  }}
+
+/* Tables */
+.tbl-wrap {{ overflow-x: auto; }}
+table {{ width: 100%; border-collapse: collapse; }}
+th {{
+  background: var(--bg);
+  padding: 9px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}}
+td {{
+  padding: 9px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}}
+tr:last-child td {{ border-bottom: none; }}
+tr:hover td {{ background: #f1f5f9; }}
+
+/* Badges */
+.badge {{
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}}
+.b-active   {{ background: #d1fae5; color: #065f46; }}
+.b-inactive {{ background: #f3f4f6; color: #374151; }}
+.b-warning  {{ background: #fef3c7; color: #92400e; }}
+.b-danger   {{ background: #fee2e2; color: #991b1b; }}
+
+/* Port badges */
+.port {{ display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 500; margin: 1px; }}
+.p-web   {{ background: #dbeafe; color: #1e40af; }}
+.p-admin {{ background: #fef3c7; color: #92400e; }}
+.p-db    {{ background: #d1fae5; color: #065f46; }}
+.p-other {{ background: #f3f4f6; color: #374151; }}
+
+/* Subdomain link */
+.sub-link {{ color: var(--blue); text-decoration: none; font-weight: 500; }}
+.sub-link:hover {{ text-decoration: underline; }}
+
+/* IP tooltip */
+.ip-wrap {{ position: relative; display: inline-block; }}
+.ip-val  {{ color: var(--blue); font-weight: 500; border-bottom: 1px dashed var(--blue); cursor: pointer; }}
+.ip-popup {{
+  visibility: hidden; opacity: 0;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #0f172a;
+  color: #f1f5f9;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
+  transition: opacity .2s, transform .2s, visibility .2s;
+  pointer-events: none;
+}}
+.ip-popup::after {{
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-top-color: #0f172a;
+}}
+.ip-popup strong {{
+  display: block;
+  color: #60a5fa;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}}
+.ip-wrap:hover .ip-popup {{ visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }}
+
+/* DataTables overrides */
+.dataTables_wrapper {{ font-size: 13px; }}
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_length {{ margin-bottom: 12px; }}
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {{
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 13px;
+  outline: none;
+}}
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus {{
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(37,99,235,.15);
+}}
+.dataTables_paginate .paginate_button {{
+  padding: 4px 10px !important;
+  margin: 0 2px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  background: var(--white) !important;
+  color: var(--text) !important;
+  font-size: 12px !important;
+  cursor: pointer;
+}}
+.dataTables_paginate .paginate_button:hover {{
+  background: var(--blue) !important;
+  color: #fff !important;
+  border-color: var(--blue) !important;
+}}
+.dataTables_paginate .paginate_button.current,
+.dataTables_paginate .paginate_button.current:hover {{
+  background: var(--blue) !important;
+  color: #fff !important;
+  border-color: var(--blue) !important;
+}}
+.dataTables_paginate .paginate_button.disabled,
+.dataTables_paginate .paginate_button.disabled:hover {{
+  color: var(--muted) !important;
+  background: var(--bg) !important;
+}}
+.dataTables_info {{ font-size: 12px; color: var(--muted); }}
+
+/* Footer */
+.rpt-footer {{
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+}}
+
+/* Responsive */
+@media (max-width: 768px) {{
+  .stats {{ grid-template-columns: repeat(2,1fr); }}
+  .rpt-header {{ flex-direction: column; gap: 12px; }}
+  .rpt-meta {{ text-align: left; }}
+}}
+
+/* Print */
+@media print {{
+  body {{ background: #fff; }}
+  .page {{ padding: 0; }}
+  .tab-nav {{ display: none; }}
+  .tab-pane {{ display: block !important; page-break-before: always; }}
+}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="rpt-header">
+    <div>
+      <div class="rpt-eyebrow">Subdomain Enumeration Report</div>
+      <div class="rpt-domain">{self.domain}</div>
+    </div>
+    <div class="rpt-meta">
+      <div>{datetime.now().strftime('%B %d, %Y  %H:%M')}</div>
+      <div>SubGrab</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat s-blue">
+      <div class="stat-val">{len(self.subdomains)}</div>
+      <div class="stat-lbl">Total Subdomains</div>
+    </div>
+    <div class="stat s-green">
+      <div class="stat-val">{len(self.active_subdomains)}</div>
+      <div class="stat-lbl">Active</div>
+    </div>
+    <div class="stat s-gray">
+      <div class="stat-val">{len(self.inactive_subdomains)}</div>
+      <div class="stat-lbl">Inactive</div>
+    </div>
+    <div class="stat s-amber">
+      <div class="stat-val">{len(self.ssh_enabled)}</div>
+      <div class="stat-lbl">SSH Enabled</div>
+    </div>
+    <div class="stat s-red">
+      <div class="stat-val">{len(self.takeover_candidates)}</div>
+      <div class="stat-lbl">Takeover Risk</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="tab-nav">
+      <button class="tab-btn active"  onclick="showTab('overview',this)">Overview</button>
+      <button class="tab-btn" onclick="showTab('all',this)">All Subdomains ({len(self.subdomains)})</button>
+      <button class="tab-btn" onclick="showTab('active',this)">Active ({len(self.active_subdomains)})</button>
+      <button class="tab-btn" onclick="showTab('inactive',this)">Inactive ({len(self.inactive_subdomains)})</button>
+      <button class="tab-btn" onclick="showTab('security',this)">Security ({len(security_subdomains)})</button>
+    </div>
+
+    <div id="overview" class="tab-pane active">
+      <div class="ov-grid">
+        <div class="ov-section">
+          <h4>Discovery Methods</h4>
+          <ul class="ov-list">
+            <li>Certificate Transparency</li>
+            <li>DNS Enumeration &amp; Brute Force</li>
+            <li>Web Archives</li>
+            <li>Search Engines</li>
+            <li>Security APIs</li>
+            <li>AI-Powered Generation</li>
+          </ul>
+        </div>
+        <div class="ov-section">
+          <h4>Key Findings</h4>
+          <ul class="ov-list">
+            <li class="c-green">{len(self.active_subdomains)} active web services</li>
+            <li class="c-amber">{len(self.ssh_enabled)} SSH-enabled hosts</li>
+            <li class="c-red">{len(self.takeover_candidates)} potential takeover risks</li>
+            <li class="c-gray">{len(self.inactive_subdomains)} inactive subdomains</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="all" class="tab-pane">
+      <div class="tbl-wrap">
+        <table id="allTable">
+          <thead><tr><th>Subdomain</th><th>Status</th><th>Code</th><th>Server</th><th>Title</th><th>IP</th><th>SSH</th><th>Takeover</th><th>Ports</th></tr></thead>
+          <tbody>{all_rows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="active" class="tab-pane">
+      <div class="tbl-wrap">
+        <table id="activeTable">
+          <thead><tr><th>Subdomain</th><th>Status</th><th>Code</th><th>Server</th><th>Title</th><th>IP</th><th>SSH</th><th>Takeover</th><th>Ports</th></tr></thead>
+          <tbody>{active_rows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="inactive" class="tab-pane">
+      <div class="tbl-wrap">
+        <table id="inactiveTable">
+          <thead><tr><th>Subdomain</th><th>Status</th><th>Code</th><th>Server</th><th>Title</th><th>IP</th><th>SSH</th><th>Takeover</th><th>Ports</th></tr></thead>
+          <tbody>{inactive_rows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="security" class="tab-pane">
+      <div class="tbl-wrap">
+        <table id="securityTable">
+          <thead><tr><th>Subdomain</th><th>Status</th><th>Code</th><th>Server</th><th>Title</th><th>IP</th><th>SSH</th><th>Takeover</th><th>Ports</th></tr></thead>
+          <tbody>{security_rows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="rpt-footer">
+    <span>SubGrab — Subdomain Enumeration</span>
+    <span>{self.domain} &nbsp;&middot;&nbsp; {datetime.now().strftime('%Y-%m-%d %H:%M')}</span>
+  </div>
+
+</div>
+<script>
+function showTab(name, btn) {{
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  btn.classList.add('active');
+}}
+$(document).ready(function() {{
+  const cfg = {{
+    responsive: true,
+    pageLength: 25,
+    lengthMenu: [[10,25,50,100,-1],[10,25,50,100,'All']],
+    order: [[0,'asc']],
+    language: {{
+      search: 'Filter:',
+      lengthMenu: 'Show _MENU_',
+      info: '_START_–_END_ of _TOTAL_',
+      paginate: {{ first:'«', last:'»', next:'›', previous:'‹' }}
+    }}
+  }};
+  $('#allTable').DataTable(cfg);
+  $('#activeTable').DataTable(cfg);
+  $('#inactiveTable').DataTable(cfg);
+  $('#securityTable').DataTable(cfg);
+}});
+</script>
+</body>
+</html>"""
         
         with open(f"{self.output_dir}/report.html", 'w', encoding='utf-8') as f:
             f.write(html_content)

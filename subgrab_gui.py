@@ -9,24 +9,46 @@ import webbrowser
 import time
 import re
 
-# ── Catppuccin Mocha ──────────────────────────────────────────────────────────
-_CRUST   = "#11111b"   # window chrome / darkest
-_MANTLE  = "#181825"   # header / panel borders
-_BASE    = "#1e1e2e"   # main content bg
-_SURF0   = "#313244"   # entry / card bg
-_SURF1   = "#45475a"   # hover surfaces
-_SURF2   = "#585b70"   # muted borders
-_SUBTEXT = "#a6adc8"   # secondary text
-_TEXT    = "#cdd6f4"   # primary text
-_ACCENT  = "#cba6f7"   # mauve / focus colour
-_GREEN   = "#a6e3a1"
-_YELLOW  = "#f9e2af"
-_RED     = "#f38ba8"
-_BLUE    = "#89b4fa"
-_CYAN    = "#94e2d5"
-_TERM    = "#0d1117"   # terminal bg (GitHub dark)
+# ── Enterprise Slate ─────────────────────────────────────────────────────────
+_CRUST   = "#020617"   # slate-950  — darkest / button fg on colored bg
+_MANTLE  = "#0F172A"   # slate-900  — header / panel bg
+_BASE    = "#1E293B"   # slate-800  — main content bg
+_SURF0   = "#334155"   # slate-700  — entry / card bg
+_SURF1   = "#3D5166"   # slate-700+ — hover surfaces
+_SURF2   = "#475569"   # slate-600  — borders / separators
+_SUBTEXT = "#94A3B8"   # slate-400  — secondary text
+_TEXT    = "#F1F5F9"   # slate-100  — primary text
+_ACCENT  = "#3B82F6"   # blue-500   — enterprise blue
+_GREEN   = "#22C55E"   # green-500  — success
+_YELLOW  = "#F59E0B"   # amber-500  — warning
+_RED     = "#EF4444"   # red-500    — error
+_BLUE    = "#60A5FA"   # blue-400   — info / links
+_CYAN    = "#38BDF8"   # sky-400    — active / scanning
+_TERM    = "#020617"   # slate-950  — terminal bg
 
 _CFG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subgrab_gui_config.json")
+
+# (json_key, instance_attr, default_value)
+_CONFIG_SCHEMA: list[tuple[str, str, object]] = [
+    ("threads",          "threads_var",             "50"),
+    ("timeout",          "timeout_var",             "30"),
+    ("fast_mode",        "fast_mode_var",            False),
+    ("stealth",          "stealth_var",              False),
+    ("nameservers",      "nameservers_var",          "8.8.8.8,8.8.4.4,1.1.1.1"),
+    ("wordlist",         "wordlist_var",             ""),
+    ("proxy_file",       "proxy_file_var",           ""),
+    ("shodan",           "shodan_key_var",           ""),
+    ("securitytrails",   "securitytrails_key_var",   ""),
+    ("virustotal",       "virustotal_key_var",       ""),
+    ("censys_id",        "censys_id_var",            ""),
+    ("censys_secret",    "censys_secret_var",        ""),
+    ("github",           "github_token_var",         ""),
+    ("whoisxml",         "whoisxml_key_var",         ""),
+    ("grok",             "grok_key_var",             ""),
+    ("grok_model",       "grok_model_var",           "grok-3"),
+    ("openrouter",       "openrouter_key_var",       ""),
+    ("openrouter_model", "openrouter_model_var",     "anthropic/claude-sonnet-4-5"),
+]
 
 
 def _btn(parent, text, cmd, bg=_SURF1, fg=_TEXT, size=9, bold=False, **kw):
@@ -65,6 +87,7 @@ class SubGrabGUI:
         self._found       = 0
         self._active      = 0
         self._key_visible = {}
+        self._key_btns    = {}
 
         self._init_vars()
         self._configure_styles()
@@ -186,22 +209,19 @@ class SubGrabGUI:
         hdr.grid(row=0, column=0, sticky="ew")
         hdr.columnconfigure(1, weight=1)
 
-        # Left accent strip
-        tk.Frame(hdr, bg=_ACCENT, width=3).grid(row=0, rowspan=2, column=0, sticky="ns")
-
         # Logo
         logo = tk.Frame(hdr, bg=_MANTLE)
-        logo.grid(row=0, column=1, sticky="w", padx=(18, 0), pady=(12, 0))
+        logo.grid(row=0, column=1, sticky="w", padx=(20, 0), pady=(12, 0))
         tk.Label(logo, text="SubGrab", font=("Segoe UI", 18, "bold"),
                  fg=_ACCENT, bg=_MANTLE).pack(side="left")
         tk.Label(logo, text="  Subdomain Enumeration",
-                 font=("Segoe UI", 10), fg=_SURF2, bg=_MANTLE).pack(
+                 font=("Segoe UI", 10), fg=_SUBTEXT, bg=_MANTLE).pack(
             side="left", pady=(5, 0))
 
         # Sub-line
         tk.Label(hdr, text="Passive recon  ·  CT logs  ·  DNS brute force  ·  AI-powered",
-                 font=("Segoe UI", 8), fg=_SURF2, bg=_MANTLE).grid(
-            row=1, column=1, sticky="w", padx=(18, 0), pady=(0, 10))
+                 font=("Segoe UI", 8), fg=_SUBTEXT, bg=_MANTLE).grid(
+            row=1, column=1, sticky="w", padx=(20, 0), pady=(0, 10))
 
         # Status indicator (right)
         ind = tk.Frame(hdr, bg=_MANTLE)
@@ -357,14 +377,16 @@ class SubGrabGUI:
             e = _entry(p, var, show="*")
             e.grid(row=r[0], column=1, sticky="ew", ipady=4,
                    padx=(0, 6), pady=(0, 2))
-            self._key_visible[e] = False
 
             bf = tk.Frame(p, bg=_BASE)
             bf.grid(row=r[0], column=2, pady=(0, 2))
-            _btn(bf, "👁", lambda w=e: self._toggle_key(w),
-                 bg=_SURF0, padx=6, pady=3).pack(side="left", padx=(0, 2))
+            show_b = _btn(bf, "Show", lambda w=e: self._toggle_key(w),
+                          bg=_SURF0, fg=_SUBTEXT, padx=6, pady=3)
+            show_b.pack(side="left", padx=(0, 2))
+            self._key_visible[e] = False
+            self._key_btns[e]    = show_b
             if url:
-                _btn(bf, "↗", lambda u=url: webbrowser.open(u),
+                _btn(bf, "Link", lambda u=url: webbrowser.open(u),
                      bg=_SURF0, fg=_BLUE, padx=6, pady=3).pack(side="left")
             r[0] += 1
 
@@ -409,12 +431,12 @@ class SubGrabGUI:
         r[0] += 1
         brow = tk.Frame(p, bg=_BASE)
         brow.grid(row=r[0], column=0, columnspan=3, pady=(10, 4))
-        _btn(brow, "💾  Save", self.save_api_keys,
+        _btn(brow, "Save Config", self.save_api_keys,
              bg=_SURF1, padx=12, pady=5).pack(side="left", padx=(0, 8))
-        _btn(brow, "📂  Load", self.load_api_keys,
+        _btn(brow, "Load Config", self.load_api_keys,
              bg=_SURF1, padx=12, pady=5).pack(side="left", padx=(0, 12))
         tk.Label(brow, text="Auto-saved on exit",
-                 font=("Segoe UI", 8), fg=_SURF2, bg=_BASE).pack(side="left")
+                 font=("Segoe UI", 8), fg=_SUBTEXT, bg=_BASE).pack(side="left")
 
     # ── Advanced tab ───────────────────────────────────────────────────────────
 
@@ -434,7 +456,7 @@ class SubGrabGUI:
 
         def field(hint, var):
             tk.Label(p, text=hint, font=("Segoe UI", 8),
-                     fg=_SURF2, bg=_BASE).grid(
+                     fg=_SUBTEXT, bg=_BASE).grid(
                 row=row[0], column=0, sticky="w", pady=(0, 2))
             row[0] += 1
             _entry(p, var).grid(row=row[0], column=0, sticky="ew",
@@ -443,7 +465,7 @@ class SubGrabGUI:
 
         def browse_field(hint, var, title):
             tk.Label(p, text=hint, font=("Segoe UI", 8),
-                     fg=_SURF2, bg=_BASE).grid(
+                     fg=_SUBTEXT, bg=_BASE).grid(
                 row=row[0], column=0, sticky="w", pady=(0, 2))
             row[0] += 1
             rf = tk.Frame(p, bg=_BASE)
@@ -492,9 +514,9 @@ class SubGrabGUI:
         tbar.grid_propagate(False)
         tbar.columnconfigure(1, weight=1)
 
-        tk.Label(tbar, text="●  Output", font=("Segoe UI", 9, "bold"),
-                 fg=_CYAN, bg=_MANTLE).grid(row=0, column=0, padx=(14, 0),
-                                             pady=10, sticky="w")
+        tk.Label(tbar, text="Output", font=("Segoe UI", 9, "bold"),
+                 fg=_SUBTEXT, bg=_MANTLE).grid(row=0, column=0, padx=(14, 0),
+                                                pady=10, sticky="w")
 
         right_btns = tk.Frame(tbar, bg=_MANTLE)
         right_btns.grid(row=0, column=2, sticky="e", padx=(0, 10), pady=5)
@@ -549,6 +571,9 @@ class SubGrabGUI:
         visible = self._key_visible.get(entry, False)
         entry.config(show="" if not visible else "*")
         self._key_visible[entry] = not visible
+        btn = self._key_btns.get(entry)
+        if btn:
+            btn.config(text="Hide" if not visible else "Show")
 
     def _browse(self, var, title):
         path = filedialog.askopenfilename(
@@ -821,26 +846,7 @@ class SubGrabGUI:
     # ── Config persistence ─────────────────────────────────────────────────────
 
     def _config_data(self):
-        return {
-            "threads":          self.threads_var.get(),
-            "timeout":          self.timeout_var.get(),
-            "fast_mode":        self.fast_mode_var.get(),
-            "stealth":          self.stealth_var.get(),
-            "nameservers":      self.nameservers_var.get(),
-            "wordlist":         self.wordlist_var.get(),
-            "proxy_file":       self.proxy_file_var.get(),
-            "shodan":           self.shodan_key_var.get(),
-            "securitytrails":   self.securitytrails_key_var.get(),
-            "virustotal":       self.virustotal_key_var.get(),
-            "censys_id":        self.censys_id_var.get(),
-            "censys_secret":    self.censys_secret_var.get(),
-            "github":           self.github_token_var.get(),
-            "whoisxml":         self.whoisxml_key_var.get(),
-            "grok":             self.grok_key_var.get(),
-            "grok_model":       self.grok_model_var.get(),
-            "openrouter":       self.openrouter_key_var.get(),
-            "openrouter_model": self.openrouter_model_var.get(),
-        }
+        return {key: getattr(self, attr).get() for key, attr, _ in _CONFIG_SCHEMA}
 
     def _load_config(self):
         if not os.path.exists(_CFG):
@@ -848,25 +854,8 @@ class SubGrabGUI:
         try:
             with open(_CFG, encoding="utf-8") as f:
                 d = json.load(f)
-            self.threads_var.set(d.get("threads", "50"))
-            self.timeout_var.set(d.get("timeout", "30"))
-            self.fast_mode_var.set(d.get("fast_mode", False))
-            self.stealth_var.set(d.get("stealth", False))
-            self.nameservers_var.set(d.get("nameservers", "8.8.8.8,8.8.4.4,1.1.1.1"))
-            self.wordlist_var.set(d.get("wordlist", ""))
-            self.proxy_file_var.set(d.get("proxy_file", ""))
-            self.shodan_key_var.set(d.get("shodan", ""))
-            self.securitytrails_key_var.set(d.get("securitytrails", ""))
-            self.virustotal_key_var.set(d.get("virustotal", ""))
-            self.censys_id_var.set(d.get("censys_id", ""))
-            self.censys_secret_var.set(d.get("censys_secret", ""))
-            self.github_token_var.set(d.get("github", ""))
-            self.whoisxml_key_var.set(d.get("whoisxml", ""))
-            self.grok_key_var.set(d.get("grok", ""))
-            self.grok_model_var.set(d.get("grok_model", "grok-3"))
-            self.openrouter_key_var.set(d.get("openrouter", ""))
-            self.openrouter_model_var.set(
-                d.get("openrouter_model", "anthropic/claude-sonnet-4-5"))
+            for key, attr, default in _CONFIG_SCHEMA:
+                getattr(self, attr).set(d.get(key, default))
         except Exception:
             pass
 
@@ -897,21 +886,9 @@ class SubGrabGUI:
             try:
                 with open(path, encoding="utf-8") as f:
                     d = json.load(f)
-                for key, var in [
-                    ("shodan",           self.shodan_key_var),
-                    ("securitytrails",   self.securitytrails_key_var),
-                    ("virustotal",       self.virustotal_key_var),
-                    ("censys_id",        self.censys_id_var),
-                    ("censys_secret",    self.censys_secret_var),
-                    ("github",           self.github_token_var),
-                    ("whoisxml",         self.whoisxml_key_var),
-                    ("grok",             self.grok_key_var),
-                    ("grok_model",       self.grok_model_var),
-                    ("openrouter",       self.openrouter_key_var),
-                    ("openrouter_model", self.openrouter_model_var),
-                ]:
+                for key, attr, _ in _CONFIG_SCHEMA:
                     if key in d:
-                        var.set(d[key])
+                        getattr(self, attr).set(d[key])
                 messagebox.showinfo("Loaded", "Configuration loaded.")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
