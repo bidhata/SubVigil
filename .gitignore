@@ -30,6 +30,7 @@ Thumbs.db
 
 # Claude Code session data
 .claude/
+docs/
 
 # Graphify output
 graphify-out/
