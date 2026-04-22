@@ -668,13 +668,16 @@ class SubdomainEnumerator:
             results: list[dict] = []
             total = len(tasks)
             report_every = max(1, total // 20)
+            bar_width = 28
             for i, coro in enumerate(asyncio.as_completed(tasks), 1):
                 result = await coro
                 results.append(result)
                 if i % report_every == 0 or i == total:
                     active_so_far = sum(1 for r in results if r['active'])
                     pct = i * 100 // total
-                    print(f"{Fore.CYAN}[*] Active recon: {i}/{total} ({pct}%) — {active_so_far} active", flush=True)
+                    filled = bar_width * i // total
+                    bar = "=" * filled + (">" if filled < bar_width else "") + "-" * (bar_width - filled - (1 if filled < bar_width else 0))
+                    print(f"{Fore.CYAN}[*] [{bar}] {i:>{len(str(total))}}/{total} ({pct:3}%) — {active_so_far} active", flush=True)
 
         with self._info_lock:
             for info in results:
