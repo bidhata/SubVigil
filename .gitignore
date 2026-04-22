@@ -27,3 +27,9 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code session data
+.claude/
+
+# Graphify output
+graphify-out/

@@ -5,6 +5,7 @@
 ### Advanced Subdomain Enumeration Tool
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![CI](https://github.com/bidhata/SubGrab/actions/workflows/ci.yml/badge.svg)](https://github.com/bidhata/SubGrab/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE.txt)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-6366f1?style=flat-square)](https://github.com/bidhata/SubGrab/releases)
 [![Release](https://img.shields.io/github/v/release/bidhata/SubGrab?style=flat-square&color=f59e0b&label=Latest)](https://github.com/bidhata/SubGrab/releases)
@@ -174,7 +175,7 @@ subgrab.py domain [options]
 SubGrab/
 ├── main.py                  ← unified entry point (GUI or CLI)
 ├── subgrab.py               ← CLI engine + SubdomainEnumerator
-├── subgrab_gui.py           ← dark GUI (Catppuccin Mocha theme)
+├── subgrab_gui.py           ← dark GUI (Enterprise Slate theme)
 ├── SubGrab.spec             ← PyInstaller build spec
 ├── requirements.txt
 ├── start_subgrab_gui.bat    ← Windows one-click launcher
@@ -461,7 +462,7 @@ SubGrab.exe               # binary — double-click
 
 | Feature | Detail |
 |---------|--------|
-| 🎨 Theme | Full Catppuccin Mocha dark theme |
+| Theme | Enterprise Slate dark theme (slate-950 + blue-500 accent) |
 | 📐 Layout | Horizontal split — config sidebar + live terminal |
 | 🔑 API Keys tab | Show/hide toggles · direct "Get Key" links · auto-save on exit |
 | ⚙️ Advanced tab | DNS nameservers · custom wordlist · proxy file |
