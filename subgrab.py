@@ -667,13 +667,14 @@ class SubdomainEnumerator:
             ]
             results: list[dict] = []
             total = len(tasks)
-            report_every = max(1, total // 10)
+            report_every = max(1, total // 20)
             for i, coro in enumerate(asyncio.as_completed(tasks), 1):
                 result = await coro
                 results.append(result)
                 if i % report_every == 0 or i == total:
                     active_so_far = sum(1 for r in results if r['active'])
-                    print(f"{Fore.CYAN}[*] Active recon: {i}/{total} checked, {active_so_far} active so far", flush=True)
+                    pct = i * 100 // total
+                    print(f"{Fore.CYAN}[*] Active recon: {i}/{total} ({pct}%) — {active_so_far} active", flush=True)
 
         with self._info_lock:
             for info in results:
@@ -690,7 +691,8 @@ class SubdomainEnumerator:
 
     def active_reconnaissance(self) -> None:
         """Perform active reconnaissance on discovered subdomains."""
-        print(f"{Fore.CYAN}[*] Performing active reconnaissance...")
+        n = len(self.subdomains)
+        print(f"{Fore.CYAN}[*] Performing active reconnaissance on {n} subdomains...", flush=True)
         asyncio.run(self._async_active_recon())
 
     def run_passive_discovery(self):
