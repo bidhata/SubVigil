@@ -625,21 +625,21 @@ class SubdomainEnumerator:
                 except Exception:
                     continue
 
-            if not self.fast_mode and self.scan_ports:
-                for port in self.scan_ports:
+            if not self.fast_mode and self.scan_ports and info['ip']:
+                async def _probe(port: int) -> int | None:
                     try:
                         reader, writer = await asyncio.wait_for(
-                            asyncio.open_connection(subdomain, port), timeout=3
+                            asyncio.open_connection(info['ip'], port), timeout=1
                         )
-                        try:
-                            info['ports'].append(port)
-                            if port == 22:
-                                info['ssh_open'] = True
-                        finally:
-                            writer.close()
-                            await writer.wait_closed()
+                        writer.close()
+                        await writer.wait_closed()
+                        return port
                     except Exception:
-                        pass
+                        return None
+
+                open_ports = [p for p in await asyncio.gather(*[_probe(p) for p in self.scan_ports]) if p]
+                info['ports'] = open_ports
+                info['ssh_open'] = 22 in open_ports
 
             if not self.fast_mode:
                 vulnerable = await asyncio.to_thread(
