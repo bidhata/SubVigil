@@ -6,6 +6,8 @@ managed by Krishnendu Paul < me@krishnendu.com >
 https://www.linkedin.com/in/krishpaul/ 
 """
 
+__version__ = "2.0.0"
+
 import argparse
 import asyncio
 import csv

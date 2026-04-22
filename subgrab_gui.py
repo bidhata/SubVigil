@@ -75,7 +75,7 @@ def _entry(parent, textvariable, show="", width=None, font_size=9):
 class SubGrabGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("SubGrab — Subdomain Enumeration")
+        self.root.title("SubGrab v2.0.0 — Subdomain Enumeration")
         self.root.geometry("1280x840")
         self.root.minsize(960, 680)
         self.root.configure(bg=_CRUST)
@@ -1035,8 +1035,10 @@ def _show_about(parent):
 
     tk.Label(frm, text="SubGrab", font=("Segoe UI", 24, "bold"),
              fg=_ACCENT, bg=_BASE).pack()
+    tk.Label(frm, text="v2.0.0", font=("Segoe UI", 10),
+             fg=_SURF2, bg=_BASE).pack(pady=(0, 2))
     tk.Label(frm, text="Advanced Subdomain Enumeration",
-             font=("Segoe UI", 10), fg=_SURF2, bg=_BASE).pack(pady=(2, 20))
+             font=("Segoe UI", 10), fg=_SURF2, bg=_BASE).pack(pady=(0, 20))
 
     tk.Frame(frm, bg=_SURF0, height=1).pack(fill="x", pady=(0, 16))
 
