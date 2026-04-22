@@ -79,9 +79,9 @@ class CertificateTransparency(BaseScanner):
                         for name in cert.get("name_value", "").split("\n"):
                             subdomains.update(self._collect(name))
                     return subdomains
-                if r.status_code == 429:
+                if r.status_code in (429, 502, 503, 504):
                     wait = 10 * (2 ** attempt)
-                    print(f"{Fore.YELLOW}[!] crt.sh rate-limited — retrying in {wait}s")
+                    print(f"{Fore.YELLOW}[!] crt.sh HTTP {r.status_code} — retrying in {wait}s")
                     time.sleep(wait)
                     continue
                 print(f"{Fore.YELLOW}[!] crt.sh HTTP {r.status_code}")
