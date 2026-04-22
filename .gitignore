@@ -23,6 +23,7 @@ env/
 .vscode/
 .idea/
 *.swp
+tests/
 
 # OS
 .DS_Store
