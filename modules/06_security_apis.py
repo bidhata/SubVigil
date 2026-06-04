@@ -1,3 +1,4 @@
+from __future__ import annotations
 from colorama import Fore
 from modules.base import BaseScanner
 
@@ -23,7 +24,10 @@ class SecurityAPIs(BaseScanner):
                     if cursor:
                         params["cursor"] = cursor
                     response = self.get_session().get(url, headers=headers, params=params, timeout=30)
-                    if response.status_code != 200:
+                    if response.status_code == 429:
+                        print(f"{Fore.YELLOW}[!] VirusTotal rate limit reached (429). Skipping remaining pages.")
+                        break
+                    elif response.status_code != 200:
                         print(f"{Fore.RED}[!] VirusTotal returned HTTP {response.status_code}")
                         break
                     data = response.json()

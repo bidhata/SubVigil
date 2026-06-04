@@ -15,6 +15,9 @@ Multi-threaded subdomain enumeration combining **9 passive sources**, **active r
 
 [**⬇️ Download Binary**](https://github.com/bidhata/SubGrab/releases) · [**📖 Quick Start**](#-quick-start) · [**🔌 Plugin Guide**](#-plugin-system) · [**🖥️ GUI**](#-gui-interface)
 
+<br>
+<img src="screenshot.png" alt="SubGrab Dashboard Screenshot" width="800">
+
 </div>
 
 ---

@@ -10,11 +10,13 @@ __version__ = "2.0.0"
 
 import argparse
 import asyncio
+import concurrent.futures
 import csv
 import dns.resolver
 import dns.zone
 import dns.query
 import dns.reversename
+import html
 import json
 import os
 import random
@@ -31,7 +33,7 @@ from datetime import datetime
 def _base_dir() -> Path:
     """Project root — works both normally and inside a PyInstaller bundle."""
     if getattr(sys, "frozen", False):
-        return Path(sys._MEIPASS)
+        return Path(getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__))))
     return Path(__file__).parent
 
 # Third-party imports (install with: pip install requests dnspython colorama beautifulsoup4 tqdm shodan)
@@ -62,6 +64,7 @@ class SubdomainEnumerator:
         self.nameservers = nameservers or ['8.8.8.8', '8.8.4.4', '1.1.1.1']
         self.api_keys = api_keys or {}
         self.scan_ports: list[int] = scan_ports if scan_ports is not None else [21, 22, 25, 80, 443, 8080, 8443, 3306, 5432, 6379, 27017]
+        self.openrouter_model = None
 
         # Results storage
         self.subdomains = set()
@@ -201,6 +204,9 @@ class SubdomainEnumerator:
             import urllib3
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             self.thread_local.session = requests.Session()
+            self.thread_local.session.headers.update({
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            })
             self.thread_local.session.verify = False
             if self.proxies:
                 proxy = random.choice(self.proxies)
@@ -286,63 +292,19 @@ class SubdomainEnumerator:
         if 'shodan' not in self.api_keys:
             return set()
         
-        print(f"{Fore.CYAN}[*] Performing Shodan scanning (active subdomains only)...")
+        print(f"{Fore.CYAN}[*] Performing Shodan passive scanning...")
         subdomains = set()
         
         try:
             api = shodan.Shodan(self.api_keys['shodan'])
             
-            # Only scan IPs from active subdomains
-            ip_to_subdomains = self._build_ip_map(active_only=True)
-            unique_ips = set(ip_to_subdomains.keys())
-
-            if not unique_ips:
-                print(f"{Fore.YELLOW}[!] No active subdomain IPs to scan with Shodan")
-                return subdomains
-            
-            print(f"{Fore.CYAN}[*] Scanning {len(unique_ips)} unique active IPs with Shodan...")
-            
-            for ip in unique_ips:
-                try:
-                    host = api.host(ip)
-                    
-                    # Store org info for all subdomains mapped to this IP
-                    for sub in ip_to_subdomains.get(ip, []):
-                        self._apply_shodan_owner(sub, host)
-                    
-                    # Add any hostnames that match our domain
-                    for hostname in host.get('hostnames', []):
-                        if hostname and hostname.endswith(f'.{self.domain}'):
-                            subdomains.add(hostname)
-                    
-                    # Add any domains from SSL certificates
-                    if host.get('data'):
-                        for item in host['data']:
-                            if item.get('ssl', {}).get('cert'):
-                                cert = item['ssl']['cert']
-                                # Process subject CN
-                                if cert.get('subject', {}).get('CN'):
-                                    for name in cert['subject']['CN'].split(','):
-                                        name = name.strip()
-                                        if name and name.endswith(f'.{self.domain}'):
-                                            subdomains.add(name)
-                                # Process alt names
-                                for alt_name in cert.get('alt_names', []):
-                                    if alt_name and alt_name.endswith(f'.{self.domain}'):
-                                        subdomains.add(alt_name)
-                            
-                            # Add any domains from HTTP responses
-                            if item.get('http'):
-                                for header in ['host', 'server', 'location']:
-                                    value = item['http'].get(header)
-                                    if isinstance(value, str) and value.endswith(f'.{self.domain}'):
-                                        subdomains.add(value)
-                    
-                    self.stealth_delay()
-                except shodan.exception.APIError as e:
-                    print(f"{Fore.YELLOW}[!] Shodan error for {ip}: {e}")
-                except Exception as e:
-                    print(f"{Fore.RED}[!] Error processing Shodan data for {ip}: {e}")
+            # Passively search for subdomains using the Shodan Search API
+            query = f"hostname:{self.domain}"
+            results = api.search(query)
+            for match in results.get('matches', []):
+                for hostname in match.get('hostnames', []):
+                    if hostname.endswith(f'.{self.domain}'):
+                        subdomains.add(hostname)
                     
         except Exception as e:
             print(f"{Fore.RED}[!] Shodan API error: {e}")
@@ -410,7 +372,7 @@ class SubdomainEnumerator:
                     print(f"{Fore.GREEN}[+] Shodan [{scanned}/{len(unique_ips)}] {ip} -> {ip_owner} | Ports: {ports}")
                     self.stealth_delay()
                     
-                except shodan.exception.APIError as e:
+                except shodan.APIError as e:
                     print(f"{Fore.YELLOW}[!] Shodan error for {ip}: {e}")
                 except Exception as e:
                     print(f"{Fore.RED}[!] Error scanning {ip}: {e}")
@@ -490,17 +452,11 @@ class SubdomainEnumerator:
                                     subdomains.add(clean_link_text)
         
         # Method 2: Use regex to find all subdomains in the entire page content
-        subdomain_pattern = r'\b([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+' + re.escape(self.domain) + r'\b'
+        subdomain_pattern = r'\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+' + re.escape(self.domain) + r'\b'
         matches = re.findall(subdomain_pattern, page_text)
         for match in matches:
-            if isinstance(match, tuple):
-                # Handle tuple results from regex groups - reconstruct the full domain
-                full_match = match[0] + self.domain
-            else:
-                full_match = match
-            
-            if self._is_valid_subdomain(full_match):
-                subdomains.add(full_match)
+            if self._is_valid_subdomain(match):
+                subdomains.add(match)
         
         # Method 3: Look for any <domain>-bearing strings inside <script> tags.
         # (Plain regex sweep — safer than nested {…}"…" patterns which could
@@ -617,7 +573,8 @@ class SubdomainEnumerator:
         }
 
         async with semaphore:
-            ips = await asyncio.to_thread(self.resolve_domain, subdomain)
+            loop = asyncio.get_running_loop()
+            ips = await loop.run_in_executor(None, self.resolve_domain, subdomain)
             if not ips:
                 return info
             info['ip'] = ips[0]
@@ -631,10 +588,9 @@ class SubdomainEnumerator:
                         info['server'] = response.headers.get('Server', 'Unknown')
                         if 'text/html' in response.headers.get('Content-Type', ''):
                             text = await response.text(errors='replace')
-                            soup = BeautifulSoup(text, 'html.parser')
-                            title_tag = soup.find('title')
-                            if title_tag and title_tag.text:
-                                info['title'] = title_tag.text.strip()[:100]
+                            title_match = re.search(r'<title[^>]*>([^<]+)</title>', text, re.IGNORECASE)
+                            if title_match:
+                                info['title'] = title_match.group(1).strip()[:100]
                     break
                 except Exception:
                     continue
@@ -656,8 +612,8 @@ class SubdomainEnumerator:
                 info['ssh_open'] = 22 in open_ports
 
             if not self.fast_mode:
-                vulnerable = await asyncio.to_thread(
-                    self.check_subdomain_takeover, subdomain
+                vulnerable = await loop.run_in_executor(
+                    None, self.check_subdomain_takeover, subdomain
                 )
                 if vulnerable:
                     info['takeover_vulnerable'] = True
@@ -671,9 +627,12 @@ class SubdomainEnumerator:
         semaphore = asyncio.Semaphore(self.threads)
         connector = aiohttp.TCPConnector(ssl=False, limit=max(self.threads * 2, 50))
         timeout_cfg = aiohttp.ClientTimeout(total=self.timeout, connect=10)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
 
         async with aiohttp.ClientSession(
-            connector=connector, timeout=timeout_cfg
+            connector=connector, timeout=timeout_cfg, headers=headers
         ) as session:
             tasks = [
                 self._check_subdomain_async(sub, session, semaphore)
@@ -721,19 +680,25 @@ class SubdomainEnumerator:
             sys.path.insert(0, _root)
         from modules.base import load_modules
         scanner_classes = load_modules(modules_dir)
+        scanners = []
         for cls in scanner_classes:
             if self.fast_mode and cls.fast_mode_skip:
                 continue
             if cls.requires_key and cls.requires_key not in self.api_keys:
                 continue
-            scanner = cls(self)
-            try:
-                discovered = scanner.run()
-                if discovered:
-                    self.subdomains.update(discovered)
-                    print(f"{Fore.GREEN}[+] {cls.name}: {len(discovered)} subdomains found")
-            except Exception as e:
-                print(f"{Fore.RED}[!] Error in {cls.name}: {e}")
+            scanners.append(cls(self))
+            
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, len(scanners))) as executor:
+            future_to_scanner = {executor.submit(scanner.run): scanner for scanner in scanners}
+            for future in concurrent.futures.as_completed(future_to_scanner):
+                scanner = future_to_scanner[future]
+                try:
+                    discovered = future.result()
+                    if discovered:
+                        self.subdomains.update(discovered)
+                        print(f"{Fore.GREEN}[+] {scanner.name}: {len(discovered)} subdomains found")
+                except Exception as e:
+                    print(f"{Fore.RED}[!] Error in {scanner.name}: {e}")
 
     def _load_ai_config(self, ai_dir):
         """Read ai_engine/config.ini and inject keys/models into self.api_keys.
@@ -770,19 +735,25 @@ class SubdomainEnumerator:
         self._load_ai_config(ai_dir)
         from ai_engine.base import load_ai_engines
         engine_classes = load_ai_engines(ai_dir)
+        engines = []
         for cls in engine_classes:
             if self.fast_mode and cls.fast_mode_skip:
                 continue
             if cls.requires_key and cls.requires_key not in self.api_keys:
                 continue
-            engine = cls(self)
-            try:
-                discovered = engine.run()
-                if discovered:
-                    self.subdomains.update(discovered)
-                    print(f"{Fore.GREEN}[+] {cls.name}: {len(discovered)} subdomains generated")
-            except Exception as e:
-                print(f"{Fore.RED}[!] Error in {cls.name}: {e}")
+            engines.append(cls(self))
+            
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, len(engines))) as executor:
+            future_to_engine = {executor.submit(engine.run): engine for engine in engines}
+            for future in concurrent.futures.as_completed(future_to_engine):
+                engine = future_to_engine[future]
+                try:
+                    discovered = future.result()
+                    if discovered:
+                        self.subdomains.update(discovered)
+                        print(f"{Fore.GREEN}[+] {engine.name}: {len(discovered)} subdomains generated")
+                except Exception as e:
+                    print(f"{Fore.RED}[!] Error in {engine.name}: {e}")
 
     def generate_reports(self):
         """Generate comprehensive reports"""
@@ -837,14 +808,14 @@ class SubdomainEnumerator:
                 writer.writerow([
                     subdomain,
                     info.get('active', False),
-                    info.get('status_code', ''),
-                    info.get('server', ''),
+                    info.get('status_code') or '',
+                    info.get('server') or '',
                     (info.get('title') or ''),
-                    info.get('ip', ''),
-                    info.get('ip_owner', ''),
+                    info.get('ip') or '',
+                    info.get('ip_owner') or '',
                     info.get('ssh_open', False),
                     info.get('takeover_vulnerable', False),
-                    ','.join(map(str, info.get('ports', [])))
+                    ','.join(map(str, info.get('ports') or []))
                 ])
         
         # HTML report
@@ -882,13 +853,16 @@ class SubdomainEnumerator:
                 ports_html = ''.join(port_parts)
 
                 title_raw     = info.get('title') or ''
-                title_display = title_raw[:60] + ('…' if len(title_raw) > 60 else '')
+                title_display = html.escape(title_raw[:60] + ('…' if len(title_raw) > 60 else ''))
+                title_tooltip = html.escape(title_raw)
+                
+                server_display = html.escape(info.get('server') or '')
 
-                ip_addr  = info.get('ip', '')
-                ip_owner = info.get('ip_owner', '')
-                ip_org   = info.get('ip_org', '')
-                ip_isp   = info.get('ip_isp', '')
-                ip_asn   = info.get('ip_asn', '')
+                ip_addr  = info.get('ip') or ''
+                ip_owner = info.get('ip_owner') or ''
+                ip_org   = info.get('ip_org') or ''
+                ip_isp   = info.get('ip_isp') or ''
+                ip_asn   = info.get('ip_asn') or ''
 
                 if ip_owner and ip_addr:
                     parts = [f'Owner: {ip_owner}']
@@ -911,9 +885,9 @@ class SubdomainEnumerator:
                     <tr>
                         <td><a href="https://{subdomain}" target="_blank" class="sub-link">{subdomain}</a></td>
                         <td>{status_badge}</td>
-                        <td>{info.get('status_code', '')}</td>
-                        <td>{info.get('server', '')}</td>
-                        <td title="{(info.get('title') or '')}">{title_display}</td>
+                        <td>{info.get('status_code') or ''}</td>
+                        <td>{server_display}</td>
+                        <td title="{title_tooltip}">{title_display}</td>
                         <td>{ip_html}</td>
                         <td>{ssh_badge}</td>
                         <td>{takeover_badge}</td>
@@ -1447,10 +1421,12 @@ $(document).ready(function() {{
 
 def main():
     for _stream in (sys.stdout, sys.stderr):
-        try:
-            _stream.reconfigure(encoding="utf-8", errors="replace")
-        except Exception:
-            pass
+        reconf = getattr(_stream, "reconfigure", None)
+        if reconf:
+            try:
+                reconf(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
     parser = argparse.ArgumentParser(
@@ -1495,7 +1471,7 @@ Examples:
     parser.add_argument('--whoisxml-key', help='WhoisXML API key for subdomain lookup (500 free credits)')
     # AI Integration
     parser.add_argument('--openrouter-key', help='OpenRouter API key for AI-powered subdomain generation')
-    parser.add_argument('--openrouter-model', default='anthropic/claude-sonnet-4.5',
+    parser.add_argument('--openrouter-model',
                        help='OpenRouter model to use (default: anthropic/claude-sonnet-4.5)')
 
     args = parser.parse_args()
@@ -1557,7 +1533,7 @@ Examples:
     )
     
     # Set AI model preferences if provided
-    if args.openrouter_key:
+    if args.openrouter_model:
         enumerator.openrouter_model = args.openrouter_model
     
     try:
@@ -1566,8 +1542,8 @@ Examples:
         print(f"\n{Fore.YELLOW}[!] Enumeration interrupted by user")
     except Exception as e:
         print(f"{Fore.RED}[!] Error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
     main()
-

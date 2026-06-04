@@ -54,6 +54,7 @@ EXECUTION ORDER
   Files are sorted alphabetically.  Use numeric prefixes (01_, 02_, …) to
   control the order.  Files whose name starts with '_' are skipped.
 """
+from __future__ import annotations
 
 import importlib.util
 import inspect

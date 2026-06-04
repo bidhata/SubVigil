@@ -1,11 +1,12 @@
 """
 SubGrab GUI — Professional subdomain enumeration cockpit.
 
-Layout (4 rows):
-    0) Header     — wordmark, version pill, animated status pill
+Layout:
+    0) Status     — scan state
     1) Command    — domain · threads · timeout · toggle chips · Start/Stop · Recent
-    2) Body       — PanedWindow [Config tabs | Results table | Terminal log]
-    3) Stats      — counts · progress bar · module progress
+    2) Summary    — counts · module progress · elapsed time
+    3) Body       — PanedWindow [Config tabs | Results table | Terminal log]
+    4) Statusbar  — progress and runtime details
 
 Stays on stdlib tkinter / ttk. No new dependencies.
 """
@@ -210,7 +211,7 @@ class Pill(tk.Frame):
             self._lbl.config(fg=fg)
         if text is not None:
             self._lbl.config(text=text)
-        if dot is not None and self._dot_cv:
+        if dot is not None and self._dot_cv and self._dot_id is not None:
             self._dot_cv.itemconfig(self._dot_id, fill=dot)
 
 
@@ -237,16 +238,13 @@ class SubGrabGUI:
         self._active       = 0
         self._key_visible  = {}
         self._key_btns     = {}
-        self._results      = {}              # subdomain -> {ip, source, takeover}
         self._module_state = {}              # display_name -> 'idle'|'running'|'done'|'error'
         self._module_count = {}              # display_name -> int
         self._module_widgets = {}            # display_name -> {'card', 'badge', 'count'}
         self._recent_domains: list[str] = []
         self._saved_window_geometry = None
         self._saved_pane_sashes = []
-        self._saved_workspace_sash = None
         self._main_paned = None
-        self._workspace_paned = None
 
         self._init_vars()
         self._configure_styles()
@@ -372,13 +370,11 @@ class SubGrabGUI:
         self.shell = tk.Frame(self.root, bg=_MANTLE,
                               highlightthickness=1, highlightbackground="#FDFDFB")
         self.shell.grid(row=0, column=0, sticky="nsew", padx=14, pady=12)
-        self.shell.columnconfigure(1, weight=1)
+        self.shell.columnconfigure(0, weight=1)
         self.shell.rowconfigure(0, weight=1)
 
-        self._build_side_rail(self.shell)
-
         self.main = tk.Frame(self.shell, bg=_MANTLE)
-        self.main.grid(row=0, column=1, sticky="nsew", padx=(6, 10), pady=9)
+        self.main.grid(row=0, column=0, sticky="nsew", padx=10, pady=9)
         self.main.columnconfigure(0, weight=1)
         self.main.rowconfigure(3, weight=1)
 
@@ -390,62 +386,15 @@ class SubGrabGUI:
         self.root.bind_all("<Control-Return>", lambda _e: self.start_scan())
         self.root.bind_all("<Escape>",         lambda _e: self.stop_scan())
 
-    def _build_side_rail(self, parent):
-        rail = tk.Frame(parent, bg=_PANEL, width=52)
-        rail.grid(row=0, column=0, sticky="ns", padx=(10, 6), pady=10)
-        rail.grid_propagate(False)
-
-        logo = tk.Frame(rail, bg=_PANEL)
-        logo.pack(pady=(14, 24))
-        cv = tk.Canvas(logo, width=32, height=32, bg=_PANEL, highlightthickness=0)
-        cv.pack()
-        cv.create_oval(3, 3, 29, 29, fill=_ACCENT, outline="")
-        cv.create_text(16, 16, text="S", font=("Segoe UI", 14, "bold"), fill=_PANEL)
-
-        nav = [
-            ("⌁", "Overview", True),
-            ("◷", "Sources", False),
-            ("▦", "Results", False),
-            ("⚙", "Settings", False),
-        ]
-        for icon, label, active in nav:
-            bg = _ACCENT2 if active else _PANEL
-            fg = _PANEL if active else _SUBTEXT
-            item = tk.Label(rail, text=icon, font=("Segoe UI", 13, "bold"),
-                            fg=fg, bg=bg, width=3, height=1, cursor="hand2")
-            item.pack(pady=7)
-            item.bind("<Enter>", lambda _e, w=item, a=active: None if a else w.config(bg=_SURF1))
-            item.bind("<Leave>", lambda _e, w=item, a=active: None if a else w.config(bg=_PANEL))
-
-        tk.Frame(rail, bg=_PANEL).pack(expand=True, fill="both")
-        for icon in ("?", "↩"):
-            tk.Label(rail, text=icon, font=("Segoe UI", 11, "bold"),
-                     fg=_SUBTEXT, bg=_PANEL, width=3, height=1).pack(pady=8)
-
     # ── Header ────────────────────────────────────────────────────────────────
 
     def _build_header(self, parent):
         hdr = tk.Frame(parent, bg=_MANTLE)
         hdr.grid(row=0, column=0, sticky="ew")
-        hdr.columnconfigure(1, weight=1)
-
-        nav = tk.Frame(hdr, bg=_PANEL, padx=3, pady=3)
-        nav.grid(row=0, column=0, sticky="w")
-        for label, active in [("Overview", True), ("Activity", False), ("Sources", False),
-                      ("Results", False), ("Reports", False)]:
-            bg = _ACCENT2 if active else _PANEL
-            fg = _PANEL if active else _SUBTEXT
-            tk.Label(nav, text=label, font=("Segoe UI", 8, "bold" if active else "normal"),
-                     fg=fg, bg=bg, padx=10, pady=6).pack(side="left")
-
-        tools = tk.Frame(hdr, bg=_MANTLE)
-        tools.grid(row=0, column=1, sticky="e", padx=(_S2, _S2))
-        for icon in ("⌕", "i"):
-            tk.Label(tools, text=icon, font=("Segoe UI", 11, "bold"),
-                     fg=_TEXT, bg=_PANEL, padx=8, pady=6).pack(side="left", padx=2)
+        hdr.columnconfigure(0, weight=1)
 
         right = tk.Frame(hdr, bg=_MANTLE)
-        right.grid(row=0, column=2, sticky="e")
+        right.grid(row=0, column=0, sticky="e")
         self.status_pill = Pill(right, text="Idle", fg=_SUBTEXT, bg=_PANEL, dot=_SURF2)
         self.status_pill.pack()
 
@@ -565,37 +514,16 @@ class SubGrabGUI:
         paned.grid(row=3, column=0, sticky="nsew")
         self._main_paned = paned
         paned.bind("<ButtonRelease-1>", lambda _e: self._capture_pane_sashes())
-        paned.bind("<Configure>", self._on_paned_configure)
 
         # Left — config notebook
         left = tk.Frame(paned, bg=_PANEL, highlightthickness=1, highlightbackground=_BORDER)
         self._build_left(left)
         paned.add(left, minsize=300, width=420, stretch="always")
 
-        # Workspace — vertically resizable results and terminal log.
-        workspace = tk.Frame(paned, bg=_MANTLE)
-        workspace.rowconfigure(0, weight=1)
-        workspace.columnconfigure(0, weight=1)
-        paned.add(workspace, minsize=520, width=720, stretch="always")
-
-        workspace_paned = tk.PanedWindow(workspace, orient=tk.VERTICAL, bg=_MANTLE,
-                         sashwidth=8, sashrelief=tk.FLAT, sashpad=3,
-                         showhandle=True, opaqueresize=True,
-                         sashcursor="sb_v_double_arrow")
-        workspace_paned.grid(row=0, column=0, sticky="nsew")
-        self._workspace_paned = workspace_paned
-        workspace_paned.bind("<ButtonRelease-1>", lambda _e: self._capture_workspace_sash())
-        workspace_paned.bind("<Configure>", self._on_workspace_configure)
-
-        # Top — results
-        center = tk.Frame(workspace_paned, bg=_PANEL, highlightthickness=1, highlightbackground=_BORDER)
-        self._build_results(center)
-        workspace_paned.add(center, minsize=220, height=400, stretch="always")
-
-        # Bottom — terminal
-        right = tk.Frame(workspace_paned, bg=_PANEL, highlightthickness=1, highlightbackground=_BORDER)
+        # Right — terminal log directly
+        right = tk.Frame(paned, bg=_PANEL, highlightthickness=1, highlightbackground=_BORDER)
         self._build_terminal(right)
-        workspace_paned.add(right, minsize=160, height=240, stretch="always")
+        paned.add(right, minsize=520, width=720, stretch="always")
 
     def _capture_pane_sashes(self):
         if not self._main_paned:
@@ -606,20 +534,6 @@ class SubGrabGUI:
         except Exception:
             self._saved_pane_sashes = []
 
-    def _capture_workspace_sash(self):
-        if not self._workspace_paned:
-            return
-        try:
-            self._saved_workspace_sash = self._workspace_paned.sash_coord(0)[1]
-        except Exception:
-            self._saved_workspace_sash = None
-
-    def _on_paned_configure(self, _event=None):
-        self._resize_results_columns()
-
-    def _on_workspace_configure(self, _event=None):
-        self._resize_results_columns()
-
     def _restore_pane_sashes(self):
         if not self._main_paned or not self._saved_pane_sashes:
             return
@@ -628,17 +542,6 @@ class SubGrabGUI:
             total = max(self._main_paned.winfo_width(), 1)
             first = max(260, min(int(self._saved_pane_sashes[0]), total - 520))
             self._main_paned.sash_place(0, first, 0)
-        except Exception:
-            pass
-
-    def _restore_workspace_sash(self):
-        if not self._workspace_paned or self._saved_workspace_sash is None:
-            return
-        try:
-            self.root.update_idletasks()
-            total = max(self._workspace_paned.winfo_height(), 1)
-            split = max(220, min(int(self._saved_workspace_sash), total - 160))
-            self._workspace_paned.sash_place(0, 0, split)
         except Exception:
             pass
 
@@ -729,18 +632,20 @@ class SubGrabGUI:
             "error":   (_CRUST,  _RED,     _RED),
         }
         fg, bg, border = palette.get(state, palette["idle"])
-        w["badge"].set(text=state, fg=fg, bg=bg)
-        try:
-            w["card"].config(highlightbackground=border)
-        except Exception:
-            pass
+        def _update():
+            w["badge"].set(text=state, fg=fg, bg=bg)
+            try:
+                w["card"].config(highlightbackground=border)
+            except Exception:
+                pass
+        self.root.after(0, _update)
 
     def _set_module_count(self, name, n):
         w = self._module_widgets.get(name)
         if not w:
             return
         self._module_count[name] = n
-        w["count"].config(text=(f"{n}" if n else ""))
+        self.root.after(0, lambda: w["count"].config(text=(f"{n}" if n else "")))
 
     def _refresh_module_states(self):
         for name in self._module_widgets:
@@ -778,7 +683,7 @@ class SubGrabGUI:
         body = tk.Frame(inner, bg=_PANEL)
         body.pack(fill="both", expand=True, padx=_S3, pady=_S3)
         body.columnconfigure(1, weight=1)
-        self._api_rows: list[tk.Frame] = []
+        self._api_rows: list[tuple[tk.Frame, str]] = []
         self._api_index = {0: body}
         r = [0]
 
@@ -796,8 +701,7 @@ class SubGrabGUI:
             row = tk.Frame(body, bg=_PANEL)
             row.grid(row=r[0], column=0, columnspan=3, sticky="ew", pady=(4, 8))
             row.columnconfigure(0, weight=1)
-            row._label_text = label.lower()
-            self._api_rows.append(row)
+            self._api_rows.append((row, label.lower()))
 
             tk.Label(row, text=label, font=("Segoe UI", 9), fg=_SUBTEXT, bg=_PANEL,
                      anchor="w").grid(row=0, column=0, sticky="w", padx=(0, _S2))
@@ -833,8 +737,7 @@ class SubGrabGUI:
             row = tk.Frame(body, bg=_PANEL)
             row.grid(row=r[0], column=0, columnspan=3, sticky="ew", pady=(4, 8))
             row.columnconfigure(0, weight=1)
-            row._label_text = label.lower()
-            self._api_rows.append(row)
+            self._api_rows.append((row, label.lower()))
             tk.Label(row, text=label, font=("Segoe UI", 9), fg=_SUBTEXT, bg=_PANEL,
                      anchor="w").grid(row=0, column=0, sticky="w", padx=(0, _S2))
             cb = ttk.Combobox(row, textvariable=var, values=options, state="readonly")
@@ -847,8 +750,7 @@ class SubGrabGUI:
             row = tk.Frame(body, bg=_PANEL)
             row.grid(row=r[0], column=0, columnspan=3, sticky="ew", pady=2)
             row.columnconfigure(1, weight=1)
-            row._label_text = label.lower()
-            self._api_rows.append(row)
+            self._api_rows.append((row, label.lower()))
             tk.Label(row, text=label, font=("Segoe UI", 9), fg=_SUBTEXT, bg=_PANEL,
                      anchor="w", width=14).grid(row=0, column=0, sticky="w", padx=(0, _S2))
             txt = "✓  installed" if found else "not installed"
@@ -904,11 +806,11 @@ class SubGrabGUI:
     def _apply_api_filter(self):
         q = self.api_filter_var.get().strip().lower()
         if q in ("", "filter providers…"):
-            for row in self._api_rows:
+            for row, _ in self._api_rows:
                 row.grid()
             return
-        for row in self._api_rows:
-            if q in row._label_text:
+        for row, label_text in self._api_rows:
+            if q in label_text:
                 row.grid()
             else:
                 row.grid_remove()
@@ -964,211 +866,11 @@ class SubGrabGUI:
         hint("Leave empty to use <domain>_results")
         browse_field(self.output_dir_var, "Select Output Directory")
 
-    # ── Center: Results panel ─────────────────────────────────────────────────
-
-    def _build_results(self, parent):
-        parent.columnconfigure(0, weight=1)
-        parent.rowconfigure(2, weight=1)
-
-        # Header
-        hdr = tk.Frame(parent, bg=_PANEL, height=48)
-        hdr.grid(row=0, column=0, columnspan=2, sticky="ew")
-        hdr.grid_propagate(False)
-        hdr.columnconfigure(1, weight=1)
-
-        tk.Label(hdr, text="RESULTS", font=("Segoe UI", 9, "bold"),
-                 fg=_TEXT, bg=_PANEL).grid(row=0, column=0, padx=_S4, pady=_S3, sticky="w")
-
-        chips = tk.Frame(hdr, bg=_PANEL)
-        chips.grid(row=0, column=1, sticky="w", padx=_S2)
-        self._chip_total  = Pill(chips, text="0 found",  fg=_GREEN,  bg=_BASE)
-        self._chip_total.pack(side="left", padx=2)
-        self._chip_unique = Pill(chips, text="0 unique IPs", fg=_BLUE, bg=_BASE)
-        self._chip_unique.pack(side="left", padx=2)
-        self._chip_take   = Pill(chips, text="0 takeover", fg=_VIOLET, bg=_BASE)
-        self._chip_take.pack(side="left", padx=2)
-
-        actions = tk.Frame(hdr, bg=_PANEL)
-        actions.grid(row=0, column=2, padx=_S3, sticky="e")
-        _btn(actions, "Export", self._export_results,
-             bg=_SURF0, fg=_SUBTEXT, padx=10, pady=4).pack(side="left", padx=2)
-        _btn(actions, "HTML",   self.open_html_report,
-             bg=_SURF0, fg=_SUBTEXT, padx=10, pady=4).pack(side="left", padx=2)
-        _btn(actions, "Folder", self.open_results_folder,
-             bg=_SURF0, fg=_SUBTEXT, padx=10, pady=4).pack(side="left", padx=2)
-
-        tk.Frame(parent, bg=_BORDER, height=1).grid(row=0, column=0, columnspan=2, sticky="sew")
-
-        # Filter
-        fbar = tk.Frame(parent, bg=_PANEL)
-        fbar.grid(row=1, column=0, columnspan=2, sticky="ew")
-        fe = _entry(fbar, self.results_filter_var)
-        fe.pack(fill="x", padx=_S3, pady=_S2, ipady=4)
-        self._add_placeholder(fe, self.results_filter_var, "Filter results…")
-        self.results_filter_var.trace_add("write", lambda *_: self._refresh_results())
-
-        # Treeview
-        tv = ttk.Treeview(parent,
-                          columns=("ip", "source", "takeover"),
-                          style="Results.Treeview",
-                          selectmode="extended", show="tree headings")
-        tv.heading("#0", text="Subdomain", command=lambda: self._sort_results("name"))
-        tv.heading("ip",       text="IP",       command=lambda: self._sort_results("ip"))
-        tv.heading("source",   text="Source",   command=lambda: self._sort_results("source"))
-        tv.heading("takeover", text="Risk",     command=lambda: self._sort_results("takeover"))
-        tv.column("#0",       width=240, anchor="w")
-        tv.column("ip",       width=120, anchor="w")
-        tv.column("source",   width=110, anchor="w")
-        tv.column("takeover", width=70,  anchor="center")
-        tv.grid(row=2, column=0, sticky="nsew")
-        tv.bind("<Configure>", lambda _e: self._resize_results_columns())
-
-        sb = ttk.Scrollbar(parent, orient="vertical", command=tv.yview)
-        tv.configure(yscrollcommand=sb.set)
-        sb.grid(row=2, column=1, sticky="ns")
-        self.results_tv = tv
-        self._sort_key = "name"
-        self._sort_rev = False
-
-        tv.tag_configure("takeover", foreground=_RED)
-        tv.tag_configure("active",   foreground=_GREEN)
-
-        # Context menu
-        menu = tk.Menu(tv, tearoff=0, bg=_PANEL, fg=_TEXT,
-                       activebackground=_SURF1, activeforeground=_TEXT, borderwidth=0)
-        menu.add_command(label="Copy",          command=self._ctx_copy)
-        menu.add_command(label="Open in browser", command=self._ctx_open)
-        menu.add_separator()
-        menu.add_command(label="Remove from view", command=self._ctx_remove)
-        self._results_menu = menu
-
-        def _popup(e):
-            iid = tv.identify_row(e.y)
-            if iid:
-                tv.selection_set(iid)
-                menu.tk_popup(e.x_root, e.y_root)
-        tv.bind("<Button-3>", _popup)
-
-    def _resize_results_columns(self):
-        tv = getattr(self, "results_tv", None)
-        if not tv:
-            return
-        try:
-            width = max(tv.winfo_width() - 28, 360)
-            risk_w = 70
-            ip_w = max(95, min(150, int(width * 0.22)))
-            src_w = max(95, min(160, int(width * 0.22)))
-            name_w = max(160, width - ip_w - src_w - risk_w)
-            tv.column("#0", width=name_w)
-            tv.column("ip", width=ip_w)
-            tv.column("source", width=src_w)
-            tv.column("takeover", width=risk_w)
-        except Exception:
-            pass
-
-    def _sort_results(self, key):
-        if self._sort_key == key:
-            self._sort_rev = not self._sort_rev
-        else:
-            self._sort_key = key
-            self._sort_rev = False
-        self._refresh_results()
-
-    def _refresh_results(self):
-        tv = self.results_tv
-        for iid in tv.get_children():
-            tv.delete(iid)
-        q = self.results_filter_var.get().strip().lower()
-        if q in ("filter results…",):
-            q = ""
-
-        rows = []
-        ips = set()
-        takeover_n = 0
-        for name, info in self._results.items():
-            if q and q not in name.lower():
-                continue
-            ip = info.get("ip", "")
-            src = info.get("source", "")
-            tk_flag = info.get("takeover", "")
-            rows.append((name, ip, src, tk_flag))
-            if ip:
-                ips.add(ip)
-            if tk_flag:
-                takeover_n += 1
-
-        key_idx = {"name": 0, "ip": 1, "source": 2, "takeover": 3}[self._sort_key]
-        rows.sort(key=lambda r: r[key_idx].lower() if isinstance(r[key_idx], str) else r[key_idx],
-                  reverse=self._sort_rev)
-        for name, ip, src, tk_flag in rows:
-            tags = ()
-            if tk_flag:
-                tags = ("takeover",)
-            tv.insert("", "end", iid=name, text=name,
-                      values=(ip, src, tk_flag), tags=tags)
-
-        self._chip_total.set(text=f"{len(self._results)} found")
-        self._chip_unique.set(text=f"{len(ips)} unique IPs")
-        self._chip_take.set(text=f"{takeover_n} takeover")
-
-    def _add_result(self, name, ip="", source="", takeover=""):
-        rec = self._results.setdefault(name, {"ip": "", "source": "", "takeover": ""})
-        if ip and not rec["ip"]:
-            rec["ip"] = ip
-        if source and not rec["source"]:
-            rec["source"] = source
-        if takeover:
-            rec["takeover"] = takeover
-
-    def _export_results(self):
-        if not self._results:
-            messagebox.showinfo("Export", "No results yet.")
-            return
-        path = filedialog.asksaveasfilename(
-            title="Export Results", defaultextension=".csv",
-            filetypes=[("CSV", "*.csv"), ("JSON", "*.json"), ("Text", "*.txt")])
-        if not path:
-            return
-        try:
-            ext = os.path.splitext(path)[1].lower()
-            if ext == ".json":
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(self._results, f, indent=2)
-            elif ext == ".csv":
-                with open(path, "w", encoding="utf-8") as f:
-                    f.write("subdomain,ip,source,takeover\n")
-                    for name, info in self._results.items():
-                        f.write(f"{name},{info.get('ip','')},{info.get('source','')},{info.get('takeover','')}\n")
-            else:
-                with open(path, "w", encoding="utf-8") as f:
-                    for name in sorted(self._results):
-                        f.write(name + "\n")
-            messagebox.showinfo("Export", f"Exported {len(self._results)} entries.")
-        except Exception as e:
-            messagebox.showerror("Export", str(e))
-
-    def _ctx_copy(self):
-        items = self.results_tv.selection()
-        if not items:
-            return
-        text = "\n".join(items)
-        self.root.clipboard_clear()
-        self.root.clipboard_append(text)
-
-    def _ctx_open(self):
-        for name in self.results_tv.selection():
-            webbrowser.open(f"https://{name}")
-
-    def _ctx_remove(self):
-        for name in self.results_tv.selection():
-            self._results.pop(name, None)
-        self._refresh_results()
-
     # ── Right pane: terminal ──────────────────────────────────────────────────
 
     def _build_terminal(self, parent):
         parent.columnconfigure(0, weight=1)
-        parent.rowconfigure(1, weight=1)
+        parent.rowconfigure(2, weight=1)
 
         # Header
         hdr = tk.Frame(parent, bg=_PANEL, height=48)
@@ -1190,6 +892,15 @@ class SubGrabGUI:
 
         tk.Frame(parent, bg=_BORDER, height=1).grid(row=0, column=0, columnspan=2, sticky="sew")
 
+        # Search Bar (Hidden by default)
+        self.search_frame = tk.Frame(parent, bg=_SURF0)
+        self.search_var = tk.StringVar()
+        se = _entry(self.search_frame, self.search_var)
+        se.pack(side="left", padx=_S3, pady=6, fill="x", expand=True)
+        _btn(self.search_frame, "↓ Next", self._search_next, bg=_PANEL, padx=8, pady=3).pack(side="left", padx=2)
+        _btn(self.search_frame, "↑ Prev", self._search_prev, bg=_PANEL, padx=8, pady=3).pack(side="left", padx=2)
+        _btn(self.search_frame, "✕ Close", self._hide_search, bg=_PANEL, padx=8, pady=3).pack(side="left", padx=4)
+
         self.output_text = tk.Text(
             parent, wrap=tk.WORD, font=("Consolas", 9),
             bg=_TERM, fg=_TEXT, insertbackground=_TEXT, selectbackground=_ACCENT2,
@@ -1198,11 +909,12 @@ class SubGrabGUI:
         )
         sb = ttk.Scrollbar(parent, command=self.output_text.yview)
         self.output_text.configure(yscrollcommand=sb.set)
-        self.output_text.grid(row=1, column=0, sticky="nsew")
-        sb.grid(row=1, column=1, sticky="ns")
+        self.output_text.grid(row=2, column=0, sticky="nsew")
+        sb.grid(row=2, column=1, sticky="ns")
 
         self.output_text.tag_configure("success", foreground=_GREEN)
         self.output_text.tag_configure("warning", foreground=_YELLOW)
+        self.output_text.tag_configure("search", background=_YELLOW, foreground=_TEXT)
         self.output_text.tag_configure("error",   foreground=_RED)
         self.output_text.tag_configure("info",    foreground=_BLUE)
         self.output_text.tag_configure("cyan",    foreground=_CYAN)
@@ -1223,6 +935,10 @@ class SubGrabGUI:
         self.output_text.bind("<Control-Insert>", lambda _e: (self._copy_output(), "break")[-1])
         self.output_text.bind("<Control-a>", self._select_all_output)
         self.output_text.bind("<Control-A>", self._select_all_output)
+        self.output_text.bind("<Control-f>", self._show_search)
+        self.output_text.bind("<Control-F>", self._show_search)
+        se.bind("<Return>", self._search_next)
+        se.bind("<Escape>", self._hide_search)
         self.output_text.bind("<<Paste>>", lambda _e: "break")
         self.output_text.bind("<<Cut>>", lambda _e: "break")
         self.output_text.bind("<KeyPress>", self._guard_output_edit)
@@ -1435,8 +1151,6 @@ class SubGrabGUI:
             messagebox.showerror("Cannot start scan", str(e))
             return
 
-        self._results.clear()
-        self._refresh_results()
         for n in list(self._module_state):
             self._module_state[n] = "idle"
             self._set_module_state(n, "idle")
@@ -1474,10 +1188,11 @@ class SubGrabGUI:
                 creationflags=flags, env=env,
             )
             self.process = proc
-            for line in iter(proc.stdout.readline, ""):
-                stripped = line.strip()
-                if stripped:
-                    self._parse_and_log(stripped)
+            if proc.stdout:
+                for line in iter(proc.stdout.readline, ""):
+                    stripped = line.strip()
+                    if stripped:
+                        self._parse_and_log(stripped)
             proc.wait()
             rc = proc.returncode
             self.root.after(0, lambda: self._on_complete(rc))
@@ -1499,12 +1214,6 @@ class SubGrabGUI:
         m = re.search(r"\[+\]\s+\S.*?:\s*(\d+)\s+subdomains", clean)
         if m:
             self._found = max(self._found, int(m.group(1)))
-
-        # Subdomain hit  e.g.  [+] sub.example.com
-        target = self.domain_var.get().strip().lower()
-        if target:
-            for cand in re.findall(r"[a-zA-Z0-9][a-zA-Z0-9\-\.]*\." + re.escape(target), clean):
-                self._add_result(cand.lower())
 
         # Module state inference
         for name, patt, _cat in _MODULES:
@@ -1534,7 +1243,6 @@ class SubGrabGUI:
             tag = "info"
 
         self.root.after(0, lambda l=clean, t=tag: self._log(l, t))
-        self.root.after(0, self._refresh_results)
 
     def _on_complete(self, rc):
         self._finish_ui()
@@ -1585,8 +1293,82 @@ class SubGrabGUI:
 
     # ── Output / log ──────────────────────────────────────────────────────────
 
+    def _show_search(self, _event=None):
+        self.search_frame.grid(row=1, column=0, columnspan=2, sticky="ew")
+        entry = self.search_frame.winfo_children()[0]
+        entry.focus_set()
+        return "break"
+
+    def _hide_search(self, _event=None):
+        self.search_frame.grid_remove()
+        self.output_text.tag_remove("search", "1.0", tk.END)
+        self.output_text.focus_set()
+        return "break"
+
+    def _search_next(self, _event=None):
+        q = self.search_var.get()
+        if not q: return "break"
+        self.output_text.tag_remove("search", "1.0", tk.END)
+        start = self.output_text.index("insert")
+        if self.output_text.tag_ranges(tk.SEL):
+            start = self.output_text.tag_ranges(tk.SEL)[1]
+            
+        pos = self.output_text.search(q, start, tk.END, nocase=True)
+        if not pos:
+            pos = self.output_text.search(q, "1.0", start, nocase=True)
+            
+        if pos:
+            end_pos = f"{pos}+{len(q)}c"
+            self.output_text.tag_add("search", pos, end_pos)
+            self.output_text.mark_set("insert", end_pos)
+            self.output_text.see(pos)
+            self.output_text.tag_remove(tk.SEL, "1.0", tk.END)
+            self.output_text.tag_add(tk.SEL, pos, end_pos)
+        return "break"
+
+    def _search_prev(self, _event=None):
+        q = self.search_var.get()
+        if not q: return "break"
+        self.output_text.tag_remove("search", "1.0", tk.END)
+        start = self.output_text.index("insert")
+        if self.output_text.tag_ranges(tk.SEL):
+            start = self.output_text.tag_ranges(tk.SEL)[0]
+            
+        pos = self.output_text.search(q, start, "1.0", backwards=True, nocase=True)
+        if not pos:
+            pos = self.output_text.search(q, tk.END, start, backwards=True, nocase=True)
+            
+        if pos:
+            end_pos = f"{pos}+{len(q)}c"
+            self.output_text.tag_add("search", pos, end_pos)
+            self.output_text.mark_set("insert", pos)
+            self.output_text.see(pos)
+            self.output_text.tag_remove(tk.SEL, "1.0", tk.END)
+            self.output_text.tag_add(tk.SEL, pos, end_pos)
+        return "break"
+
     def _log(self, text, tag=None):
-        self.output_text.insert(tk.END, "  " + text + "\n", tag)
+        self.output_text.mark_set("insert_start", "end-1c")
+        if tag:
+            self.output_text.insert(tk.END, "  " + text + "\n", tag)
+        else:
+            self.output_text.insert(tk.END, "  " + text + "\n")
+            
+        # Regex highlight discovered subdomains with the 'hit' tag
+        target = self.domain_var.get().strip().lower()
+        if target:
+            line = "  " + text
+            for m in re.finditer(r"[a-zA-Z0-9][a-zA-Z0-9\-\.]*\." + re.escape(target), line, re.IGNORECASE):
+                self.output_text.tag_add("hit", f"insert_start+{m.start()}c", f"insert_start+{m.end()}c")
+                
+        # Memory optimization: Keep max 10,000 lines to prevent UI freezing
+        try:
+            lines = int(self.output_text.index('end-1c').split('.')[0])
+            if lines > 10500:
+                self.output_text.delete('1.0', f'{lines - 10000 + 1}.0')
+        except Exception:
+            pass
+
         self.output_text.see(tk.END)
 
     def clear_output(self):
@@ -1705,9 +1487,7 @@ class SubGrabGUI:
         d["recent_domains"] = self._recent_domains
         d["window_geometry"] = self.root.geometry()
         self._capture_pane_sashes()
-        self._capture_workspace_sash()
         d["pane_sashes"] = self._saved_pane_sashes
-        d["workspace_sash"] = self._saved_workspace_sash
         return d
 
     def _load_config(self):
@@ -1728,14 +1508,10 @@ class SubGrabGUI:
             sashes = d.get("pane_sashes", [])
             if isinstance(sashes, list) and all(isinstance(x, int) for x in sashes[:1]):
                 self._saved_pane_sashes = sashes[:1]
-            workspace_sash = d.get("workspace_sash")
-            if isinstance(workspace_sash, int):
-                self._saved_workspace_sash = workspace_sash
         except Exception:
             pass
         self._rebuild_recent_menu()
         self.root.after(150, self._restore_pane_sashes)
-        self.root.after(180, self._restore_workspace_sash)
 
     def _save_config_auto(self):
         try:
@@ -1775,10 +1551,6 @@ class SubGrabGUI:
                 if isinstance(sashes, list) and all(isinstance(x, int) for x in sashes[:1]):
                     self._saved_pane_sashes = sashes[:1]
                     self.root.after(150, self._restore_pane_sashes)
-                workspace_sash = d.get("workspace_sash")
-                if isinstance(workspace_sash, int):
-                    self._saved_workspace_sash = workspace_sash
-                    self.root.after(180, self._restore_workspace_sash)
                 messagebox.showinfo("Loaded", "Configuration loaded.")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
@@ -1833,8 +1605,7 @@ class _Installer:
 
         def go():
             for pkg in self.PACKAGES:
-                out.insert(tk.END, f"  Installing {pkg} …\n")
-                out.see(tk.END)
+                win.after(0, lambda p=pkg: (out.insert(tk.END, f"  Installing {p} …\n"), out.see(tk.END)))
                 try:
                     r = subprocess.run(
                         [sys.executable, "-m", "pip", "install", pkg],

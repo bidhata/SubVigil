@@ -1,37 +1,19 @@
-# Python
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# Python caches
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-*.egg-info/
-dist/
-build/
-.eggs/
+*$py.class
 
-# Scan results
-*_results/
-
-# Local GUI config (may contain API keys)
+# SubGrab specific files (IMPORTANT: prevents leaking API keys)
 subgrab_gui_config.json
+ai_engine/config.ini
+*_results/
+*.log
 
 # Virtual environments
 venv/
 .venv/
-env/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-tests/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Claude Code session data
-.claude/
-docs/
-
-# Graphify output
-graphify-out/

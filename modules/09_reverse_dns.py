@@ -1,3 +1,4 @@
+from __future__ import annotations
 import dns.exception
 import dns.resolver
 import dns.reversename
@@ -19,6 +20,9 @@ class ReverseDNS(BaseScanner):
             main_ips = self.resolve_domain(self.domain)
             if main_ips:
                 for ip in main_ips:
+                    # Skip IPv6 addresses
+                    if ":" in ip:
+                        continue
                     ip_parts = ip.split(".")
                     if len(ip_parts) != 4:
                         continue
