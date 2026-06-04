@@ -616,12 +616,12 @@ class SubdomainEnumerator:
             'ports': [],
         }
 
-        ips = self.resolve_domain(subdomain)
-        if not ips:
-            return info
-        info['ip'] = ips[0]
-
         async with semaphore:
+            ips = await asyncio.to_thread(self.resolve_domain, subdomain)
+            if not ips:
+                return info
+            info['ip'] = ips[0]
+
             for protocol in ('https', 'http'):
                 try:
                     url = f"{protocol}://{subdomain}"
@@ -857,7 +857,7 @@ class SubdomainEnumerator:
         
         # Helper function to generate table rows for different categories
         def generate_table_rows(subdomain_list):
-            rows = ""
+            rows = []
             for subdomain in sorted(subdomain_list):
                 info = self.subdomain_info.get(subdomain, {})
                 active   = info.get('active', False)
@@ -868,7 +868,7 @@ class SubdomainEnumerator:
                 ssh_badge      = f'<span class="badge {"b-warning" if ssh_on else "b-inactive"}">{"Yes" if ssh_on else "No"}</span>'
                 takeover_badge = f'<span class="badge {"b-danger"  if tak_on else "b-inactive"}">{"Yes" if tak_on else "No"}</span>'
 
-                ports_html = ""
+                port_parts = []
                 for port in info.get('ports', []):
                     if port in [80, 443, 8080, 8443]:
                         cls = "p-web"
@@ -878,7 +878,8 @@ class SubdomainEnumerator:
                         cls = "p-db"
                     else:
                         cls = "p-other"
-                    ports_html += f'<span class="port {cls}">{port}</span>'
+                    port_parts.append(f'<span class="port {cls}">{port}</span>')
+                ports_html = ''.join(port_parts)
 
                 title_raw     = info.get('title') or ''
                 title_display = title_raw[:60] + ('…' if len(title_raw) > 60 else '')
@@ -906,7 +907,7 @@ class SubdomainEnumerator:
                 else:
                     ip_html = ip_addr
 
-                rows += f"""
+                rows.append(f"""
                     <tr>
                         <td><a href="https://{subdomain}" target="_blank" class="sub-link">{subdomain}</a></td>
                         <td>{status_badge}</td>
@@ -918,8 +919,8 @@ class SubdomainEnumerator:
                         <td>{takeover_badge}</td>
                         <td>{ports_html}</td>
                     </tr>
-                """
-            return rows
+                """)
+            return ''.join(rows)
         
         # Generate data for different tabs
         all_rows = generate_table_rows(self.subdomains)
@@ -1392,6 +1393,14 @@ $(document).ready(function() {{
         with open(f"{self.output_dir}/report.html", 'w', encoding='utf-8') as f:
             f.write(html_content)
 
+    def _timed_phase(self, label, func):
+        start = time.perf_counter()
+        try:
+            return func()
+        finally:
+            elapsed = time.perf_counter() - start
+            print(f"{Fore.CYAN}[*] Timing: {label} completed in {elapsed:.2f}s", flush=True)
+
     def run(self):
         """Main execution method"""
         print(f"{Fore.CYAN}{'='*60}")
@@ -1403,23 +1412,23 @@ $(document).ready(function() {{
         start_time = time.time()
         
         # Passive discovery
-        self.run_passive_discovery()
+        self._timed_phase("passive discovery", self.run_passive_discovery)
 
         # AI-powered generation (runs after passive so engines see full subdomain set)
-        self.run_ai_engines()
+        self._timed_phase("AI engines", self.run_ai_engines)
 
         print(f"{Fore.GREEN}[+] Total subdomains discovered: {len(self.subdomains)}")
         
         # Active reconnaissance
         if self.subdomains:
-            self.active_reconnaissance()
+            self._timed_phase("active reconnaissance", self.active_reconnaissance)
         
         # Shodan IP scan (active subdomains only)
         if self.active_subdomains and 'shodan' in self.api_keys:
-            self.shodan_active_ip_scan()
+            self._timed_phase("Shodan IP scan", self.shodan_active_ip_scan)
         
         # Generate reports
-        self.generate_reports()
+        self._timed_phase("report generation", self.generate_reports)
         
         # Summary
         end_time = time.time()
