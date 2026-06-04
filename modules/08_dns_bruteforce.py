@@ -1,6 +1,4 @@
 import dns.name
-import dns.query
-import dns.zone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from colorama import Fore
@@ -19,7 +17,7 @@ class DnsBruteforce(BaseScanner):
         wordlist = self.default_wordlist
         if self.wordlist:
             try:
-                with open(self.wordlist, "r") as f:
+                with open(self.wordlist, "r", encoding="utf-8-sig", errors="ignore") as f:
                     wordlist = [line.strip() for line in f if line.strip()]
             except Exception:
                 print(f"{Fore.RED}[!] Could not read wordlist file, using default")

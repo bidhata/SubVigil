@@ -51,7 +51,7 @@ init(autoreset=True)
 class SubdomainEnumerator:
     def __init__(self, domain, threads=50, timeout=30, fast_mode=False, stealth=False,
                  proxies=None, wordlist=None, nameservers=None, api_keys=None,
-                 scan_ports: list[int] | None = None):
+                 scan_ports: list[int] | None = None, output_dir=None):
         self.domain = domain
         self.threads = threads
         self.timeout = timeout
@@ -81,7 +81,7 @@ class SubdomainEnumerator:
         self._detect_wildcards()
         
         # Create output directory
-        self.output_dir = f"{domain}_results"
+        self.output_dir = output_dir or f"{domain}_results"
         os.makedirs(self.output_dir, exist_ok=True)
         
         # Default wordlist
@@ -202,7 +202,6 @@ class SubdomainEnumerator:
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             self.thread_local.session = requests.Session()
             self.thread_local.session.verify = False
-            self.thread_local.session.timeout = self.timeout
             if self.proxies:
                 proxy = random.choice(self.proxies)
                 self.thread_local.session.proxies = {'http': proxy, 'https': proxy}
@@ -213,22 +212,28 @@ class SubdomainEnumerator:
         if not hasattr(self.thread_local, 'resolver'):
             self.thread_local.resolver = dns.resolver.Resolver()
             self.thread_local.resolver.nameservers = self.nameservers
-            self.thread_local.resolver.timeout = 10
-            self.thread_local.resolver.lifetime = 10
+            self.thread_local.resolver.timeout = self.timeout
+            self.thread_local.resolver.lifetime = self.timeout
         return self.thread_local.resolver
 
     def _detect_wildcards(self):
-        """Detect wildcard DNS responses"""
+        """Detect wildcard DNS responses (probes 3 distinct labels)."""
         print(f"{Fore.YELLOW}[*] Detecting wildcard DNS responses...")
-        test_subdomain = f"nonexistent{random.randint(1000, 9999)}.{self.domain}"
-        try:
-            resolver = dns.resolver.Resolver()
-            resolver.nameservers = self.nameservers
-            answers = resolver.resolve(test_subdomain, 'A')
-            for answer in answers:
-                self.wildcard_ips.add(str(answer))
+        resolver = dns.resolver.Resolver()
+        resolver.nameservers = self.nameservers
+        resolver.timeout = self.timeout
+        resolver.lifetime = self.timeout
+        for _ in range(3):
+            test_subdomain = f"nonexistent{random.randint(10000, 99999)}.{self.domain}"
+            try:
+                answers = resolver.resolve(test_subdomain, 'A')
+                for answer in answers:
+                    self.wildcard_ips.add(str(answer))
+            except Exception:
+                continue
+        if self.wildcard_ips:
             print(f"{Fore.RED}[!] Wildcard DNS detected: {', '.join(self.wildcard_ips)}")
-        except Exception:
+        else:
             print(f"{Fore.GREEN}[+] No wildcard DNS detected")
 
     @lru_cache(maxsize=1000)
@@ -497,20 +502,25 @@ class SubdomainEnumerator:
             if self._is_valid_subdomain(full_match):
                 subdomains.add(full_match)
         
-        # Method 3: Look for JSON data that might contain subdomains
+        # Method 3: Look for any <domain>-bearing strings inside <script> tags.
+        # (Plain regex sweep — safer than nested {…}"…" patterns which could
+        # backtrack catastrophically on minified JS.)
         script_tags = soup.find_all('script')
+        script_pattern = re.compile(
+            r'(?<![A-Za-z0-9_.-])'
+            r'([a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?'
+            r'(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.'
+            + re.escape(self.domain) + r')(?![A-Za-z0-9_.-])'
+        )
         for script in script_tags:
-            if script.string:
-                try:
-                    # Look for JSON-like structures
-                    json_matches = re.findall(r'\{[^}]*"[^"]*' + re.escape(self.domain) + r'[^"]*"[^}]*\}', script.string)
-                    for json_match in json_matches:
-                        domain_in_json = re.findall(r'([a-zA-Z0-9.-]+\.' + re.escape(self.domain) + r')', json_match)
-                        for domain in domain_in_json:
-                            if self._is_valid_subdomain(domain):
-                                subdomains.add(domain)
-                except Exception:
-                    pass
+            if not script.string:
+                continue
+            try:
+                for m in script_pattern.findall(script.string):
+                    if self._is_valid_subdomain(m):
+                        subdomains.add(m)
+            except Exception:
+                pass
         
         return subdomains
     
@@ -565,7 +575,8 @@ class SubdomainEnumerator:
                                 resolver.resolve(cname_target, 'A')
                             except Exception:
                                 reason = f"dangling CNAME to {service}"
-                                self.takeover_reasons[subdomain] = reason
+                                with self._info_lock:
+                                    self.takeover_reasons[subdomain] = reason
                                 return True
                             
                             # Fallback: HTTP content signature
@@ -575,7 +586,8 @@ class SubdomainEnumerator:
                                 for indicator in indicators:
                                     if indicator in content:
                                         reason = f"signature match for {service}"
-                                        self.takeover_reasons[subdomain] = reason
+                                        with self._info_lock:
+                                            self.takeover_reasons[subdomain] = reason
                                         return True
                             except Exception:
                                 pass
@@ -1425,6 +1437,13 @@ $(document).ready(function() {{
 
 
 def main():
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+
     parser = argparse.ArgumentParser(
         description="SubGrab - Advanced Subdomain Enumeration Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -1454,6 +1473,8 @@ Examples:
                        help='DNS nameservers to use')
     parser.add_argument('--ports', default=None,
                        help='Comma-separated ports to probe in active recon (default: 21,22,25,80,443,8080,8443,3306,5432,6379,27017)')
+    parser.add_argument('--output-dir', default=None,
+                       help='Directory to write reports into (default: <domain>_results)')
 
     # API keys
     parser.add_argument('--shodan-key', help='Shodan API key')
@@ -1465,19 +1486,16 @@ Examples:
     parser.add_argument('--whoisxml-key', help='WhoisXML API key for subdomain lookup (500 free credits)')
     # AI Integration
     parser.add_argument('--openrouter-key', help='OpenRouter API key for AI-powered subdomain generation')
-    parser.add_argument('--openrouter-model', default='anthropic/claude-3.5-sonnet',
-                       help='OpenRouter model to use (default: anthropic/claude-3.5-sonnet)')
-    parser.add_argument('--grok-key', help='xAI Grok API key for AI-powered subdomain generation')
-    parser.add_argument('--grok-model', default='grok-3',
-                       help='Grok model to use (default: grok-3, also: grok-3-mini, grok-4, grok-4.1-fast)')
-    
+    parser.add_argument('--openrouter-model', default='anthropic/claude-sonnet-4.5',
+                       help='OpenRouter model to use (default: anthropic/claude-sonnet-4.5)')
+
     args = parser.parse_args()
     
     # Load proxies if provided
     proxies = []
     if args.proxy_file:
         try:
-            with open(args.proxy_file, 'r') as f:
+            with open(args.proxy_file, 'r', encoding='utf-8-sig', errors='ignore') as f:
                 proxies = [line.strip() for line in f if line.strip()]
         except Exception:
             print(f"{Fore.RED}[!] Could not read proxy file")
@@ -1513,8 +1531,6 @@ Examples:
         api_keys['whoisxml'] = args.whoisxml_key
     if args.openrouter_key:
         api_keys['openrouter'] = args.openrouter_key
-    if args.grok_key:
-        api_keys['grok'] = args.grok_key
     
     # Initialize and run enumeration
     enumerator = SubdomainEnumerator(
@@ -1528,13 +1544,12 @@ Examples:
         nameservers=args.nameservers,
         api_keys=api_keys,
         scan_ports=scan_ports,
+        output_dir=args.output_dir,
     )
     
     # Set AI model preferences if provided
     if args.openrouter_key:
         enumerator.openrouter_model = args.openrouter_model
-    if args.grok_key:
-        enumerator.grok_model = args.grok_model
     
     try:
         enumerator.run()

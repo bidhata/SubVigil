@@ -48,10 +48,10 @@ Multi-threaded subdomain enumeration combining **9 passive sources**, **active r
 <td width="33%">
 
 **🤖 AI Generation**
-- Grok (xAI) — free credits
-- OpenRouter — Claude 4, GPT-4o, Gemini…
+- OpenRouter — Claude 4.5, GPT-5.1, Gemini 2.5…
 - Pattern analysis on discovered subdomains
 - Runs after traditional sources complete
+- Single API key, dozens of models
 
 </td>
 </tr>
@@ -108,12 +108,11 @@ python subgrab.py example.com --fast --threads 100
 # Stealth mode — random delays between requests
 python subgrab.py example.com --stealth
 
-# AI-powered with Grok (free credits available)
-python subgrab.py example.com --grok-key xai-YOURKEY
+# AI-powered with OpenRouter (single key, any model)
+python subgrab.py example.com --openrouter-key sk-or-YOURKEY
 
-# Full coverage — dual AI + all APIs
+# Full coverage — AI + all APIs
 python subgrab.py example.com \
-  --grok-key xai-YOURKEY \
   --openrouter-key sk-or-YOURKEY \
   --shodan-key SHODANKEY \
   --virustotal-key VTKEY \
@@ -144,6 +143,7 @@ subgrab.py domain [options]
 | `--proxy-file FILE` | — | Newline-separated proxy list |
 | `--wordlist FILE` | built-in | Custom DNS brute force wordlist |
 | `--nameservers NS...` | `8.8.8.8 8.8.4.4 1.1.1.1` | DNS resolvers |
+| `--output-dir DIR` | `<domain>_results` | Custom report directory |
 
 ### 🔑 API Key Flags
 
@@ -160,10 +160,8 @@ subgrab.py domain [options]
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--grok-key` | — | xAI Grok API key |
-| `--grok-model` | `grok-3` | Model ID |
 | `--openrouter-key` | — | OpenRouter API key |
-| `--openrouter-model` | `anthropic/claude-sonnet-4-5` | Model ID |
+| `--openrouter-model` | `anthropic/claude-sonnet-4.5` | Model ID |
 
 > **Tip:** Store keys in `ai_engine/config.ini` or the GUI's API Keys tab — no need to pass them on every run.
 
@@ -195,8 +193,7 @@ SubGrab/
 └── ai_engine/               ← AI generation plugins
     ├── base.py              ← BaseAIEngine + load_ai_engines()
     ├── config.ini           ← API keys (not committed)
-    ├── openrouter_ai.py
-    └── grok_ai.py
+    └── openrouter_ai.py
 ```
 
 `run_passive_discovery()` loads every `BaseScanner` subclass from `modules/` alphabetically.  
@@ -274,39 +271,27 @@ Traditional sources  →  [api, api1, api2, dev-api, staging-api]
                  [api3, api-v2, dev-api2, test-api, ...]
 ```
 
-### Grok (xAI) — recommended free option
-
-```bash
-python subgrab.py example.com --grok-key xai-YOURKEY
-python subgrab.py example.com --grok-key xai-YOURKEY --grok-model grok-3-mini
-```
-
-| Model | Best for | Cost |
-|-------|---------|------|
-| `grok-3` | General use · **recommended** | $ |
-| `grok-3-fast` | Faster turnaround | $ |
-| `grok-3-mini` | Budget / quick scans | ¢ |
-| `grok-3-mini-fast` | Maximum speed | ¢ |
-
-Get a key → [console.x.ai](https://console.x.ai) (free credits for new accounts)
-
 ### OpenRouter — any LLM through one API
 
 ```bash
 python subgrab.py example.com \
   --openrouter-key sk-or-YOURKEY \
-  --openrouter-model anthropic/claude-sonnet-4-5
+  --openrouter-model anthropic/claude-sonnet-4.5
 ```
 
 | Model | Quality | Cost |
 |-------|---------|------|
-| `anthropic/claude-sonnet-4-5` | Excellent · **recommended** | $$ |
-| `anthropic/claude-opus-4` | Best overall | $$$$ |
-| `anthropic/claude-haiku-4-5` | Fast, affordable | $ |
-| `openai/gpt-4o` | High quality | $$$ |
-| `openai/o3-mini` | Reasoning | $$ |
-| `google/gemini-2.0-flash` | Fast + cheap | ¢ |
-| `deepseek/deepseek-r1` | Open source | ¢ |
+| `anthropic/claude-sonnet-4.5` | Excellent · **recommended** | $$ |
+| `anthropic/claude-opus-4.5` | Best overall | $$$$ |
+| `anthropic/claude-haiku-4.5` | Fast, affordable | $ |
+| `openai/gpt-5.1` | Top-tier general | $$$ |
+| `openai/gpt-5-mini` | Balanced quality/cost | $$ |
+| `openai/o4-mini` | Reasoning | $$ |
+| `google/gemini-2.5-pro` | Long context | $$ |
+| `google/gemini-2.5-flash` | Fast + cheap | ¢ |
+| `x-ai/grok-4.3` | Grok via OpenRouter | $$ |
+| `deepseek/deepseek-chat-v3.1` | Open weights | ¢ |
+| `~anthropic/claude-sonnet-latest` | Always-current alias | $$ |
 
 Get a key → [openrouter.ai](https://openrouter.ai)
 
@@ -314,11 +299,11 @@ Get a key → [openrouter.ai](https://openrouter.ai)
 
 | Situation | Recommendation |
 |-----------|---------------|
-| First time / no budget | Grok (free credits) |
-| Regular bug bounty | Grok only |
-| Pentest engagement | Dual AI — Grok + Claude |
+| First time / low budget | `~anthropic/claude-sonnet-latest` or Gemini 2.5 Flash |
+| Regular bug bounty | Claude Sonnet 4.5 |
+| Pentest engagement | Claude Opus 4.5 + all API keys |
 | Quick recon | `--fast`, no AI |
-| Maximum coverage | Dual AI + all API keys |
+| Maximum coverage | OpenRouter + all API keys |
 
 ---
 

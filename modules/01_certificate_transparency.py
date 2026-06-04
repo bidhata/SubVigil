@@ -63,7 +63,10 @@ class CertificateTransparency(BaseScanner):
             "User-Agent",
             "Mozilla/5.0 (compatible; SubGrab/2.0; +https://github.com/bidhata/SubGrab)",
         )
-        return self.get_session().get(url, headers=headers, **kwargs)
+        r = self.get_session().get(url, headers=headers, **kwargs)
+        if not r.encoding or r.encoding.lower() == "iso-8859-1":
+            r.encoding = r.apparent_encoding or "utf-8"
+        return r
 
     # ---- crt.sh --------------------------------------------------------
 

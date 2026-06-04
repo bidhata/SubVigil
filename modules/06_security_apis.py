@@ -15,7 +15,10 @@ class SecurityAPIs(BaseScanner):
                 headers = {"x-apikey": self.api_keys["virustotal"]}
                 url = f"https://www.virustotal.com/api/v3/domains/{self.domain}/subdomains"
                 cursor = None
-                for _ in range(10):
+                # Cap at 50 pages × 40/page = 2000 subdomains. Large orgs (Microsoft,
+                # Ericsson, etc.) routinely have more, but VT's free tier rate-limits
+                # heavily so 50 pages is a reasonable upper bound.
+                for _ in range(50):
                     params = {"limit": 40}
                     if cursor:
                         params["cursor"] = cursor

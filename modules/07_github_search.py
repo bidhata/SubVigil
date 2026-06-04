@@ -110,6 +110,8 @@ class GitHubSearch(BaseScanner):
                 url = f"https://github.com/search?q={q}&type=code"
                 r = self.get_session().get(url, headers=headers, timeout=20)
                 if r.status_code == 200:
+                    if not r.encoding or r.encoding.lower() == "iso-8859-1":
+                        r.encoding = r.apparent_encoding or "utf-8"
                     subdomains.update(self._extract(r.text))
             except Exception:
                 pass

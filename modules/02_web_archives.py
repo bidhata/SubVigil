@@ -10,7 +10,7 @@ class WebArchives(BaseScanner):
     description = "Search Wayback Machine and CommonCrawl"
 
     def _latest_commoncrawl_index(self):
-        """Return the API URL for the most recent CommonCrawl index."""
+        """Return the API URL for the most recent CommonCrawl index, or None."""
         try:
             resp = self.get_session().get(
                 "https://index.commoncrawl.org/collinfo.json", timeout=8
@@ -23,7 +23,7 @@ class WebArchives(BaseScanner):
                         return cdx_api
         except Exception:
             pass
-        return "https://index.commoncrawl.org/CC-MAIN-2026-13-index"
+        return None
 
     def run(self):
         print(f"{Fore.CYAN}[*] Searching web archives...")
@@ -48,12 +48,15 @@ class WebArchives(BaseScanner):
                 ),
                 "timeout": 30,
             },
-            {
+        ]
+        if cc_url:
+            sources.append({
                 "name": "CommonCrawl Index",
                 "url": f"{cc_url}?url=*.{self.domain}/*&output=json&fl=url",
                 "timeout": 25,
-            },
-        ]
+            })
+        else:
+            print(f"{Fore.YELLOW}[!] CommonCrawl: latest index unavailable, skipping")
 
         headers = {
             "User-Agent": (

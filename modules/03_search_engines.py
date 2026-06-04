@@ -57,7 +57,10 @@ class SearchEngines(BaseScanner):
         headers = {"User-Agent": self._UA, "Accept-Language": "en-US,en;q=0.9"}
         if extra_headers:
             headers.update(extra_headers)
-        return self.get_session().get(url, headers=headers, timeout=15)
+        r = self.get_session().get(url, headers=headers, timeout=15)
+        if not r.encoding or r.encoding.lower() == "iso-8859-1":
+            r.encoding = r.apparent_encoding or "utf-8"
+        return r
 
     # ---- Bing ----
     def _search_bing(self):

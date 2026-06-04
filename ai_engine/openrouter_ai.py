@@ -4,7 +4,7 @@ OpenRouter AI — subdomain generation via any LLM on OpenRouter.
 Drop this file in ai_engine/ and pass --openrouter-key to activate.
 Delete to disable. No other changes required.
 
-Default model: anthropic/claude-sonnet-4-5
+Default model: anthropic/claude-sonnet-4.5
 Override:      --openrouter-model <model-id>
 """
 
@@ -21,7 +21,7 @@ class OpenRouterAI(BaseAIEngine):
     description = "AI-powered subdomain generation via OpenRouter"
     requires_key = "openrouter"
 
-    _DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
+    _DEFAULT_MODEL = "anthropic/claude-sonnet-4.5"
     _BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
 
     # ------------------------------------------------------------------ #
@@ -129,7 +129,16 @@ class OpenRouterAI(BaseAIEngine):
                 if r.status_code in (429, 502, 503, 504) and attempt < 2:
                     time.sleep(3 * (2 ** attempt))
                     continue
-                r.raise_for_status()
+                if not r.ok:
+                    detail = ""
+                    try:
+                        j = r.json()
+                        detail = (j.get("error", {}) or {}).get("message") or j.get("message", "")
+                    except Exception:
+                        detail = r.text[:200]
+                    raise RuntimeError(
+                        f"OpenRouter HTTP {r.status_code} for model '{model}': {detail}".strip()
+                    )
                 return r.json()["choices"][0]["message"]["content"]
             except Exception:
                 if attempt == 2:

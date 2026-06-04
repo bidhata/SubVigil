@@ -23,7 +23,7 @@ SOFTWARE.
 ---
 
 SubGrab - Advanced Subdomain Enumeration Tool
-Enhanced with OpenRouter AI and Grok AI (xAI) Integration
+Enhanced with OpenRouter AI Integration
 
 This tool is designed for authorized security testing and bug bounty programs only.
 Users are responsible for ensuring they have proper authorization before scanning
