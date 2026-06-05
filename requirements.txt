@@ -1,4 +1,4 @@
-# Core dependencies for SubGrab
+# Core dependencies for SubVigil
 requests>=2.28.0
 dnspython>=2.2.0
 colorama>=0.4.4

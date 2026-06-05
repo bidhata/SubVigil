@@ -1,5 +1,5 @@
 """
-SubGrab GUI — Professional subdomain enumeration cockpit.
+SubVigil GUI — Professional subdomain enumeration cockpit.
 
 Layout:
     0) Status     — scan state
@@ -43,13 +43,11 @@ _BLUE    = "#2D6CDF"
 _CYAN    = "#00A7B5"
 _VIOLET  = "#7C4DFF"
 _TERM    = "#11120F"
-
+_VERSION = "2.1"
 # Spacing scale (px)
 _S1, _S2, _S3, _S4, _S5, _S6 = 4, 8, 12, 16, 20, 28
 
-_VERSION = "v2.1"
-
-_CFG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subgrab_gui_config.json")
+_CFG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subvigil_gui_config.json")
 
 # (json_key, instance_attr, default_value)
 _CONFIG_SCHEMA: list[tuple[str, str, object]] = [
@@ -219,10 +217,10 @@ class Pill(tk.Frame):
 #  Main application
 # ─────────────────────────────────────────────────────────────────────────────
 
-class SubGrabGUI:
-    def __init__(self, root):
+class SubVigilGUI:
+    def __init__(self, root): 
         self.root = root
-        self.root.title(f"SubGrab {_VERSION} — Subdomain Enumeration")
+        self.root.title(f"SubVigil {_VERSION} — Subdomain Enumeration")
         self.root.geometry("1180x760")
         self.root.minsize(1020, 680)
         self.root.configure(bg=_CRUST)
@@ -469,7 +467,7 @@ class SubGrabGUI:
         self.start_btn = _btn(actions, "Start", self.start_scan,
                       bg=_ACCENT, fg=_PANEL, size=10, bold=True,
                       hover_bg="#EA4F27", padx=18, pady=8)
-        self.start_btn.pack(side="left", padx=(0, _S2))
+        self.start_btn.pack(side="left", padx=(0, _S2)) 
 
         self.stop_btn = _btn(actions, "Stop", self.stop_scan,
                              bg=_SURF0, fg=_SURF2, size=10, bold=True,
@@ -1095,13 +1093,13 @@ class SubGrabGUI:
         if getattr(sys, "frozen", False):
             cmd = [sys.executable, domain]
         else:
-            script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subgrab.py")
+            script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subvigil.py")
             if not os.path.exists(script):
                 script = filedialog.askopenfilename(
-                    title="Locate subgrab.py",
+                    title="Locate subvigil.py",
                     filetypes=[("Python files", "*.py"), ("All files", "*.*")])
                 if not script:
-                    raise ValueError("subgrab.py not found.")
+                    raise ValueError("subvigil.py not found.")
             cmd = [sys.executable, script, domain]
 
         if self.threads_var.get() != "50":
@@ -1179,7 +1177,7 @@ class SubGrabGUI:
             flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
             env = os.environ.copy()
             if not self.enable_c99_var.get():
-                env["SUBGRAB_DISABLE_C99"] = "1"
+                env["SUBVIGIL_DISABLE_C99"] = "1"
             proc = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -1627,16 +1625,18 @@ class _Installer:
 def main():
     root = tk.Tk()
     try:
-        ico = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.ico")
+        ico = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ico.ico")
+        if not os.path.exists(ico):
+            ico = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.ico")
         if os.path.exists(ico):
             root.iconbitmap(ico)
     except Exception:
         pass
 
-    app = SubGrabGUI(root)
+    app = SubVigilGUI(root)
 
     def _on_close():
-        app._save_config_auto()
+        app._save_config_auto() 
         if app.is_running:
             if messagebox.askokcancel("Quit", "A scan is running. Stop it and quit?"):
                 app.stop_scan()
@@ -1649,8 +1649,8 @@ def main():
 
 
 def _show_about(parent):
-    win = tk.Toplevel(parent)
-    win.title("About SubGrab")
+    win = tk.Toplevel(parent) 
+    win.title("About SubVigil")
     win.geometry("480x400")
     win.transient(parent)
     win.grab_set()
@@ -1661,9 +1661,9 @@ def _show_about(parent):
     win.geometry(f"480x400+{x}+{y}")
 
     frm = tk.Frame(win, bg=_BASE, padx=28, pady=24)
-    frm.pack(fill="both", expand=True)
+    frm.pack(fill="both", expand=True) 
 
-    tk.Label(frm, text="SubGrab", font=("Segoe UI", 26, "bold"),
+    tk.Label(frm, text="SubVigil", font=("Segoe UI", 26, "bold"),
              fg=_ACCENT, bg=_BASE).pack()
     tk.Label(frm, text=_VERSION, font=("Segoe UI", 10),
              fg=_MUTED, bg=_BASE).pack(pady=(0, 2))
@@ -1681,7 +1681,7 @@ def _show_about(parent):
     tk.Label(frm, text=desc, font=("Segoe UI", 9), fg=_SUBTEXT,
              bg=_BASE, justify="center").pack()
 
-    _btn(frm, "GitHub", lambda: webbrowser.open("https://github.com/bidhata/SubGrab"),
+    _btn(frm, "GitHub", lambda: webbrowser.open("https://github.com/bidhata/SubVigil"),
          bg=_SURF1, padx=14, pady=6).pack(pady=(20, 0))
 
 

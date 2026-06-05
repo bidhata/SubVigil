@@ -30,13 +30,13 @@ class C99SubdomainFinder(BaseScanner):
     fast_mode_skip = False
 
     BASE = "https://subdomainfinder.c99.nl"
-    LOOKBACK_DAYS = 60
-
+    LOOKBACK_DAYS = 60 
+ 
     ABUSE_MARKERS = ("Abuse has been detected", "cheap API key")
 
     def run(self) -> set[str]:
-        if os.environ.get("SUBGRAB_DISABLE_C99") == "1":
-            print(f"{Fore.YELLOW}[*] c99.nl SubdomainFinder: skipped (SUBGRAB_DISABLE_C99=1)")
+        if os.environ.get("SUBVIGIL_DISABLE_C99") == "1":
+            print(f"{Fore.YELLOW}[*] c99.nl SubdomainFinder: skipped (SUBVIGIL_DISABLE_C99=1)")
             return set()
         print(f"{Fore.CYAN}[*] Querying c99.nl SubdomainFinder...")
         subdomains: set[str] = set()

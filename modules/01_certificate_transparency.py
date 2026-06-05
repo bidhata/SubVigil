@@ -10,6 +10,7 @@ All sources run independently — a rate-limit on one does not drop the total.
 
 import re
 import time
+import requests
 
 from bs4 import BeautifulSoup
 from colorama import Fore
@@ -39,6 +40,14 @@ class CertificateTransparency(BaseScanner):
                     print(f"{Fore.GREEN}[+] {name}: {len(found)} subdomains")
                 else:
                     print(f"{Fore.YELLOW}[!] {name}: 0 results")
+            except requests.exceptions.RequestException as e:
+                if isinstance(e, requests.exceptions.Timeout):
+                    err_msg = "Connection timed out"
+                elif isinstance(e, requests.exceptions.ConnectionError):
+                    err_msg = "Connection error"
+                else:
+                    err_msg = str(e).split(':')[-1].strip() or str(e)
+                print(f"{Fore.YELLOW}[!] {name}: {err_msg[:100]}")
             except Exception as e:
                 print(f"{Fore.YELLOW}[!] {name}: {str(e)[:80]}")
 
@@ -60,8 +69,8 @@ class CertificateTransparency(BaseScanner):
         """GET with a reasonable UA header."""
         headers = kwargs.pop("headers", {})
         headers.setdefault(
-            "User-Agent",
-            "Mozilla/5.0 (compatible; SubGrab/2.0; +https://github.com/bidhata/SubGrab)",
+            "User-Agent", 
+            "Mozilla/5.0 (compatible; SubVigil/2.0; +https://github.com/bidhata/SubVigil)",
         )
         r = self.get_session().get(url, headers=headers, **kwargs)
         if not r.encoding or r.encoding.lower() == "iso-8859-1":
@@ -78,22 +87,47 @@ class CertificateTransparency(BaseScanner):
             try:
                 r = self._get(url, timeout=90)
                 if r.status_code == 200:
-                    for cert in r.json():
-                        for name in cert.get("name_value", "").split("\n"):
-                            subdomains.update(self._collect(name))
+                    try:
+                        for cert in r.json():
+                            for name in cert.get("name_value", "").split("\n"):
+                                subdomains.update(self._collect(name))
+                    except Exception:
+                        pass
                     return subdomains
+                
+                if r.status_code == 404:
+                    break  # crt.sh frequently returns 404 for no results or temporary DB issues
+                    
                 if r.status_code in (429, 502, 503, 504):
-                    wait = 10 * (2 ** attempt)
-                    print(f"{Fore.YELLOW}[!] crt.sh HTTP {r.status_code} — retrying in {wait}s")
-                    time.sleep(wait)
-                    continue
-                print(f"{Fore.YELLOW}[!] crt.sh HTTP {r.status_code}")
+                    if attempt < 2:
+                        wait = 10 * (2 ** attempt)
+                        print(f"{Fore.YELLOW}[!] crt.sh: HTTP {r.status_code}, retrying in {wait}s...")
+                        time.sleep(wait)
+                        continue
+                
+                print(f"{Fore.YELLOW}[!] crt.sh: HTTP {r.status_code}")
                 break
+                
+            except requests.exceptions.RequestException as e:
+                if isinstance(e, requests.exceptions.Timeout):
+                    err_msg = "Connection timed out"
+                elif isinstance(e, requests.exceptions.ConnectionError):
+                    err_msg = "Connection error"
+                else:
+                    err_msg = str(e).split(':')[-1].strip() or str(e)
+                    
+                if attempt < 2:
+                    wait = 10 * (attempt + 1)
+                    print(f"{Fore.YELLOW}[!] crt.sh: {err_msg[:100]}, retrying in {wait}s...")
+                    time.sleep(wait)
+                else:
+                    print(f"{Fore.YELLOW}[!] crt.sh: {err_msg[:100]}")
             except Exception as e:
                 if attempt < 2:
                     time.sleep(5)
                 else:
-                    raise
+                    print(f"{Fore.YELLOW}[!] crt.sh: {str(e)[:100]}")
+                    break
 
         return subdomains
 

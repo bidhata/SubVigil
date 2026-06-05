@@ -1,5 +1,5 @@
 """
-SubGrab passive scanner plugin system.
+SubVigil passive scanner plugin system.
 
 HOW TO ADD A NEW SCANNER
 ─────────────────────────
@@ -8,7 +8,10 @@ HOW TO ADD A NEW SCANNER
 3. Drop the file here.  It is picked up automatically on the next run.
    Delete the file to stop using that scanner — nothing else to change.
 
-MINIMAL PLUGIN (no imports needed — BaseScanner and Fore are pre-injected):
+MINIMAL PLUGIN:
+
+    from modules.base import BaseScanner
+    from colorama import Fore
 
     class MySource(BaseScanner):
         name        = "My Source"        # shown in logs
@@ -48,7 +51,6 @@ AVAILABLE INSIDE run()
   self.shodan_scan()        – run Shodan on active IPs (requires shodan key)
   self.extract_from_json(data)        – extract subdomains from arbitrary JSON
   self.extract_from_page(soup, text)  – extract subdomains from parsed HTML
-  Fore.RED / GREEN / CYAN / YELLOW    – colorama colors for print output
 
 EXECUTION ORDER
   Files are sorted alphabetically.  Use numeric prefixes (01_, 02_, …) to
@@ -143,13 +145,15 @@ def load_modules(modules_dir: Path) -> list:
             continue
         try:
             spec = importlib.util.spec_from_file_location(path.stem, path)
+            if not spec:
+                failed.append(path.name)
+                print(f"{(_Fore.RED if _Fore else '')}[!] Could not create module spec for {path.name}{(_Fore.RESET if _Fore else '')}")
+                continue
+            if not spec.loader:
+                failed.append(path.name)
+                print(f"{(_Fore.RED if _Fore else '')}[!] No loader for module {path.name}{(_Fore.RESET if _Fore else '')}")
+                continue
             mod = importlib.util.module_from_spec(spec)
-
-            # ── pre-inject so plugin files need zero imports ──────────────
-            mod.BaseScanner = _Base
-            if _Fore is not None:
-                mod.Fore = _Fore
-            # ─────────────────────────────────────────────────────────────
 
             spec.loader.exec_module(mod)
 

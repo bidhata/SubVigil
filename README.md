@@ -1,22 +1,22 @@
 <div align="center">
 
-# 🔍 SubGrab
+# 🔍 SubVigil
 
-### Advanced Subdomain Enumeration Tool
+### The first context-aware, AI-augmented attack surface mapper.
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![CI](https://github.com/bidhata/SubGrab/actions/workflows/ci.yml/badge.svg)](https://github.com/bidhata/SubGrab/actions/workflows/ci.yml)
+[![CI](https://github.com/bidhata/SubVigil/actions/workflows/ci.yml/badge.svg)](https://github.com/bidhata/SubVigil/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE.txt)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-6366f1?style=flat-square)](https://github.com/bidhata/SubGrab/releases)
-[![Release](https://img.shields.io/github/v/release/bidhata/SubGrab?style=flat-square&color=f59e0b&label=Latest)](https://github.com/bidhata/SubGrab/releases)
-[![Stars](https://img.shields.io/github/stars/bidhata/SubGrab?style=flat-square&color=facc15)](https://github.com/bidhata/SubGrab/stargazers)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-6366f1?style=flat-square)](https://github.com/bidhata/SubVigil/releases)
+[![Release](https://img.shields.io/github/v/release/bidhata/SubVigil?style=flat-square&color=f59e0b&label=Latest)](https://github.com/bidhata/SubVigil/releases)
+[![Stars](https://img.shields.io/github/stars/bidhata/SubVigil?style=flat-square&color=facc15)](https://github.com/bidhata/SubVigil/stargazers)
 
 Multi-threaded subdomain enumeration combining **9 passive sources**, **active recon**, and **AI-powered pattern generation** into a single CLI and GUI tool — no Python required for the Windows binary.
 
-[**⬇️ Download Binary**](https://github.com/bidhata/SubGrab/releases) · [**📖 Quick Start**](#-quick-start) · [**🔌 Plugin Guide**](#-plugin-system) · [**🖥️ GUI**](#-gui-interface)
+[**⬇️ Download Binary**](https://github.com/bidhata/SubVigil/releases) · [**📖 Quick Start**](#-quick-start) · [**🔌 Plugin Guide**](#-plugin-system) · [**🖥️ GUI**](#-gui-interface)
 
 <br>
-<img src="screenshot.png" alt="SubGrab Dashboard Screenshot" width="800">
+<img src="screenshot.png" alt="SubVigil Dashboard Screenshot" width="800">
 
 </div>
 
@@ -53,6 +53,7 @@ Multi-threaded subdomain enumeration combining **9 passive sources**, **active r
 **🤖 AI Generation**
 - OpenRouter — Claude 4.5, GPT-5.1, Gemini 2.5…
 - Pattern analysis on discovered subdomains
+- Codex CLI — local binary support
 - Runs after traditional sources complete
 - Single API key, dozens of models
 
@@ -66,10 +67,10 @@ Multi-threaded subdomain enumeration combining **9 passive sources**, **active r
 
 ### Option A — Pre-built Binary (Windows, no Python needed)
 
-```
-1. Download SubGrab-vX.X.X-windows-x64.zip from Releases
-2. Extract → double-click SubGrab.exe for GUI
-              or run SubGrab.exe example.com for CLI
+```bash
+1. Download SubVigil-vX.X.X-windows-x64.zip from Releases
+2. Extract → double-click SubVigil.exe for GUI
+              or run SubVigil.exe example.com for CLI
 ```
 
 ### Option B — Run from Source
@@ -519,7 +520,7 @@ Both AI engines require **at least 3 discovered subdomains** to enter pattern-an
 4. Test against a domain you own or have written permission to enumerate
 5. Open a pull request with a clear description
 
-Bug reports → [open an issue](https://github.com/bidhata/SubGrab/issues)
+Bug reports → open an issue
 
 ---
 

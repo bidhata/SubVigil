@@ -1,5 +1,5 @@
 """
-SubGrab AI Engine plugin system.
+SubVigil AI Engine plugin system.
 
 HOW TO ADD A NEW AI ENGINE
 ───────────────────────────
@@ -11,7 +11,10 @@ HOW TO ADD A NEW AI ENGINE
 AI engines run AFTER all passive scanners complete, so self.subdomains
 already contains every passively discovered subdomain when run() is called.
 
-MINIMAL PLUGIN (BaseAIEngine and Fore are pre-injected — no imports needed):
+MINIMAL PLUGIN:
+
+    from ai_engine.base import BaseAIEngine
+    from colorama import Fore
 
     class MyLLM(BaseAIEngine):
         name        = "My LLM"
@@ -38,7 +41,6 @@ AVAILABLE INSIDE run()
   self.get_resolver()  – thread-local dns.resolver.Resolver
   self.resolve_domain(sub)  – resolve subdomain → list[str] IPs or None
   self.is_valid(sub)        – validate subdomain format → bool
-  Fore.RED / GREEN / CYAN / YELLOW  – colorama colors
 
 EXECUTION ORDER
   Files are sorted alphabetically.  Use numeric prefixes (01_, 02_, …) to
@@ -119,12 +121,15 @@ def load_ai_engines(ai_engine_dir: Path) -> list:
             continue
         try:
             spec = importlib.util.spec_from_file_location(path.stem, path)
+            if not spec:
+                failed.append(path.name)
+                print(f"{(_Fore.RED if _Fore else '')}[!] Could not create module spec for {path.name}{(_Fore.RESET if _Fore else '')}")
+                continue
+            if not spec.loader:
+                failed.append(path.name)
+                print(f"{(_Fore.RED if _Fore else '')}[!] No loader for module {path.name}{(_Fore.RESET if _Fore else '')}")
+                continue
             mod = importlib.util.module_from_spec(spec)
-
-            # Pre-inject so plugin files need zero imports
-            mod.BaseAIEngine = _Base
-            if _Fore is not None:
-                mod.Fore = _Fore
 
             spec.loader.exec_module(mod)
 

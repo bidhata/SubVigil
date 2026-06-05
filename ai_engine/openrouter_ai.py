@@ -105,8 +105,8 @@ class OpenRouterAI(BaseAIEngine):
         headers = {
             "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/bidhata/SubGrab",
-            "X-Title": "SubGrab Subdomain Discovery",
+            "HTTP-Referer": "https://github.com/bidhata/SubVigil",
+            "X-Title": "SubVigil Subdomain Discovery",
         }
         payload = {
             "model": model,

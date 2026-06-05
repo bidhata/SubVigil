@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# SubGrab AI Engine Plugin Template
+# SubVigil AI Engine Plugin Template
 #
 # HOW TO USE:
 #   1. Copy this file, rename it  e.g. my_llm.py
@@ -7,16 +7,19 @@
 #   3. Drop the file in this folder — it loads automatically next scan
 #   4. Delete the file to disable it — nothing else to change
 #
-# BaseAIEngine and Fore are pre-injected — no imports needed for those.
-# Add any other imports you need at the top of your file as normal.
+# The loader pre-injects `Fore` for colored output, but for static analysis
+# and type checking, it's best to import `BaseAIEngine` and `Fore` explicitly.
 #
 # AI engines run AFTER passive scanners, so self.subdomains already
 # contains all passively discovered subdomains when run() is called.
 # Use them to guide pattern-based generation.
 # ─────────────────────────────────────────────────────────────────────────────
 
+from colorama import Fore
+from ai_engine.base import BaseAIEngine
 
-class MyLLM(BaseAIEngine):              # BaseAIEngine is pre-injected — no import needed
+
+class MyLLM(BaseAIEngine):
     name         = "My LLM"            # shown in logs and startup list
     description  = "One-line description of what this AI engine does"
     requires_key = "my_llm"            # key in api_keys dict; engine auto-skipped when absent

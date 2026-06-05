@@ -8,7 +8,7 @@ Install (pick one):
     Microsoft Store: search "Codex" (app ID 9plm9xgg6vks)
 
 Auth is managed by the codex binary itself. Run `codex login` once after
-installing. No API keys are needed in SubGrab. Delete this file to disable.
+installing. No API keys are needed in SubVigil. Delete this file to disable.
 """
 
 import ai_engine._binary_base as _binary_base

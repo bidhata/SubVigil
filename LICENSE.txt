@@ -22,8 +22,7 @@ SOFTWARE.
 
 ---
 
-SubGrab - Advanced Subdomain Enumeration Tool
-Enhanced with OpenRouter AI Integration
+SubVigil - The first context-aware, AI-augmented attack surface mapper.
 
 This tool is designed for authorized security testing and bug bounty programs only.
 Users are responsible for ensuring they have proper authorization before scanning

@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# SubGrab Scanner Plugin Template
+# SubVigil Scanner Plugin Template
 #
 # HOW TO USE:
 #   1. Copy this file, rename it  e.g. 12_my_source.py
@@ -7,12 +7,15 @@
 #   3. Drop the file in this folder — it loads automatically next scan
 #   4. Delete the file to disable it — nothing else to change
 #
-# BaseScanner and Fore are pre-injected — no imports needed for those.
-# Add any other imports you need at the top of your file as normal.
+# The loader pre-injects `Fore` for colored output, but for static analysis
+# and type checking, it's best to import `BaseScanner` and `Fore` explicitly.
 # ─────────────────────────────────────────────────────────────────────────────
 
+from colorama import Fore
+from modules.base import BaseScanner
 
-class MySource(BaseScanner):           # BaseScanner is pre-injected — no import needed
+
+class MySource(BaseScanner):
     name         = "My Source"         # shown in logs and startup list
     description  = "One-line description of what this scanner does"
 
