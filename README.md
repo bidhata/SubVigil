@@ -176,13 +176,13 @@ subgrab.py domain [options]
 ## 🏗️ Architecture
 
 ```
-SubGrab/
+SubVigil/
 ├── main.py                  ← unified entry point (GUI or CLI)
-├── subgrab.py               ← CLI engine + SubdomainEnumerator
-├── subgrab_gui.py           ← dark GUI (Enterprise Slate theme)
-├── SubGrab.spec             ← PyInstaller build spec
+├── subvigil.py              ← CLI engine + SubdomainEnumerator
+├── subvigil_gui.py          ← dark GUI (Enterprise Slate theme)
+├── SubVigil.spec            ← PyInstaller build spec
 ├── requirements.txt
-├── start_subgrab_gui.bat    ← Windows one-click launcher
+├── start_subvigil_gui.bat   ← Windows one-click launcher
 │
 ├── modules/                 ← passive scanner plugins (drop .py to add)
 │   ├── base.py              ← BaseScanner ABC + load_modules()
@@ -280,7 +280,7 @@ Traditional sources  →  [api, api1, api2, dev-api, staging-api]
 ### OpenRouter — any LLM through one API
 
 ```bash
-python subgrab.py example.com \
+python subvigil.py example.com \
   --openrouter-key sk-or-YOURKEY \
   --openrouter-model anthropic/claude-sonnet-4.5
 ```
