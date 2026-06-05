@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="logo.png" alt="SubVigil Logo" width="200">
+
 # 🔍 SubVigil
 
 ### The first context-aware, AI-augmented attack surface mapper.
