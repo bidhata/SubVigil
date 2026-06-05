@@ -80,8 +80,8 @@ Multi-threaded subdomain enumeration combining **9 passive sources**, **active r
 **Requirements:** Python 3.8+
 
 ```bash
-git clone https://github.com/bidhata/SubGrab.git
-cd SubGrab
+git clone https://github.com/bidhata/subvigil.git
+cd subvigil
 pip install -r requirements.txt
 ```
 
@@ -106,28 +106,28 @@ pip install -r requirements.txt
 
 ```bash
 # Passive-only (no API keys required)
-python subgrab.py example.com
+python subvigil.py example.com
 
 # Fast mode — skips brute force and reverse DNS
-python subgrab.py example.com --fast --threads 100
+python subvigil.py example.com --fast --threads 100
 
 # Stealth mode — random delays between requests
-python subgrab.py example.com --stealth
+python subvigil.py example.com --stealth
 
 # AI-powered with OpenRouter (single key, any model)
-python subgrab.py example.com --openrouter-key sk-or-YOURKEY
+python subvigil.py example.com --openrouter-key sk-or-YOURKEY
 
 # Full coverage — AI + all APIs
-python subgrab.py example.com \
+python subvigil.py example.com \
   --openrouter-key sk-or-YOURKEY \
   --shodan-key SHODANKEY \
   --virustotal-key VTKEY \
   --threads 100
 
 # Launch GUI
-python subgrab_gui.py        # source
+python subvigil_gui.py        # source
 # or
-SubGrab.exe                  # binary
+subvigil.exe                  # binary
 ```
 
 ---
@@ -135,7 +135,7 @@ SubGrab.exe                  # binary
 ## 📋 CLI Reference
 
 ```
-subgrab.py domain [options]
+subvigil.py domain [options]
 ```
 
 ### ⚙️ General Options
@@ -446,9 +446,9 @@ Drop it in `modules/` — that's it.
 ## 🖥️ GUI Interface
 
 ```bash
-python subgrab_gui.py     # from source
-start_subgrab_gui.bat     # Windows one-click
-SubGrab.exe               # binary — double-click
+python subvigil_gui.py     # from source
+start_subvigil_gui.bat     # Windows one-click
+subvigil.exe               # binary — double-click
 ```
 
 | Feature | Detail |
@@ -492,7 +492,7 @@ Search engines frequently block automated requests. Other sources are unaffected
 Use a shorter wordlist and reduce threads to avoid hitting DNS rate limits:
 
 ```bash
-python subgrab.py example.com --wordlist small.txt --threads 20
+python subvigil.py example.com --wordlist small.txt --threads 20
 ```
 
 </details>
