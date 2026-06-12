@@ -55,16 +55,47 @@ class SecurityAPIs(BaseScanner):
 
         if "censys" in self.api_keys:
             try:
-                url = "https://search.censys.io/api/v2/certificates/search"
-                auth = (self.api_keys["censys"]["id"], self.api_keys["censys"]["secret"])
-                params = {"q": f"names: *.{self.domain}", "per_page": 100}
-                response = self.get_session().get(url, auth=auth, params=params, timeout=30)
+                censys_auth = self.api_keys["censys"]
+                if "pat" in censys_auth:
+                    # Platform API v3 using Personal Access Token
+                    url = "https://api.platform.censys.io/v3/global/search/query"
+                    headers = {
+                        "Authorization": f"Bearer {censys_auth['pat']}",
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    }
+                    payload = {"query": f"names: *.{self.domain}", "per_page": 100}
+                    response = self.get_session().post(url, headers=headers, json=payload, timeout=30)
+                else:
+                    # Legacy Search API v2 using Basic Auth
+                    url = "https://search.censys.io/api/v2/certificates/search"
+                    auth = (censys_auth["id"], censys_auth["secret"])
+                    params = {"q": f"names: *.{self.domain}", "per_page": 100}
+                    response = self.get_session().get(url, auth=auth, params=params, timeout=30)
+                    
                 if response.status_code == 200:
                     data = response.json()
-                    for result in data.get("result", {}).get("hits", []):
-                        for name in result.get("names", []):
+                    hits = data.get("result", {}).get("hits", [])
+                    if not hits and "results" in data:
+                        hits = data.get("results", [])
+                        
+                    for result in hits:
+                        # Censys v2/v3 may place names under 'parsed'
+                        names = result.get("names", [])
+                        if not names and "parsed" in result:
+                            names = result["parsed"].get("names", [])
+                            
+                        for name in names:
                             if name.endswith(f".{self.domain}"):
                                 subdomains.add(name)
+                elif response.status_code == 401:
+                    print(f"{Fore.RED}[!] Censys API: Invalid API ID or Secret (401 Unauthorized)")
+                elif response.status_code == 403:
+                    print(f"{Fore.RED}[!] Censys API: Access Denied / Out of Credits (403 Forbidden)")
+                elif response.status_code == 429:
+                    print(f"{Fore.YELLOW}[!] Censys API: Rate limit exceeded (429 Too Many Requests)")
+                else:
+                    print(f"{Fore.RED}[!] Censys API returned HTTP {response.status_code}: {response.text[:100]}")
             except Exception as e:
                 print(f"{Fore.RED}[!] Error with Censys: {e}")
 
