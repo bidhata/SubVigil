@@ -29,13 +29,15 @@ class BinaryAIEngine(BaseAIEngine):
             result = subprocess.run(
                 cmd, input=prompt, capture_output=True, text=True, timeout=120
             )
-            if result.returncode != 0:
+            labels = self._parse_lines(result.stdout)
+            
+            if result.returncode != 0 and not labels:
                 print(
                     f"{Fore.RED}[!] {self.name}: exited with code {result.returncode}: "
-                    f"{result.stderr[:120]}"
+                    f"\n... {result.stderr.strip()[-1000:]}"
                 )
                 return set()
-            labels = self._parse_lines(result.stdout)
+                
             return {
                 f"{label}.{self.domain}"
                 for label in labels
@@ -60,6 +62,11 @@ class BinaryAIEngine(BaseAIEngine):
             for s in self.subdomains
             if s.endswith(f".{self.domain}")
         ]
+        
+        # Cap to 1000 to prevent LLM context window limits and IPC buffer issues
+        if len(existing) > 100:
+            existing = existing[:100]
+            
         if len(existing) >= 3:
             label_block = "\n".join(existing)
             return (
