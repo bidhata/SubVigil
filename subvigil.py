@@ -1508,8 +1508,16 @@ Examples:
         api_keys['securitytrails'] = args.securitytrails_key
     if args.virustotal_key:
         api_keys['virustotal'] = args.virustotal_key
-    if args.censys_id and args.censys_secret:
-        api_keys['censys'] = {'id': args.censys_id, 'secret': args.censys_secret}
+        
+    censys_id = args.censys_id.strip() if args.censys_id else ""
+    censys_secret = args.censys_secret.strip() if args.censys_secret else ""
+    if censys_id.startswith('censys_'):
+        api_keys['censys'] = {'pat': censys_id}
+    elif censys_secret.startswith('censys_'):
+        api_keys['censys'] = {'pat': censys_secret}
+    elif censys_id and censys_secret:
+        api_keys['censys'] = {'id': censys_id, 'secret': censys_secret}
+        
     if args.github_token:
         api_keys['github'] = args.github_token
     if args.whoisxml_key:

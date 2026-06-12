@@ -765,7 +765,7 @@ class SubVigilGUI:
         api_row("SecurityTrails", self.securitytrails_key_var, "https://securitytrails.com/")
         api_row("VirusTotal",     self.virustotal_key_var,     "https://virustotal.com/")
         api_row("WhoisXML",       self.whoisxml_key_var,       "https://whoisxmlapi.com/")
-        api_row("Censys ID",      self.censys_id_var,          "https://censys.io/")
+        api_row("Censys ID / PAT",self.censys_id_var,          "https://censys.io/")
         api_row("Censys Secret",  self.censys_secret_var)
 
         section("Development")
