@@ -1,23 +1,29 @@
 """
-c99.nl SubdomainFinder scraper.
+c99.nl SubdomainFinder.
 
-Pulls subdomains from https://subdomainfinder.c99.nl/scans/<YYYY-MM-DD>/<domain>.
-The site renders the full list (same data backing the "Download CSV" button)
-into the HTML table, so we parse the table directly.
+c99 exposes subdomain data two ways:
 
-Walks back day-by-day from today until a cached scan is found or the lookback
-limit is reached. Captures per-row IP and Cloudflare flags (class="sd"/ip/cf),
-merges IPs into self.subdomain_info, and writes a side-car
-<output_dir>/<domain>_c99_scan.json.
+1. Official API (reliable): https://api.c99.nl/subdomainfinder?key=<KEY>&domain=<D>&json
+   Returns JSON {"success": bool, "subdomains": [{"subdomain", "ip", "cloudflare"}...]}.
+   Used automatically when a "c99" API key is configured. This is the ONLY
+   method c99 supports for automation.
 
-c99 actively blocks scrapers; if the abuse banner is detected we abort the walk.
+2. HTML scrape (best-effort fallback): https://subdomainfinder.c99.nl/
+   The public site is behind Cloudflare and actively blocks scrapers — any
+   automated request to a scan path is answered with a 200 "Abuse has been
+   detected" page. We attempt a single best-effort fetch; if the abuse banner
+   (or no usable scan) is seen, we give up quietly. Without a key this source
+   will usually return nothing, which is expected — other sources cover it.
+
+Per-row IP and Cloudflare flags are merged into self.subdomain_info and written
+to a side-car <output_dir>/<domain>_c99_scan.json.
+
+Set SUBVIGIL_DISABLE_C99=1 to skip this module entirely.
 """
 
-import datetime
 import json
 import os
 import re
-import time
 
 from bs4 import BeautifulSoup
 from colorama import Fore
@@ -26,12 +32,13 @@ from modules.base import BaseScanner
 
 class C99SubdomainFinder(BaseScanner):
     name = "c99.nl SubdomainFinder"
-    description = "subdomainfinder.c99.nl scan results"
+    description = "c99.nl SubdomainFinder (official API, HTML fallback)"
     fast_mode_skip = False
+    requires_key = None  # key is optional; module still runs without it
 
     BASE = "https://subdomainfinder.c99.nl"
-    LOOKBACK_DAYS = 60 
- 
+    API = "https://api.c99.nl/subdomainfinder"
+
     ABUSE_MARKERS = ("Abuse has been detected", "cheap API key")
 
     def run(self) -> set[str]:
@@ -39,8 +46,70 @@ class C99SubdomainFinder(BaseScanner):
             print(f"{Fore.YELLOW}[*] c99.nl SubdomainFinder: skipped (SUBVIGIL_DISABLE_C99=1)")
             return set()
         print(f"{Fore.CYAN}[*] Querying c99.nl SubdomainFinder...")
-        subdomains: set[str] = set()
+
         domain = self.domain.lower().strip(".")
+
+        # 1) Official API — the only reliable, non-abusive path.
+        api_key = (self.api_keys or {}).get("c99")
+        if api_key:
+            subs = self._query_api(domain, api_key)
+            if subs is not None:
+                return subs
+            # API failed (bad key / error); fall through to best-effort scrape.
+
+        # 2) HTML fallback — expected to be blocked without a key.
+        return self._scrape(domain)
+
+    # ------------------------------------------------------------------ #
+    # Official API                                                        #
+    # ------------------------------------------------------------------ #
+    def _query_api(self, domain: str, api_key: str):
+        """Return a set of subdomains, or None if the API call failed."""
+        subdomains: set[str] = set()
+        c99_data = []
+        try:
+            resp = self.get_session().get(
+                self.API,
+                params={"key": api_key, "domain": domain, "json": ""},
+                timeout=self.timeout,
+            )
+        except Exception as e:
+            print(f"{Fore.YELLOW}[!] c99 API request failed: {e}")
+            return None
+
+        try:
+            data = resp.json()
+        except Exception:
+            print(f"{Fore.YELLOW}[!] c99 API returned non-JSON response")
+            return None
+
+        if not data.get("success"):
+            print(f"{Fore.RED}[!] c99 API error: {data.get('error', 'unknown error')}")
+            return None
+
+        for entry in data.get("subdomains", []):
+            host = str(entry.get("subdomain", "")).lower().strip(".")
+            if not host.endswith(f".{domain}") or not self.is_valid(host):
+                continue
+            subdomains.add(host)
+            ip = str(entry.get("ip", "") or "")
+            cloudflare = entry.get("cloudflare")
+            c99_data.append({"subdomain": host, "ip": ip, "cloudflare": cloudflare})
+            if ip and host not in self.subdomain_info:
+                self.subdomain_info[host] = {"ip": ip, "source": "c99"}
+
+        self._write_sidecar(domain, c99_data)
+        if subdomains:
+            print(f"{Fore.GREEN}[+] c99 API: {len(subdomains)} subdomains")
+        else:
+            print(f"{Fore.YELLOW}[!] c99 API: no subdomains for {domain}")
+        return subdomains
+
+    # ------------------------------------------------------------------ #
+    # HTML scrape fallback                                                #
+    # ------------------------------------------------------------------ #
+    def _scrape(self, domain: str) -> set[str]:
+        subdomains: set[str] = set()
         session = self.get_session()
         headers = {
             "User-Agent": (
@@ -53,51 +122,28 @@ class C99SubdomainFinder(BaseScanner):
             "Referer": f"{self.BASE}/",
         }
 
-        today = datetime.date.today()
-        scan_url = None
-        html = None
+        url = f"{self.BASE}/scans/{domain}"
+        try:
+            resp = session.get(
+                url, headers=headers, timeout=self.timeout, allow_redirects=True
+            )
+        except Exception as e:
+            print(f"{Fore.YELLOW}[!] c99.nl request failed: {e}")
+            return subdomains
 
-        for offset in range(self.LOOKBACK_DAYS + 1):
-            day = today - datetime.timedelta(days=offset)
-            url = f"{self.BASE}/scans/{day.isoformat()}/{domain}"
-            try:
-                resp = session.get(
-                    url, headers=headers, timeout=self.timeout, allow_redirects=True
-                )
-            except Exception as e:
-                print(f"{Fore.YELLOW}[!] c99.nl request failed for {day}: {e}")
-                self.stealth_delay()
-                continue
-
-            text = resp.text or ""
-            if any(m in text for m in self.ABUSE_MARKERS):
-                print(
-                    f"{Fore.RED}[!] c99.nl blocked the request (abuse detection). "
-                    f"A paid c99 API key is required for automated scans."
-                )
-                return subdomains
-            if resp.status_code == 429:
-                print(f"{Fore.YELLOW}[!] c99.nl rate-limited (429); backing off 5s")
-                time.sleep(5)
-                continue
-            if resp.status_code != 200:
-                self.stealth_delay()
-                continue
-            if f".{domain}" not in text:
-                self.stealth_delay()
-                continue
-
-            scan_url = resp.url
-            html = text
-            print(f"{Fore.GREEN}[+] Found c99.nl scan: {scan_url} ({len(html):,} bytes)")
-            break
-
-        if not html:
+        text = resp.text or ""
+        if any(m in text for m in self.ABUSE_MARKERS):
             print(
-                f"{Fore.YELLOW}[!] No c99.nl scan found in last "
-                f"{self.LOOKBACK_DAYS} days for {domain}"
+                f"{Fore.YELLOW}[!] c99.nl blocked the scrape (Cloudflare abuse page). "
+                f"Configure a 'c99' API key for reliable results — skipping."
             )
             return subdomains
+        if resp.status_code != 200 or f".{domain}" not in text:
+            print(f"{Fore.YELLOW}[!] c99.nl: no usable scan page for {domain}")
+            return subdomains
+
+        html = text
+        print(f"{Fore.GREEN}[+] c99.nl scan page: {resp.url} ({len(html):,} bytes)")
 
         try:
             try:
@@ -150,14 +196,7 @@ class C99SubdomainFinder(BaseScanner):
                 if host != domain and self.is_valid(host):
                     subdomains.add(host)
 
-            if c99_data:
-                out = os.path.join(self.output_dir, f"{domain}_c99_scan.json")
-                try:
-                    with open(out, "w", encoding="utf-8") as f:
-                        json.dump(c99_data, f, indent=2, ensure_ascii=False)
-                    print(f"{Fore.GREEN}[+] c99 scan data saved to {out}")
-                except Exception as e:
-                    print(f"{Fore.YELLOW}[!] Failed to write c99 side-car: {e}")
+            self._write_sidecar(domain, c99_data)
         except Exception as e:
             print(f"{Fore.RED}[!] Error parsing c99.nl scan: {e}")
 
@@ -167,3 +206,18 @@ class C99SubdomainFinder(BaseScanner):
                 f"{len(subdomains)} subdomains"
             )
         return subdomains
+
+    # ------------------------------------------------------------------ #
+    # Shared helper                                                       #
+    # ------------------------------------------------------------------ #
+    def _write_sidecar(self, domain: str, c99_data: list) -> None:
+        """Persist per-row IP / Cloudflare data to <output_dir>/<domain>_c99_scan.json."""
+        if not c99_data:
+            return
+        out = os.path.join(self.output_dir, f"{domain}_c99_scan.json")
+        try:
+            with open(out, "w", encoding="utf-8") as f:
+                json.dump(c99_data, f, indent=2, ensure_ascii=False)
+            print(f"{Fore.GREEN}[+] c99 scan data saved to {out}")
+        except Exception as e:
+            print(f"{Fore.YELLOW}[!] Failed to write c99 side-car: {e}")

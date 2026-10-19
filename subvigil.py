@@ -1469,6 +1469,7 @@ Examples:
     parser.add_argument('--censys-secret', help='Censys API secret')
     parser.add_argument('--github-token', help='GitHub API token')
     parser.add_argument('--whoisxml-key', help='WhoisXML API key for subdomain lookup (500 free credits)')
+    parser.add_argument('--c99-key', help='c99.nl API key for SubdomainFinder (required for reliable c99 results)')
     # AI Integration
     parser.add_argument('--openrouter-key', help='OpenRouter API key for AI-powered subdomain generation')
     parser.add_argument('--openrouter-model',
@@ -1522,6 +1523,8 @@ Examples:
         api_keys['github'] = args.github_token
     if args.whoisxml_key:
         api_keys['whoisxml'] = args.whoisxml_key
+    if args.c99_key:
+        api_keys['c99'] = args.c99_key
     if args.openrouter_key:
         api_keys['openrouter'] = args.openrouter_key
     

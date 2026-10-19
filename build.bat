@@ -1,13 +1,20 @@
 @echo off
-echo [*] Installing PyInstaller...
+REM ---------------------------------------------------------------------------
+REM SubVigil Windows build script. Must be run on Windows (PyInstaller does not
+REM cross-compile). Produces dist\SubVigil.exe.
+REM ---------------------------------------------------------------------------
+
+echo [*] Installing dependencies...
+pip install -r requirements.txt
 pip install pyinstaller
 
-echo [*] Compiling SubVigil as a single binary with no CMD popup...
-python -m PyInstaller --noconfirm --onefile --windowed --name "SubVigil" ^
-    --add-data "modules;modules" ^
-    --add-data "ai_engine;ai_engine" ^
-    --icon "ico.ico" ^
-    main.py
+echo [*] Building SubVigil.exe from SubVigil.spec (one-file, no console popup)...
+python -m PyInstaller --noconfirm --clean SubVigil.spec
+if errorlevel 1 (
+    echo [!] Build failed.
+    pause
+    exit /b 1
+)
 
 echo [*] Build complete! Check the 'dist' folder for SubVigil.exe.
 pause

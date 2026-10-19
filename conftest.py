@@ -3,8 +3,9 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock, AsyncMock
 import pytest
 
-# Ensure project root is on path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Ensure project root is on path. conftest.py lives at the repo root, so the
+# project root is its own directory (not the parent).
+sys.path.insert(0, str(Path(__file__).parent))
 
 
 @pytest.fixture

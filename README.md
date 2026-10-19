@@ -94,9 +94,11 @@ pip install -r requirements.txt
 | `dnspython` | DNS resolution, zone transfer, SRV |
 | `colorama` | Coloured terminal output |
 | `beautifulsoup4` | HTML parsing (C99 pages) |
-| `lxml` | Fast HTML parser |
 | `tqdm` | Progress bars |
 | `shodan` | Shodan API client |
+| `aiohttp` | Async HTTP for concurrent probing |
+| `lxml` *(optional)* | Faster HTML parser (falls back to stdlib) |
+| `urllib3` *(optional)* | Transport tuning / warning suppression |
 
 </details>
 
@@ -161,6 +163,7 @@ subvigil.py domain [options]
 | `--censys-id` + `--censys-secret` | Censys | 250 req/month |
 | `--github-token` | GitHub | 5,000 req/hr |
 | `--whoisxml-key` | WhoisXML | 500 credits |
+| `--c99-key` | c99.nl SubdomainFinder | $5 one-time |
 
 ### 🤖 AI Flags
 
@@ -224,7 +227,16 @@ SubVigil/
 > **Fast-skip (✓):** module is bypassed when `--fast` is passed.
 
 <details>
-<summary>🧬 C99 Parsing — 3-tier fallback</summary>
+<summary>🧬 C99 — API-first, HTML fallback</summary>
+
+**Primary (reliable):** the official c99 API —
+`https://api.c99.nl/subdomainfinder?key=<KEY>&domain=<D>&json` — used automatically
+when a `--c99-key` is configured. This is the only method c99 supports for automation.
+
+**Fallback (best-effort):** scrape `subdomainfinder.c99.nl`. The public site sits
+behind Cloudflare and answers automated requests with a 200 "Abuse has been detected"
+page, so without a key this source usually returns nothing. When a scan page *is*
+reachable it is parsed in tiers:
 
 1. Parse `class="sd"` elements (primary layout)
 2. Try alternative class names: `subdomain`, `host`, `domain`, `sub`, `name`
@@ -475,7 +487,11 @@ crt.sh rate-limits heavy users. The module retries 3× with exponential backoff 
 <details>
 <summary>No C99 results</summary>
 
-C99 requires a public scan to exist within the last 14 days. If none is found, the tool falls back to HackerTarget automatically.
+C99 reliably works only with a `--c99-key` (the $5 one-time key from c99.nl), which
+uses the official API. Without a key the tool attempts a best-effort HTML scrape, but
+the public site is behind Cloudflare and blocks automated requests with an "Abuse has
+been detected" page — so keyless runs usually return nothing and the tool falls back
+to HackerTarget automatically.
 
 </details>
 
